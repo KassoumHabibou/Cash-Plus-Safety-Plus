@@ -165,7 +165,7 @@ baseline_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(baseline_MRT_hh$treatme
 followup_MRT_hh$treatment_pi <- haven::as_factor(followup_MRT_hh$treatment_pi)         # Convert PM treatment to factor
 followup_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(followup_MRT_hh$treatment_csh_trnsfr) # Convert cash transfer treatment to factor
 
-ipv_df_all <- readRDS(paste0("~/Dropbox/PhD thesis/chapitre_5","/output/data/ipv_df_all.rds"))
+ipv_df_all <- readRDS(paste0(getwd(),"/output/data/ipv_df_all.rds"))
 
 # For the IPV module 
 ipv_df_all$treatment_pi <- haven::as_factor(ipv_df_all$treatment_pi)         # Convert pi treatment to factor
@@ -202,6 +202,7 @@ physical_ipv_vars_num <- c("phy_ipv_inten_index","phy_severity_12m", "phy_severi
 sexual_ipv_vars_num <- c("sex_ipv_inten_index","sex_severity_12m", "sex_severity_12m_z")
 economic_ipv_vars_num <- c("eco_ipv_inten_index","eco_severity_12m", "eco_severity_12m_z")
 other_ipv_vars_num <- c("all_ipv_inten_index")
+
 ```
 
 <!---BLOCK_TOC--->

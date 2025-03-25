@@ -95,9 +95,9 @@ allrounds_MRT_hh <- allrounds_MRT_hh %>%
          reg_hh_pi_mrt = reg_hh_mrt,
          mes_ctrans_d = ctrans_d) %>% 
   mutate(treatment_pi = treatment_pi %>%
-            structure(label = "PI impact evaluation"),
+            structure(label = "PI IE treatment group"),
          reg_hh_pi_mrt = reg_hh_pi_mrt %>%
-           structure(label = "Filtering condition for PI impact evaluation")
+           structure(label = "Filtering condition for PI IE")
           )
 
 
@@ -169,17 +169,16 @@ allrounds_MRT_hh <- allrounds_MRT_hh %>%
              cash_trsfr==1 & treatment_pi==0 ~ 1,  # Cash transfer recipients in pi control group
              .default = 0                       # All other cases
            ) %>%
-           structure(label = "Cash transfer (Tekavoul only)"))
+           structure(label = "Filtering condition for Tekavoul IE"))
 
 # Create treatment indicator for cash transfer (1 = received transfer, 0 = control)
 allrounds_MRT_hh <- allrounds_MRT_hh %>% 
   mutate(treatment_csh_trnsfr = 
            ifelse(reg_hh_csh_mrt==1 & cash_trsfr==1, 1,     # Treatment group
-                  ifelse(reg_hh_csh_mrt==1 & cash_trsfr==0, 0, NA)) %>%  # Control group, NA for excluded
-           structure(label = "Cash transfer RCT"),
+                  ifelse(reg_hh_csh_mrt==1 & cash_trsfr==0, 0, NA)),  # Control group, NA for excluded,
          treatment_csh_trnsfr = factor(treatment_csh_trnsfr, levels = c(0,1),
                                         labels = c("Control","Cash Assignment")) %>%
-           structure(label = "Cash transfer (Tekavoul only program)"))
+           structure(label = "Tekavoul program IE treatment group"))
 
 # Repeat the same process for baseline data
 # Create regression indicator for baseline households
@@ -579,7 +578,21 @@ ipv_df_all <- ipv_df_all %>%
                       by="hhid", 
                       multiple="first")
 
+followup_MRT_hh_and_ipv_df %>% 
+  filter(reg_hh_csh_mrt == 1 | reg_hh_pi_mrt == 1) %>% 
+  select(-c(contains("ipv"), contains("severity"))) %>% 
+  select(hhid, treatment_csh_trnsfr,reg_hh_csh_mrt, treatment_pi, reg_hh_pi_mrt, 
+         strata,cluster,surveyor) %>% 
+  write_dta("output/data/extract-df-kelsey.dta")
 
+# , hhh_fem_bl, mem_n_bl, pben_relation, # Productive beneficiary relationship to household head
+# ctrl_earn_index_tr_bl, ctrl_earn_index, ctrl_hh_index_tr_bl, ctrl_hh_index, 
+# intrahh_vars_index_tr_bl, intrahh_index, rev_sum_bohh_wemp_98_tr_bl, rev_sum_bohh,hhh_lit,
+# age_gap, ctrl_hh_index, intrahh_index, rev_sum_bohh, pben_handicap, 
+# pben_poly, hhh_edu, het_hhh_edu, hhh_fem, hhh_age_bl, pben_lit, het_pben_lit, 
+# save_share_d, cash_trsfr, pben_age_bl, save_share,pben_age,hhh_age, pben_edu, 
+# hhh_edu, same_cb,pben_fem,hhh_poly,hhh_prim_bl,pben_prim_bl, mem_n,hou_room_bl,
+# hou_hea_min_bl,hou_wat_min_bl
 # Exporting the data in R format
 write_rds(baseline_MRT_hh, "output/data/baseline_MRT_hh.rds")
 write_rds(allrounds_MRT_hh, "output/data/allrounds_MRT_hh.rds")

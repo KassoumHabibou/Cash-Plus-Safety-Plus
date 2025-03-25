@@ -1016,7 +1016,7 @@ custom_tab(compliance_rates, header, footer)
 ```
 
 
-## Cross comparaison (Tekavoul and the PI)
+## Cross comparison (Tekavoul and the PI)
 
 ```{r}
 
