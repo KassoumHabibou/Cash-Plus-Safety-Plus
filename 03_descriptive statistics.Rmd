@@ -1,0 +1,2437 @@
+---
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+subtitle: "Descriptive statistics"
+author: "IBRAHIM KASSOUM Habibou"
+date: '`r format (Sys.Date(), "%d %B %Y")`'
+output: 
+  officedown::rdocx_document:
+    mapstyles:
+      Normal: ['First Paragraph']
+---
+
+```{r setup, include=FALSE}
+# Set random seed for reproducibility
+set.seed(7654)
+
+# Set number of decimal places to display
+options(digits = 3)
+
+# Configure knitr chunk options:
+knitr::opts_chunk$set(
+ echo = FALSE,          # Don't show R code in output
+ message = FALSE,       # Don't show messages
+ warning = FALSE,       # Don't show warnings
+ cache = FALSE,         # Don't cache results
+ fig.align = 'center',  # Center figures
+ fig.width = 6,         # Figure width in inches
+ fig.asp = 0.618,       # Figure aspect ratio (golden ratio)
+ fig.show = "hold"      # Hold multiple plots until end of chunk
+)
+
+# Set dplyr print options to show 6 rows max
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+
+```
+
+
+```{r, include=FALSE, results='hide', echo=FALSE}
+
+######################## Importing library and external files ##################
+### List of required packages
+required_packages <- c("tidyverse", "dplyr","readr","officedown", "officer", "gtsummary", "flextable", "magrittr", "lmtest","haven", "readxl","data.table","stringr","labelled","sandwich","car","fastDummies")
+
+### Check if packages are installed
+missing_packages <- setdiff(required_packages, installed.packages()[,"Package"])
+
+### Install missing packages
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+### Load all packages
+lapply(required_packages, library, character.only = TRUE)
+
+# Remove all objects
+rm(list = ls())
+```
+
+
+```{r echo=F}
+
+set_gtsummary_theme(theme_gtsummary_compact())
+
+######### Create default BioAVR table from dataframe
+#
+# Dependencies : dplyr, flextable, officer
+# source link : https://www.r-bloggers.com/2021/11/publication-ready-tables-with-flextable-and-own-theme-in-r/
+
+customtab_defaults <- function(){
+set_flextable_defaults(font.family = "Times New Roman",
+font.size = 9,
+border.color = "black",  
+width = 2  # Set your preferred default column width (in inches)
+)
+}
+FitFlextableToPage <- function(ft, pgwidth = 25){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+
+custom_tab <- function(df, header, footer){
+  
+  flextable(df) %>%
+   # width(width = 2) %>%  # Set column width for all columns
+    add_header_lines(header) %>%
+    add_footer_lines(footer) %>%
+    bold(i = 1, part = "header") %>%
+    hline_top(part = "header", 
+              border = fp_border(color = "white", width = 3, style = "solid")) %>%
+    hline(i = 1, part = "header",
+          border = fp_border(color = "black", width = 0.25, style = "solid")) %>%
+    hline_top(part = "body",
+              border = fp_border(color = "black", width = 0.25, style = "solid")) %>%
+    hline_bottom(part = "body",
+                 border = fp_border(color = "black", width = 0.25, style = "solid")) %>%
+    hline_bottom(part = "footer",
+                 border = fp_border(color = "black", width = 0.25, style = "solid")) %>%
+    border_inner_h(part = "body",
+                   border = fp_border(color = "black", width = 0.25, style = "dotted")) %>%
+    bg(part = "body", bg = "white") %>%
+    align(part = "all", align = "center") %>%
+    align(j = 1, part = "all", align = "left")
+}
+
+```
+
+
+
+```{r echo=F}
+# This function aims at providing customized statistics in the table that 
+# with be produced using the gtsummary package
+# Basically the gtsummary does not include such a function 
+add_by_n <- function(data, variable, by, tbl, ...) {
+  data %>%
+    select(all_of(c(variable, by))) %>%
+    dplyr::group_by(.data[[by]]) %>%
+    dplyr::summarise_all(~sum(!is.na(.))) %>%
+    rlang::set_names(c("by", "variable")) %>%
+    dplyr::left_join(
+      tbl$df_by %>% select(by, by_col),
+      by = "by"
+    ) %>%
+    mutate(
+      by_col = paste0("add_n_", by_col),
+      variable = style_number(variable)
+    ) %>%
+    select(-by) %>%
+    tidyr::pivot_wider(names_from = by_col, 
+                       values_from = variable)
+}
+
+## define custom test
+fisher.test.simulate.p.values <- function(data, variable, by, ...) {
+  test_results <- stats::fisher.test(data[[variable]], data[[by]], simulate.p.value = TRUE)
+  
+  # Return a tibble instead of a list
+  tibble::tibble(
+    p.value = test_results$p.value,
+    test = test_results$method,
+    conf.int = test_results$conf.int
+  )
+}
+```
+
+```{r}
+
+######################## Loading the datasets ##################################
+# Read the stata file containing the global dataframe into allrounds_MRT_hh
+baseline_MRT_hh <- readRDS(paste0(getwd(),"/output/data/baseline_MRT_hh.rds"))
+allrounds_MRT_hh <- readRDS(paste0(getwd(),"/output/data/allrounds_MRT_hh.rds"))
+followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_MRT_hh_and_ipv_MRT_hh.rds"))
+
+# Convert treatment variables from numeric to factor variables for both datasets
+# This is useful for regression analysis and plotting as factors are treated as categorical variables
+
+# For baseline dataset
+baseline_MRT_hh$treatment_pi <- haven::as_factor(baseline_MRT_hh$treatment_pi)           # Convert PM treatment to factor
+
+baseline_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(baseline_MRT_hh$treatment_csh_trnsfr) # Convert cash transfer treatment to factor
+
+# For all rounds dataset  
+followup_MRT_hh$treatment_pi <- haven::as_factor(followup_MRT_hh$treatment_pi)         # Convert PM treatment to factor
+followup_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(followup_MRT_hh$treatment_csh_trnsfr) # Convert cash transfer treatment to factor
+
+ipv_df_all <- readRDS(paste0("~/Dropbox/PhD thesis/chapitre_5","/output/data/ipv_df_all.rds"))
+
+# For the IPV module 
+ipv_df_all$treatment_pi <- haven::as_factor(ipv_df_all$treatment_pi)         # Convert pi treatment to factor
+ipv_df_all$treatment_csh_trnsfr <- haven::as_factor(ipv_df_all$treatment_csh_trnsfr) # Convert cash transfer treatment to factor
+
+followup_MRT_hh_pi <- followup_MRT_hh %>%
+  filter(reg_hh_pi_mrt == 1)
+
+followup_MRT_hh_csh_trnsfr <- followup_MRT_hh %>%
+  filter(reg_hh_csh_mrt == 1)
+
+followup_MRT_hh  <- followup_MRT_hh %>%
+  filter(reg_hh_csh_mrt == 1| reg_hh_pi_mrt == 1)
+
+# IPV by type 
+# control_ipv_vars <- c("control_ipv_12m","control_ipv_r0_12m", "control_ipv_r1_12m")
+# emotional_ipv_vars <- c("emo_ipv_ever","emo_ipv_r0_ever","emo_ipv_r1_ever","emo_ipv_12m","emo_ipv_r0_12m","emo_ipv_r1_12m")
+# physical_ipv_vars <- c("phy_ipv_ever","phy_ipv_r0_ever","phy_ipv_r1_ever","phy_ipv_12m","phy_ipv_r0_12m","phy_ipv_r1_12m")
+# sexual_ipv_vars <- c("sex_ipv_ever", "sex_ipv_r0_ever","sex_ipv_r1_ever","sex_ipv_12m","sex_ipv_r0_12m","sex_ipv_r1_12m")
+# economic_ipv_vars <- c("eco_ipv_ever","eco_ipv_r0_ever","eco_ipv_r1_ever","eco_ipv_12m","eco_ipv_r0_12m","eco_ipv_r1_12m")
+# other_ipv_vars <- c("ipv_all_12m","ipv_all2_12m","ipv_all_r0_12m","ipv_all_r1_12m")
+# 
+
+control_ipv_vars_fac <- c("control_ipv_12m")
+emotional_ipv_vars_fac <- c("emo_ipv_12m")
+physical_ipv_vars_fac <- c("phy_ipv_12m")
+sexual_ipv_vars_fac <- c("sex_ipv_12m")
+economic_ipv_vars_fac <- c("eco_ipv_12m")
+other_ipv_vars_fac <- c("ipv_all_12m","ipv_all2_12m")
+
+control_ipv_vars_num <- c("control_ipv_inten_index")
+emotional_ipv_vars_num <- c("emo_ipv_inten_index","emo_severity_12m", "emo_severity_12m_z")
+physical_ipv_vars_num <- c("phy_ipv_inten_index","phy_severity_12m", "phy_severity_12m_z")
+sexual_ipv_vars_num <- c("sex_ipv_inten_index","sex_severity_12m", "sex_severity_12m_z")
+economic_ipv_vars_num <- c("eco_ipv_inten_index","eco_severity_12m", "eco_severity_12m_z")
+other_ipv_vars_num <- c("all_ipv_inten_index")
+```
+
+<!---BLOCK_TOC--->
+
+
+<!---BLOCK_LANDSCAPE_START--->
+\newpage
+# Summary
+
+**Key Takeaways**:
+
+- Around 54 percent of the women who participated in the evaluation gave their consent for the IPV module.
+- Reasons for non-consent to the IPV module appear balanced between the different intervention groups with no significant differences.  
+- Overall, beneficiaries of the productive inclusion program present higher rates of IPV than recipients of the Tekavoul program.  
+- The most common type of violence is the partner controlling behavior, affecting over half of the women in the entire sample. The variation between groups is small.  
+- Interestingly, intervention groups generally show slightly higher IPV rates than control groups, which could indicate:  
+  * Increased awareness and comfort in reporting among intervention group participants.  
+  * Potential backlash effects from economic or social interventions.  
+- The psychosocial package presents the highest rate of sexual IPV, while economic IPV is more common among recipients of the capital and full packages.  
+- The variables that will be considered in the heterogeneity analysis are:  
+  * The sex of the household head  
+  * The beneficiary relationship to the household head  
+  * Household head literacy  
+  * Beneficiary literacy  
+  * Household head number of years of education (the median value as the threshold)  
+  * Beneficiary number of years of education (the median value as the threshold)
+  * Beneficiary share of savings owned by their partner (the median value as the threshold)
+  * Control over earnings index (the median value as the threshold)
+  * Control over household resources index (the median value as the threshold)
+  * Intra-household dynamics index (the median value as the threshold)
+  * Beneficiary's share of total revenue (the median value as the threshold) 
+  * Age gap between the household head and the beneficiary (the median value as the threshold) 
+- Enumerators fixed effects (FE) will be included in all regressions since there is variation in the number of surveyed individuals across treatment group.
+  
+\newpage
+# Consent for the IPV module balance 
+
+
+The following table presents the balance test for the IPV (Intimate Partner Violence) module from the second follow-up survey. Understanding this balance is important because it helps determine whether the sample remains properly randomized. Any imbalance could potentially affect the results, which is particularly important since IPV is the main outcome measure in this analysis.
+
+- Out of the total sample size of 2,561 individuals, 54% (1,371 respondents) participated in the IPV module. This indicates that just over half of the sample provided consent, which is a common challenge in sensitive data collection.
+- A notable proportion (28 percent) of non-participants were over the age of 50 and 9 percent of them are widow hence less exposed to the IPV.
+- The remaining 9 percent of the women did not respond due to various reasons, including household refusal, absence during the survey period, or the respondent no longer residing in the household.
+- *There are 15 women in the cash assignment group that are above 50 and included in the tekavoul program impact evaluation and answered to the IPV module*
+- *27 women in the cash assignment group are aged above 50*.
+
+```{r}
+
+ipv_df_all <- ipv_df_all %>%
+  mutate(status_noconsent=as.character(labelled::unlabelled(status_noconsent)),
+         status_noconsent=ifelse(is.na(status_noconsent)," La répondante clef a participé",status_noconsent)%>%
+           structure(label = "Status of consent to the IPV module"))
+
+dataconsent <- ipv_df_all %>%
+  filter(reg_hh_csh_mrt == 1 | reg_hh_pi_mrt == 1) %>% 
+  fastDummies::dummy_cols(select_columns="status_noconsent", omit_colname_prefix = TRUE)
+
+colnames(dataconsent) <- gsub("status_noconsent_", "",colnames(dataconsent), fixed = T)
+# Create a table with tbl_summary
+ipv_df_all %>%
+  filter(reg_hh_csh_mrt == 1 | reg_hh_pi_mrt == 1) %>% 
+  select(status_noconsent) %>% 
+  tbl_summary(
+    statistic = list(all_categorical = "{n} ({p}%)"),
+    missing = "ifany"
+  ) %>%
+  modify_header(
+    label = "Status"
+  ) %>%
+  bold_labels() %>% 
+    modify_header(label ~ "") # Modify the table header to provide a descriptive label
+```
+
+
+In the following, I performed balance checks on the variable consent to the IPV module by type of treatment. Overall, non-response is balanced between treatment groups.
+
+## Tekavoul program
+
+
+```{r}
+# Create vectors of variable names and their corresponding labels
+var_vec = unique(dataconsent$status_noconsent)
+
+
+# Create corresponding human-readable labels for each variable
+label_vec = unique(dataconsent$status_noconsent)
+
+label_var = c("Balance for no consent to the IPV module")
+
+var_lab = c("Balance")
+
+# Convert all variables in var_vec to numeric type
+dataconsent <- dataconsent  %>% 
+  dplyr::mutate(across(var_vec, as.numeric))
+
+# Create a tibble mapping variable names to their labels
+description = tibble(
+  name = var_vec,
+  label = label_vec
+)
+
+# Create a named list of variable labels
+var_labels <- setNames(as.list(description$label), description$name)
+
+# Apply the variable labels to the dataset
+dataconsent <- dataconsent %>%
+  set_variable_labels(.labels = var_labels, .strict = FALSE)
+
+
+
+# Filter to get the cash recipient in the followup_MRT_hh that receive the Tekavoul
+# and is in the age transfert
+ipv_df_all_csh_trnsfr <- dataconsent %>%
+  filter(reg_hh_csh_mrt == 1)
+
+
+# Create summary statistics table grouped by treatment
+balance_tab_1 = ipv_df_all_csh_trnsfr %>% 
+  dplyr::select(treatment_csh_trnsfr,var_vec) %>%  
+  tbl_summary(by = treatment_csh_trnsfr,
+              type = (list=var_vec ~ "continuous"),
+              statistic = list(all_continuous() ~ "{mean}({sd})"),
+              digits = everything() ~ c(2,2), 
+              missing = "no") %>% 
+  modify_header(label = 'Variable')
+
+# Create vector of treatment binary comparison variables
+lst_treatment_bin="treatment_csh_trnsfr"
+
+# Calculate p-values for each treatment comparison and variable
+balance_tab_2 <- purrr::map_dfr(lst_treatment_bin, function(treat_var) {
+  df_coef_value <- data.frame(variable = character(), 
+                       treatment = character(), 
+                       coef_val = character(), 
+                       stringsAsFactors = FALSE)
+  
+  # Loop through each variable and run logistic regression
+  for (v_name in var_vec) {
+    # Fit logistic regression with clustered standard errors
+    reg <- glm(as.formula(paste0(treat_var, " ~ ", "`", v_name,"`" ," + strata")), 
+               family = binomial, 
+               data = ipv_df_all_csh_trnsfr)
+    
+    # Calculate p-value and add significance stars
+    coef_val <- round(coeftest(reg, vcovCL(reg, cluster = ipv_df_all_csh_trnsfr$cluster))[2, 1], 3)
+    pval <- round(coeftest(reg, vcovCL(reg, cluster = ipv_df_all_csh_trnsfr$cluster))[2, 4], 3)
+    
+    # Add significance stars based on p-value thresholds
+    if (pval < 0.01) {
+      coef_val <- paste0(as.character(coef_val), "***")
+    } else if (pval < 0.05) {
+      coef_val <- paste0(as.character(coef_val), "**")
+    } else if (pval < 0.1) {
+      coef_val <- paste0(as.character(coef_val), "*")
+    }else {
+       coef_val <- as.character(coef_val)
+    }
+    
+    df_coef_value <- rbind(df_coef_value, data.frame(variable = v_name, 
+                                        treatment = treat_var, 
+                                        coef_val = coef_val, 
+                                        stringsAsFactors = FALSE))
+  }
+  
+  return(df_coef_value)
+})
+
+# Reshape p-value table to wide format with treatment comparisons as columns
+balance_tab_2 <- balance_tab_2 %>% 
+  pivot_wider(id_cols = "variable", 
+              names_from = "treatment", 
+              values_from = "coef_val") 
+
+# Rename columns to show treatment group comparisons
+names(balance_tab_2) <- c("variable","(1)-(2)")
+
+#Keep the variables of interest
+balance_tab_2 <- balance_tab_2 %>% 
+  select("(1)-(2)")
+
+# Create table for joint F-tests
+  
+
+myfooter <- ipv_df_all_csh_trnsfr %>% 
+  dplyr::select(treatment_csh_trnsfr,cluster, strata) %>%  
+  group_by(treatment_csh_trnsfr) %>% 
+  summarise(nbr._cluster = n_distinct(cluster),
+            nbr._strata = n_distinct(strata)) %>% 
+  column_to_rownames(var="treatment_csh_trnsfr")
+
+#transpose data frame
+myfooter_t <- transpose(myfooter)
+
+#redefine row and column names
+rownames(myfooter_t) <- colnames(myfooter)
+colnames(myfooter_t) <- balance_tab_1$table_styling$header$label[c(6,7)]
+
+myfooter_t <- tibble::rownames_to_column(myfooter_t, "Variable") %>%
+  mutate(Variable=dplyr::recode(Variable, nbr._cluster = "N cluster", nbr._strata = "N strata"))
+
+
+balance_tab = cbind(
+  balance_tab_1,
+  balance_tab_2)
+
+# Adding the row on the nbr. of cluster and strata
+balance_tab <- plyr::rbind.fill(balance_tab,myfooter_t)
+
+header <- str_squish(str_remove("Table : Balance Table ", "\n"))
+# Set Table footer
+footer <- str_squish(str_remove("Notes: Standard errors for all tests are clustered at the Social Promotion Space level. Fixed effects using randomization strata are included in all estimation regressions. *** p < 0.01, ** p < 0.05, * p < 0.1.", "\n"))
+# Set custom_tab() defaults
+customtab_defaults()
+custom_tab(balance_tab, header, footer)
+```
+
+
+## Productive inclusion program
+
+
+```{r}
+
+ipv_df_all_pi <- dataconsent %>%
+  filter(reg_hh_pi_mrt == 1)
+
+# Create summary statistics table grouped by treatment
+balance_tab_1 = ipv_df_all_pi %>% 
+  dplyr::select(treatment_pi,var_vec) %>%  
+  tbl_summary(by = treatment_pi,
+              type = (list=var_vec ~ "continuous"),
+              statistic = list(all_continuous() ~ "{mean}({sd})"),
+              digits = everything() ~ c(2,2), 
+              missing = "no") %>% 
+  modify_header(label = 'Variable')
+
+# Create vector of treatment binary comparison variables
+lst_treatment_bin=paste("treatment_pi_", seq(1,6,1), sep="")
+
+# Adding the variable for the pooled T-test
+lst_treatment_bin <- append(lst_treatment_bin, "treat_dum_pi")
+
+# Calculate p-values for each treatment comparison and variable
+balance_tab_2 <- purrr::map_dfr(lst_treatment_bin, function(treat_var) {
+  df_coef_value <- data.frame(variable = character(), 
+                       treatment = character(), 
+                       coef_val = character(), 
+                       stringsAsFactors = FALSE)
+  #browser()
+  # Loop through each variable and run logistic regression
+  for (v_name in var_vec) {
+    # Fit logistic regression with clustered standard errors
+      reg <- glm(as.formula(paste0(treat_var, " ~ ", "`", v_name,"`" ," + strata")), 
+               family = binomial, 
+               data = ipv_df_all_pi)
+    
+    # Calculate p-value and add significance stars
+    coef_val <- round(coeftest(reg, vcovCL(reg, cluster = ipv_df_all_pi$cluster))[2, 1], 3)
+    pval <- round(coeftest(reg, vcovCL(reg, cluster = ipv_df_all_pi$cluster))[2, 4], 3)
+    # Add significance stars based on p-value thresholds
+    if (pval < 0.01) {
+      coef_val <- paste0(as.character(coef_val), "***")
+    } else if (pval < 0.05) {
+      coef_val <- paste0(as.character(coef_val), "**")
+    } else if (pval < 0.1) {
+      coef_val <- paste0(as.character(coef_val), "*")
+    }else {
+       coef_val <- as.character(coef_val)
+    }
+    
+    df_coef_value <- rbind(df_coef_value, data.frame(variable = v_name, 
+                                        treatment = treat_var, 
+                                        coef_val = coef_val, 
+                                        stringsAsFactors = FALSE))
+  }
+  
+  return(df_coef_value)
+})
+
+# Reshape p-value table to wide format with treatment comparisons as columns
+balance_tab_2 <- balance_tab_2 %>% 
+  pivot_wider(id_cols = "variable", 
+              names_from = "treatment", 
+              values_from = "coef_val") 
+
+# Rename columns to show treatment group comparisons
+names(balance_tab_2) <- c("variable","(1)-(2)","(1)-(3)","(1)-(4)",
+                     "(2)-(3)","(2)-(4)","(3)-(4)", "Pooled F-test \n P-value")
+
+#Keep the variables of interest
+balance_tab_2 <- balance_tab_2 %>% 
+  select("(1)-(2)","(1)-(3)","(1)-(4)",
+         "(2)-(3)","(2)-(4)","(3)-(4)",
+         "Pooled F-test \n P-value")
+
+# Create table for joint F-tests
+  
+# For each variable, run joint F-test of treatment effects
+
+balance_tab_3 <- purrr::map_dfr(var_vec, function(v_name) { 
+  
+    # Fit regression model
+    model <- lm(as.formula(paste0( "`", v_name,"`" , " ~ treatment_pi + strata")), 
+                 #family = binomial,
+                 data = ipv_df_all_pi)
+
+    # Create hypotheses for joint test of treatment effects
+    trtmnt_qult_hpthss <- c(
+      paste0("treatment_pi",levels(ipv_df_all_pi$treatment_pi)[-1][1],
+             "=","treatment_pi",levels(ipv_df_all_pi$treatment_pi)[-1][2]),
+      paste0("treatment_pi",levels(ipv_df_all_pi$treatment_pi)[-1][1],
+             "=","treatment_pi",levels(ipv_df_all_pi$treatment_pi)[-1][3]))
+
+    # Perform joint F-test with clustered standard errors
+    joint_f_test <- linearHypothesis(model, 
+                                    trtmnt_qult_hpthss,
+                                    test = "F", 
+                                    vcov. = vcovCL(model, ipv_df_all_pi$cluster))
+
+    # Get and format p-value with significance stars
+    coef_val_ftest <- round(joint_f_test$`F`[2],3)
+    pval <- round(joint_f_test$`Pr(>F)`[2],3)
+    if (pval < 0.01) {
+      coef_val_ftest <- paste0(as.character(coef_val_ftest), "***")
+    } else if (pval < 0.05) {
+      coef_val_ftest <- paste0(as.character(coef_val_ftest), "**")
+    } else if (pval < 0.1) {
+      coef_val_ftest <- paste0(as.character(coef_val_ftest), "*")
+    }else {
+       coef_val_ftest <- as.character(coef_val_ftest)
+    }
+
+    # Add results to balance table
+    temp_balance <- tibble(
+  "Joint F-test \n P-value" = coef_val_ftest)
+    
+
+})
+  
+
+
+
+myfooter <- ipv_df_all_pi %>% 
+  dplyr::select(treatment_pi,cluster, strata) %>%  
+  group_by(treatment_pi) %>% 
+  summarise(nbr._cluster = n_distinct(cluster),
+            nbr._strata = n_distinct(strata)) %>% 
+  column_to_rownames(var="treatment_pi")
+
+#transpose data frame
+myfooter_t <- transpose(myfooter)
+
+#redefine row and column names
+rownames(myfooter_t) <- colnames(myfooter)
+colnames(myfooter_t) <- balance_tab_1$table_styling$header$label[seq(6,9,1)]
+
+myfooter_t <- tibble::rownames_to_column(myfooter_t, "Variable") %>%
+  mutate(Variable=dplyr::recode(Variable, nbr._cluster = "N cluster", nbr._strata = "N strata"))
+
+
+balance_tab = cbind(
+  balance_tab_1,
+  balance_tab_2,
+  balance_tab_3) %>% 
+  relocate("Pooled F-test \n P-value", .after = "Joint F-test \n P-value")
+
+# Adding the row on the nbr. of cluster and strata
+balance_tab <- plyr::rbind.fill(balance_tab,myfooter_t)
+
+header <- str_squish(str_remove("Table : Balance Table ", "\n"))
+# Set Table footer
+footer <- str_squish(str_remove("Notes: Standard errors for all tests are clustered at the Social Promotion Space level. Fixed effects using randomization strata are included in all estimation regressions. The joint F-test shows the p-value from a test of equality of treatment arms. While the pooled F-test shows the p-value from a test of pooled treatment (i.e., a regression with a dummy for any treatment arm). *** p < 0.01, ** p < 0.05, * p < 0.1.", "\n"))
+# Set custom_tab() defaults
+customtab_defaults()
+custom_tab(balance_tab, header, footer)
+
+
+```
+
+
+```{r}
+# # Create vectors of variable names and their corresponding labels
+# var_vec = c("ipv_completed","status_noconsent")
+# 
+# 
+# # Create corresponding human-readable labels for each variable
+# label_vec = c("Consent for IPV module")
+# 
+# label_var = c("Balance for IPV")
+# 
+# var_lab = c("Balance")
+# 
+# # Convert all variables in var_vec to numeric type
+# ipv_df_all <- ipv_df_all  %>% 
+#   dplyr::mutate(across(var_vec, as.numeric))
+# 
+# # Create a tibble mapping variable names to their labels
+# description = tibble(
+#   name = var_vec,
+#   label = label_vec
+# )
+# 
+# # Create a named list of variable labels
+# var_labels <- setNames(as.list(description$label), description$name)
+# 
+# # Apply the variable labels to the dataset
+# ipv_df_all <- ipv_df_all %>%
+#   set_variable_labels(.labels = var_labels, .strict = FALSE)
+# 
+# 
+# 
+# # Filter to get the cash recipient in the followup_MRT_hh that receive the Tekavoul
+# # and is in the age transfert
+# ipv_df_all_csh_trnsfr <- ipv_df_all %>%
+#   filter(reg_hh_csh_mrt == 1)
+# 
+# 
+# # Create summary statistics table grouped by treatment
+# balance_tab_1 = ipv_df_all_csh_trnsfr %>% 
+#   dplyr::select(treatment_csh_trnsfr,var_vec) %>%  
+#   tbl_summary(by = treatment_csh_trnsfr,
+#               type = (list=var_vec ~ "continuous"),
+#               statistic = list(all_continuous() ~ "{mean}({sd})"),
+#               digits = everything() ~ c(2,2), 
+#               missing = "no") %>% 
+#   modify_header(label = 'Variable')
+# 
+# # Create vector of treatment binary comparison variables
+# lst_treatment_bin="treatment_csh_trnsfr"
+# 
+# # Calculate p-values for each treatment comparison and variable
+# balance_tab_2 <- purrr::map_dfr(lst_treatment_bin, function(treat_var) {
+#   df_coef_value <- data.frame(variable = character(), 
+#                        treatment = character(), 
+#                        coef_val = character(), 
+#                        stringsAsFactors = FALSE)
+#   
+#   # Loop through each variable and run logistic regression
+#   for (v_name in var_vec) {
+#     # Fit logistic regression with clustered standard errors
+#     reg <- glm(as.formula(paste0(treat_var, " ~ ", v_name, " + strata")), 
+#                family = binomial, 
+#                data = ipv_df_all_csh_trnsfr)
+#     
+#     # Calculate p-value and add significance stars
+#     coef_val <- round(coeftest(reg, vcovCL(reg, cluster = ipv_df_all_csh_trnsfr$cluster))[2, 1], 3)
+#     pval <- round(coeftest(reg, vcovCL(reg, cluster = ipv_df_all_csh_trnsfr$cluster))[2, 4], 3)
+#     
+#     # Add significance stars based on p-value thresholds
+#     if (pval < 0.01) {
+#       coef_val <- paste0(as.character(coef_val), "***")
+#     } else if (pval < 0.05) {
+#       coef_val <- paste0(as.character(coef_val), "**")
+#     } else if (pval < 0.1) {
+#       coef_val <- paste0(as.character(coef_val), "*")
+#     }else {
+#        coef_val <- as.character(coef_val)
+#     }
+#     
+#     df_coef_value <- rbind(df_coef_value, data.frame(variable = v_name, 
+#                                         treatment = treat_var, 
+#                                         coef_val = coef_val, 
+#                                         stringsAsFactors = FALSE))
+#   }
+#   
+#   return(df_coef_value)
+# })
+# 
+# # Reshape p-value table to wide format with treatment comparisons as columns
+# balance_tab_2 <- balance_tab_2 %>% 
+#   pivot_wider(id_cols = "variable", 
+#               names_from = "treatment", 
+#               values_from = "coef_val") 
+# 
+# # Rename columns to show treatment group comparisons
+# names(balance_tab_2) <- c("variable","(1)-(2)")
+# 
+# #Keep the variables of interest
+# balance_tab_2 <- balance_tab_2 %>% 
+#   select("(1)-(2)")
+# 
+# # Create table for joint F-tests
+#   
+# 
+# myfooter <- ipv_df_all_csh_trnsfr %>% 
+#   dplyr::select(treatment_csh_trnsfr,cluster, strata) %>%  
+#   group_by(treatment_csh_trnsfr) %>% 
+#   summarise(nbr._cluster = n_distinct(cluster),
+#             nbr._strata = n_distinct(strata)) %>% 
+#   column_to_rownames(var="treatment_csh_trnsfr")
+# 
+# #transpose data frame
+# myfooter_t <- transpose(myfooter)
+# 
+# #redefine row and column names
+# rownames(myfooter_t) <- colnames(myfooter)
+# colnames(myfooter_t) <- balance_tab_1$table_styling$header$label[c(6,7)]
+# 
+# myfooter_t <- tibble::rownames_to_column(myfooter_t, "Variable") %>%
+#   mutate(Variable=dplyr::recode(Variable, nbr._cluster = "N cluster", nbr._strata = "N strata"))
+# 
+# 
+# balance_tab = cbind(
+#   balance_tab_1,
+#   balance_tab_2)
+# 
+# # Adding the row on the nbr. of cluster and strata
+# balance_tab <- plyr::rbind.fill(balance_tab,myfooter_t)
+# 
+# header <- str_squish(str_remove("Table : Balance Table ", "\n"))
+# # Set Table footer
+# footer <- str_squish(str_remove("Notes: Standard errors for all tests are clustered at the Social Promotion Space level. Fixed effects using randomization strata are included in all estimation regressions. The joint F-test shows the p-value from a test of equality of treatment arms. While the pooled F-test shows the p-value from a test of pooled treatment (i.e., a regression with a dummy for any treatment arm). *** p < 0.01, ** p < 0.05, * p < 0.1.", "\n"))
+# # Set custom_tab() defaults
+# customtab_defaults()
+# custom_tab(balance_tab, header, footer)
+# 
+
+```
+
+\newpage
+
+# Descriptive Statistics
+
+## IPV variables
+
+The following tables primarily consider women who provided consent for the IPV module.  
+The observed differences between this balance table and the attrition table in the following sections arise from the fact that some women did not provide consent for participation.
+
+**Index construction**: See: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0282339
+
+- A binary variable coded as 1 is created if a female beneficiary of the program responded affirmatively to any of the items related to IPV.
+- Additionally, a continuous variable is constructed as the standardized average of the responses to each of these items that report the frequency of instances of each type of violence experienced in the past 12 months. This variable is measured on a 4-point Likert frequency scale (0 = Never, 1 = Once, 2 = Sometimes, 3 = Often). It is coded as "missing" only if all the items are missing. The range of the continuous variable is 0–3.
+
+For all types of violence (except *controlling behavior*), the survey typically asks three sequential questions:
+
+- Whether it has ever happened;  
+- Whether it happened in the past 12 months;  
+- For incidents in the past 12 months, the frequency (once, occasionally, or often)  
+
+\newpage
+
+### Partner's controlling behavior
+
+- Overall rates range between 51 percent and 56 percent across program groups.
+- The control group rates are around 51 percent in the Productive Inclusion program, which is slightly lower than the intervention groups' average for the same program (between 52 and 56 percent). 
+- In the Tekavoul program, the control group presents around 3 percentage points more controlling behavior than the intervention group.
+- This type of IPV contains question on:
+  * ipv1: Being jealous or angry if the wife speaks to other men,
+  * ipv2: Accusing the wife of being unfaithful,
+  * ipv3: Trying to prevent the wife from seeing family or friends,
+  * ipv5: Insisting on knowing the wife's whereabouts at all times,
+  * ipv6: Expecting the wife to ask permission before seeking healthcare,
+  * ipv7: Preventing the wife from working outside the home.
+  
+
+```{r}
+var_label(followup_MRT_hh_pi$control_ipv_12m) <- "Partner's controlling behavior Index (last 12 months)"
+
+# For the productive inclusion program
+tbl_pi <- followup_MRT_hh_pi %>% 
+  select(treatment_pi, all_of(control_ipv_vars_fac), all_of(control_ipv_vars_num)) %>% 
+  mutate(across(all_of(control_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi = unlabelled(treatment_pi)) %>% 
+  tbl_summary(by = treatment_pi,
+           label = list(control_ipv_12m ~ "Binary for control IPV In the last 12 months",
+                        control_ipv_inten_index ~ "Control IPV intensity index z-score"
+                        #  control_ipv_inten_index ~ "Binary for control IPV In the last 12 months"
+                        # control_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # control_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")"
+                        ), # Label for the Controling behavior variable.
+           type = list(all_of(control_ipv_vars_fac) ~ "dichotomous", all_of(control_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(control_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Partner's controlling behavior") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+tbl_pi_pool <- followup_MRT_hh_pi %>% 
+  select(treatment_pi_pool, all_of(control_ipv_vars_fac), all_of(control_ipv_vars_num)) %>% 
+  mutate(across(all_of(control_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi_pool = unlabelled(treatment_pi_pool)) %>% 
+  tbl_summary(by = treatment_pi_pool,
+           label = list(control_ipv_12m ~ "Binary for control IPV In the last 12 months",
+                        control_ipv_inten_index ~ "Control IPV intensity index z-score" 
+                        # control_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # control_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")"
+                        ), # Label for the Controling behavior variable.
+           type = list(all_of(control_ipv_vars_fac) ~ "dichotomous", all_of(control_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(control_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Partner's controlling behavior") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+# For the Tekavoul program
+tbl_csh_trnsfr <- followup_MRT_hh_csh_trnsfr %>% 
+  select(treatment_csh_trnsfr, all_of(control_ipv_vars_fac), all_of(control_ipv_vars_num)) %>% 
+  mutate(across(all_of(control_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_csh_trnsfr = unlabelled(treatment_csh_trnsfr)) %>% 
+  tbl_summary(by = treatment_csh_trnsfr,
+           label = list(control_ipv_12m ~ "Binary for control IPV In the last 12 months" ,
+                        control_ipv_inten_index ~ "Control IPV intensity index z-score"
+                        # control_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # control_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")"
+                        ), # Label for the Controling behavior variable.
+           type = list(all_of(control_ipv_vars_fac) ~ "dichotomous", all_of(control_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(control_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Partner's controlling behavior") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+
+## Creating the final table
+tbl <- tbl_merge(
+  tbls = list(
+              tbl_csh_trnsfr, # Tekavoul
+              tbl_pi, # Productive inclusion
+              tbl_pi_pool), # Pool inclusion
+
+  tab_spanner = c("Tekavoul", "Productive inclusion", "Productive inclusion (Pool)")
+) %>%
+  modify_footnote(everything() ~ NA) 
+# Adding the row on the nbr. of cluster and strata
+
+
+tbl
+```
+
+\newpage
+
+### Emotional Violence
+
+
+- Emotional IPV rates are considerably lower than controlling behaviors, ranging between 7 percent and 10 percent across groups.
+- The Capital package presents slightly higher rates at 10.27 percent compared to the other interventions.
+- Control groups show lower rates (around 7 percent) than intervention groups (8-10 percent).
+- This type of IPV contains question on:
+  * ipv8: Humiliating the wife in front of others,
+  * ipv9: Threatening to hurt the wife or someone close to her,
+  * ipv10: Insulting or belittling the wife,
+  * ipv11: Deliberately scaring or intimidating the wife (through looks, shouting, breaking things).
+
+
+```{r}
+
+# For the productive inclusion program
+tbl_pi <- followup_MRT_hh_pi %>% 
+  select(treatment_pi, all_of(c(emotional_ipv_vars_fac, emotional_ipv_vars_num))) %>% 
+  mutate(across(all_of(emotional_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi = unlabelled(treatment_pi)) %>% 
+  tbl_summary(by = treatment_pi,
+           label = list(
+                        #emo_ipv_ever ~ "Binary for emo. IPV ever", 
+                        # emo_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # emo_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        emo_ipv_12m ~ "Binary for emo. IPV in the last 12 months",
+                        # emo_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # emo_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        emo_severity_12m ~ "Emo. IPV severity index",
+                        emo_severity_12m_z ~ "Emo. IPV severity index z-score",
+                        emo_ipv_inten_index ~ "Emo. IPV intensity index z-score"), # Label for the Controling behavior variable.
+           type = list(all_of(emotional_ipv_vars_fac) ~ "dichotomous", all_of(emotional_ipv_vars_num)~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(emotional_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Emotional Violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+tbl_pi_pool <- followup_MRT_hh_pi %>% 
+  select(treatment_pi_pool, all_of(c(emotional_ipv_vars_fac, emotional_ipv_vars_num))) %>% 
+  mutate(across(all_of(emotional_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi_pool = unlabelled(treatment_pi_pool)) %>% 
+  tbl_summary(by = treatment_pi_pool,
+           label = list(
+                        #emo_ipv_ever ~ "Binary for emo. IPV ever", 
+                        # emo_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # emo_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        emo_ipv_12m ~ "Binary for emo. IPV in the last 12 months",
+                        emo_ipv_inten_index ~ "Emo. IPV intensity index z-score",
+                        # emo_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # emo_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        emo_severity_12m ~ "Emo. IPV severity index",
+                        emo_severity_12m_z ~ "Emo. IPV severity index z-score",
+                        emo_ipv_inten_index ~ "Emo. IPV intensity index z-score"), # Label for the Controling behavior variable.
+           type = list(all_of(emotional_ipv_vars_fac) ~ "dichotomous", all_of(emotional_ipv_vars_num)~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(emotional_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Emotional Violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+# For the Tekavoul program
+tbl_csh_trnsfr <- followup_MRT_hh_csh_trnsfr %>% 
+  select(treatment_csh_trnsfr, all_of(c(emotional_ipv_vars_fac, emotional_ipv_vars_num))) %>% 
+  mutate(across(all_of(emotional_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_csh_trnsfr = unlabelled(treatment_csh_trnsfr)) %>% 
+  tbl_summary(by = treatment_csh_trnsfr,
+            label = list(
+                        #emo_ipv_ever ~ "Binary for emo. IPV ever", 
+                        # emo_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # emo_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        emo_ipv_12m ~ "Binary for emo. IPV in the last 12 months",
+                        emo_ipv_inten_index ~ "Emo. IPV intensity index z-score",
+                        # emo_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # emo_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        emo_severity_12m ~ "Emo. IPV severity index",
+                        emo_severity_12m_z ~ "Emo. IPV severity index z-score",
+                        emo_ipv_inten_index ~ "Emo. IPV intensity index z-score"), # Label for the Controling behavior variable.
+           type = list(all_of(emotional_ipv_vars_fac) ~ "dichotomous", all_of(emotional_ipv_vars_num)~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(emotional_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Emotional Violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+
+## Creating the final table
+tbl <- tbl_merge(
+  tbls = list(
+              tbl_csh_trnsfr, # Tekavoul
+              tbl_pi, # Productive inclusion
+              tbl_pi_pool), # Pool inclusion
+
+  tab_spanner = c("Tekavoul", "Productive inclusion", "Productive inclusion (Pool)")
+)  %>%
+  modify_footnote(everything() ~ NA) 
+
+tbl
+```
+
+\newpage
+
+### Physical Violence
+
+
+- The overall prevalence of physical violence ranges from about 0.99 percent in the Tekavoul program to 1.55 percent in the Productive Inclusion program.
+- There appears to be slight variation between control groups (0.89 percent in Tekavoul control, 1.09 percent in productive inclusion control) and the beneficiaries of the two programs (1.05 percent in the beneficiaries of the cash assignment in the Tekavoul program, 1.80 percent for the beneficiary of the productive inclusion).
+- Within the productive inclusion program, the psychosocial and the full intervention groups show the highest rates (around 2 percent).
+- The physical IPV intensity and severity indices are very low across all groups, with minimal variation.
+- This type of IPV contains questions on :
+  * ipv12: slapping or throwing objects that could cause injury,
+  * ipv13: Pushing, shoving, or pulling hair,
+  * ipv14: Punching or hitting with objects that could cause injury,
+  * ipv15: Kicking, dragging, or beating,
+  * ipv16: Attempting to strangle or burn intentionally (not accidentally),
+  * ipv17: Threatening or attacking with weapons (knife, gun, etc.).
+
+```{r}
+
+# For the productive inclusion program
+tbl_pi <- followup_MRT_hh_pi %>% 
+  select(treatment_pi, all_of(c(physical_ipv_vars_fac, physical_ipv_vars_num))) %>% 
+  mutate(across(all_of(physical_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi = unlabelled(treatment_pi)) %>% 
+  tbl_summary(by = treatment_pi,
+           label = list(
+                        #phy_ipv_ever ~ "Binary for phy. IPV ever", 
+                        # phy_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # phy_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        phy_ipv_inten_index ~ "Phy. IPV intensity index z-score",
+                        phy_ipv_12m ~ "Binary for phy. IPV in the last 12 months", 
+                        # phy_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # phy_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        phy_severity_12m ~ "Phy. IPV severity index",
+                        phy_severity_12m_z ~ "Phy. IPV severity z-score"), 
+           type = list(all_of(physical_ipv_vars_fac) ~ "dichotomous", all_of(physical_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(physical_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Physical Violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+tbl_pi_pool <- followup_MRT_hh_pi %>% 
+  select(treatment_pi_pool, all_of(c(physical_ipv_vars_fac, physical_ipv_vars_num))) %>% 
+  mutate(across(all_of(physical_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi_pool = unlabelled(treatment_pi_pool)) %>% 
+  tbl_summary(by = treatment_pi_pool,
+           label = list(
+                        #phy_ipv_ever ~ "Binary for phy. IPV ever", 
+                        # phy_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # phy_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        phy_ipv_inten_index ~ "Phy. IPV intensity index z-score",
+                        phy_ipv_12m ~ "Binary for phy. IPV in the last 12 months", 
+                        # phy_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # phy_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        phy_severity_12m ~ "Phy. IPV severity index",
+                        phy_severity_12m_z ~ "Phy. IPV severity z-score"),  
+           type = list(all_of(physical_ipv_vars_fac) ~ "dichotomous", physical_ipv_vars_num ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(physical_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Physical Violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+# For the Tekavoul program
+tbl_csh_trnsfr <- followup_MRT_hh_csh_trnsfr %>% 
+  select(treatment_csh_trnsfr, all_of(c(physical_ipv_vars_fac, physical_ipv_vars_num))) %>%  
+  mutate(across(all_of(physical_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_csh_trnsfr = unlabelled(treatment_csh_trnsfr)) %>% 
+  tbl_summary(by = treatment_csh_trnsfr,
+           label = list(
+                        #phy_ipv_ever ~ "Binary for phy. IPV ever", 
+                        # phy_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # phy_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        phy_ipv_inten_index ~ "Phy. IPV intensity index z-score",
+                        phy_ipv_12m ~ "Binary for phy. IPV in the last 12 months", 
+                        # phy_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # phy_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        phy_severity_12m ~ "Phy. IPV severity index",
+                        phy_severity_12m_z ~ "Phy. IPV severity z-score"), 
+           type = list(all_of(physical_ipv_vars_fac) ~ "dichotomous", physical_ipv_vars_num ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(physical_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Physical Violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+
+## Creating the final table
+tbl <- tbl_merge(
+  tbls = list(
+              tbl_csh_trnsfr, # Tekavoul
+              tbl_pi, # Productive inclusion
+              tbl_pi_pool), # Pool inclusion
+
+  tab_spanner = c("Tekavoul", "Productive inclusion", "Productive inclusion (Pool)")
+) %>%
+  modify_footnote(everything() ~ NA) 
+
+tbl
+```
+\newpage
+
+### Sexual Violence
+
+- Sexual IPV prevalence ranges from 4.46 percent in Tekavoul to 7.47 percent in Productive Inclusion. There's a more noticeable difference between control and intervention groups.
+- The Psychosocial package recipient group shows the highest rate at 11.02 percent.
+- The control groups consistently show lower rates than intervention groups.
+- The severity indices for sexual violence are overall higher than those for physical violence.
+- This type of IPV contains questions on:
+  * ipv18: physically forcing sexual intercourse against the wife's will
+  * ipv19: having unwanted sexual intercourse due to fear of consequences
+  * ipv20: forcing degrading or humiliating sexual acts
+
+
+```{r}
+
+
+# For the productive inclusion program
+tbl_pi <- followup_MRT_hh_pi %>% 
+  select(treatment_pi, all_of(c(sexual_ipv_vars_fac, sexual_ipv_vars_num))) %>% 
+  mutate(across(all_of(sexual_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi = unlabelled(treatment_pi)) %>% 
+  tbl_summary(by = treatment_pi,
+           label = list(
+                        #sex_ipv_ever ~ "Binary for sex. IPV ever", 
+                        # sex_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # sex_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        sex_ipv_inten_index ~ "Sex. IPV intensity index z-score",
+                        sex_ipv_12m ~ "Binary for sex. IPV in the last 12 months", 
+                        # sex_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # sex_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        sex_severity_12m ~ "Sex. IPV severity index",
+                        sex_severity_12m_z ~ "Sex. IPV severity Z-score"), # Label for the Controling behavior variable.
+           type = list(all_of(sexual_ipv_vars_fac) ~ "dichotomous", all_of(sexual_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(sexual_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Sexual violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+tbl_pi_pool <- followup_MRT_hh_pi %>% 
+  select(treatment_pi_pool, all_of(c(sexual_ipv_vars_fac,sexual_ipv_vars_num))) %>% 
+  mutate(across(all_of(sexual_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi_pool = unlabelled(treatment_pi_pool)) %>% 
+  tbl_summary(by = treatment_pi_pool,
+           label = list(
+                        #sex_ipv_ever ~ "Binary for sex. IPV ever", 
+                        # sex_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # sex_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        sex_ipv_inten_index ~ "Sex. IPV intensity index z-score",
+                        sex_ipv_12m ~ "Binary for sex. IPV in the last 12 months", 
+                        # sex_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # sex_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        sex_severity_12m ~ "Sex. IPV severity index",
+                        sex_severity_12m_z ~ "Sex. IPV severity Z-score"), # Label for the Controling behavior variable.
+           
+           type = list(all_of(sexual_ipv_vars_fac) ~ "dichotomous", all_of(sexual_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(sexual_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Sexual violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+# For the Tekavoul program
+tbl_csh_trnsfr <- followup_MRT_hh_csh_trnsfr %>% 
+  select(treatment_csh_trnsfr, all_of(c(sexual_ipv_vars_fac, sexual_ipv_vars_num))) %>% 
+  mutate(across(all_of(sexual_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_csh_trnsfr = unlabelled(treatment_csh_trnsfr)) %>% 
+  tbl_summary(by = treatment_csh_trnsfr,
+           label = list(
+                        #sex_ipv_ever ~ "Binary for sex. IPV ever", 
+                        # sex_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # sex_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        sex_ipv_inten_index ~ "Sex. IPV intensity index z-score",
+                        sex_ipv_12m ~ "Binary for sex. IPV in the last 12 months", 
+                        # sex_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # sex_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        sex_severity_12m ~ "Sex. IPV severity index",
+                        sex_severity_12m_z ~ "Sex. IPV severity Z-score"), # Label for the Controling behavior variable.
+           
+  type = list(all_of(sexual_ipv_vars_fac) ~ "dichotomous", all_of(sexual_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(sexual_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Sexual violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+
+## Creating the final table
+tbl <- tbl_merge(
+  tbls = list(
+              tbl_csh_trnsfr, # Tekavoul
+              tbl_pi, # Productive inclusion
+              tbl_pi_pool), # Pool inclusion
+
+  tab_spanner = c("Tekavoul", "Productive inclusion", "Productive inclusion (Pool)")
+)  %>%
+  modify_footnote(everything() ~ NA) 
+
+tbl
+```
+\newpage
+
+### Economic Violence
+
+- Economic IPV rates fall between those of physical and sexual violence, with overall prevalence of 4.45 percent in Tekavoul and 6.73 percent in the Productive Inclusion program. 
+- Similar to the previous tables, intervention groups generally show higher reported rates compared to control groups:
+  * In Tekavoul: control shows 3.17 percent while Cash Assignment shows 5.18 percent,
+  * In productive inclusion: control shows 5.38 percent while intervention arms range from 5.37 percent to 8.76 percent.
+- The Capital and Full intervention groups show the highest rates of economic IPV (8.76 percent and 8.72 percent respectively).
+- Interestingly, the Psychosocial group, which had the highest sexual IPV rate, shows the lowest economic IPV rate among intervention groups (5.37 percent) with values similar to the recipients of the Tekavoul program (5.18 percent).
+- This type of IPV contains questions on :
+  * ipv22: taking money earned by the wife against her will,
+  * ipv23: refusing to provide money for household necessities despite having funds available,
+  * ipv24: forcing the wife to give all or part of her earnings to his family (in-laws).
+
+
+```{r}
+
+
+# For the productive inclusion program
+tbl_pi <- followup_MRT_hh_pi %>% 
+  select(treatment_pi, all_of(c(economic_ipv_vars_fac, economic_ipv_vars_num))) %>% 
+  mutate(across(all_of(economic_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi = unlabelled(treatment_pi)) %>% 
+  tbl_summary(by = treatment_pi,
+           label = list(
+                        #eco_ipv_ever ~ "Binary for eco. IPV ever", 
+                        # eco_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # eco_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        eco_ipv_inten_index ~ "Eco. IPV intensity index z-score",
+                        eco_ipv_12m ~ "Binary for eco. IPV in the last 12 months", 
+                        # eco_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # eco_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        eco_severity_12m ~ "Eco. IPV severity index",
+                        eco_severity_12m_z ~ "Eco. IPV severity z-score"), # Label for the Controling behavior variable.
+           type = list(all_of(economic_ipv_vars_fac) ~ "dichotomous", all_of(economic_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(economic_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Economic violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+tbl_pi_pool <- followup_MRT_hh_pi %>% 
+  select(treatment_pi_pool, all_of(c(economic_ipv_vars_fac, economic_ipv_vars_num))) %>% 
+  mutate(across(all_of(economic_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi_pool = unlabelled(treatment_pi_pool)) %>% 
+  tbl_summary(by = treatment_pi_pool,
+           label = list(
+                        #eco_ipv_ever ~ "Binary for eco. IPV ever", 
+                        # eco_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # eco_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        eco_ipv_inten_index ~ "Eco. IPV intensity index z-score",
+                        eco_ipv_12m ~ "Binary for eco. IPV in the last 12 months", 
+                        # eco_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # eco_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        eco_severity_12m ~ "Eco. IPV severity index",
+                        eco_severity_12m_z ~ "Eco. IPV severity z-score"), # Label for the Controling behavior variable.
+           
+           type = list(all_of(economic_ipv_vars_fac) ~ "dichotomous", all_of(economic_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(economic_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Economic violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+# For the Tekavoul program
+tbl_csh_trnsfr <- followup_MRT_hh_csh_trnsfr %>% 
+  select(treatment_csh_trnsfr, all_of(c(economic_ipv_vars_fac, economic_ipv_vars_num))) %>% 
+  mutate(across(all_of(economic_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_csh_trnsfr = unlabelled(treatment_csh_trnsfr)) %>% 
+  tbl_summary(by = treatment_csh_trnsfr,
+           label = list(
+                        #eco_ipv_ever ~ "Binary for eco. IPV ever", 
+                        # eco_ipv_r0_ever ~ "Ever (Refusal = \"0\")",
+                        # eco_ipv_r1_ever ~ "Ever (Refusal = \"1\")",
+                        eco_ipv_inten_index ~ "Eco. IPV intensity index z-score",
+                        eco_ipv_12m ~ "Binary for eco. IPV in the last 12 months", 
+                        # eco_ipv_r0_12m ~ "In the last 12 months (Refusal = \"0\")",
+                        # eco_ipv_r1_12m ~ "In the last 12 months (Refusal = \"1\")",
+                        eco_severity_12m ~ "Eco. IPV severity index",
+                        eco_severity_12m_z ~ "Eco. IPV severity z-score"), # Label for the Controling behavior variable.
+           
+           type = list(all_of(economic_ipv_vars_fac) ~ "dichotomous", all_of(economic_ipv_vars_num) ~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(economic_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Economic violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+
+## Creating the final table
+tbl <- tbl_merge(
+  tbls = list(
+              tbl_csh_trnsfr, # Tekavoul
+              tbl_pi, # Productive inclusion
+              tbl_pi_pool), # Pool inclusion
+
+  tab_spanner = c("Tekavoul", "Productive inclusion", "Productive inclusion (Pool)")
+)  %>%
+  modify_footnote(everything() ~ NA) 
+
+tbl
+```
+
+
+\newpage 
+
+### Other IPV index Violence
+
+In this table we consider the emotional violence, the physical, sexual and economic violence.
+  
+
+```{r}
+
+
+# For the productive inclusion program
+tbl_pi <- followup_MRT_hh_pi %>% 
+  select(treatment_pi, all_of(other_ipv_vars_fac), all_of(other_ipv_vars_num)) %>% 
+  mutate(across(all_of(other_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi = unlabelled(treatment_pi)) %>% 
+  tbl_summary(by = treatment_pi,
+           label = list(
+                        ipv_all_12m ~ "Binary for at least one type of IPV incl. eco. in the last 12 months", 
+                        all_ipv_inten_index ~ "All IPV intensity index z-score",
+                        ipv_all2_12m ~ "Binary for at least one type of IPV" 
+                        # ipv_all_r0_12m ~ "At least one type of violence in the last 12 months (Refusal = \"0\")",
+                        # ipv_all_r1_12m ~ "At least one type of violence in the last 12 months (Refusal = \"1\")"
+                        ), # Label for the Controling behavior variable.
+           type = list(all_of(other_ipv_vars_fac) ~ "dichotomous", all_of(other_ipv_vars_num)~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(other_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Other IPV index violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+tbl_pi_pool <- followup_MRT_hh_pi %>% 
+  select(treatment_pi_pool, all_of(other_ipv_vars_fac), all_of(other_ipv_vars_num)) %>% 
+  mutate(across(all_of(other_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_pi_pool = unlabelled(treatment_pi_pool)) %>% 
+  tbl_summary(by = treatment_pi_pool,
+           label = list(                        
+             ipv_all_12m ~ "Binary for at least one type of IPV incl. eco. in the last 12 months", 
+             all_ipv_inten_index ~ "All IPV intensity index z-score",
+             ipv_all2_12m ~ "Binary for at least one type of IPV" 
+                        # ipv_all_r0_12m ~ "At least one type of violence in the last 12 months (Refusal = \"0\")",
+                        # ipv_all_r1_12m ~ "At least one type of violence in the last 12 months (Refusal = \"1\")"
+                        ), # Label for the Controling behavior variable.
+                    type = list(all_of(other_ipv_vars_fac) ~ "dichotomous", all_of(other_ipv_vars_num)~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(other_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Other IPV index violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+# For the Tekavoul program
+tbl_csh_trnsfr <- followup_MRT_hh_csh_trnsfr %>% 
+  select(treatment_csh_trnsfr, all_of(other_ipv_vars_fac), all_of(other_ipv_vars_num)) %>% 
+  mutate(across(all_of(other_ipv_vars_fac), ~as.factor(.))) %>% 
+  mutate(treatment_csh_trnsfr = unlabelled(treatment_csh_trnsfr)) %>% 
+  tbl_summary(by = treatment_csh_trnsfr,
+          label = list(                        
+            ipv_all_12m ~ "Binary for at least one type of IPV incl. eco. in the last 12 months", 
+            all_ipv_inten_index ~ "All IPV intensity index z-score",
+            ipv_all2_12m ~ "Binary for at least one type of IPV" 
+                        # ipv_all_r0_12m ~ "At least one type of violence in the last 12 months (Refusal = \"0\")",
+                        # ipv_all_r1_12m ~ "At least one type of violence in the last 12 months (Refusal = \"1\")"
+                       ), # Label for the Controling behavior variable.
+           type = list(all_of(other_ipv_vars_fac) ~ "dichotomous", all_of(other_ipv_vars_num)~ "continuous"), # Specify the variable as dichotomous.
+             value = list(all_of(other_ipv_vars_fac) ~ "1"),  # Explicitly set the reference category
+           statistic = list(
+                     all_categorical() ~ "{p}",
+                     all_continuous() ~ "{mean} ({sd})"
+                     ),
+            missing_text = "(Missing)",
+            digits = list(everything() ~c(2,2)),
+            missing = "ifany" # Include missing values in the table.
+          ) %>% 
+    modify_header(label ~ "Other IPV index violence") %>% # Modify the table header to provide a descriptive label
+    add_overall() 
+
+
+## Creating the final table
+tbl <- tbl_merge(
+  tbls = list(
+              tbl_csh_trnsfr, # Tekavoul
+              tbl_pi, # Productive inclusion
+              tbl_pi_pool), # Pool inclusion
+
+  tab_spanner = c("Tekavoul", "Productive inclusion", "Productive inclusion (Pool)")
+)  %>%
+  modify_footnote(everything() ~ NA) 
+
+tbl
+```
+
+\newpage
+
+## Other household characteristics
+
+
+### Household head is female
+
+- 71 percent of female hh head live with there male partner in the same house.
+- 12 percent of female hh head live are polygamous.
+
+```{r}
+
+followup_MRT_hh %>% 
+  mutate(hhh_fem_bin = factor(hhh_fem, levels = c("0", "1"),
+                 labels = c("No", "Yes"))) %>% 
+  group_by(hhh_fem_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+  ggplot(aes(x = hhh_fem_bin, y=Prop, fill = hhh_fem_bin, label = scales::percent(Prop))) +
+  
+  # Bar chart with proper counts or proportions
+  # geom_bar(fill = c("grey69","black"), 
+  #          color = "black", alpha = 0.7) +
+  geom_col(fill = c("grey69","grey25"), 
+            color = "black", alpha = 0.7)+
+  geom_text(aes(label = scales::percent(Prop)), position = position_stack(.5)) +
+  # Add plot labels
+  labs(title="Household's head is female", x="", y="Proportion", fill="Household head is female") +
+  
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/Household head sex.pdf", width = 18, height = 10, units = "cm")
+
+```
+
+### Beneficiary relationship to household head
+
+
+
+```{r}
+#### Graph
+followup_MRT_hh %>% 
+  mutate(pben_relation_bin = labelled::unlabelled(pben_relation)) %>% 
+  group_by(pben_relation_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+    # Begin creating the plot
+  ggplot(aes(x = pben_relation_bin, y=Prop, label = scales::percent(Prop))) +
+  
+  # Create a histogram with black outline, and slight transparency
+    geom_col(fill = c("grey69"), 
+            color = "black", alpha = 0.7)+
+  # geom_histogram(aes(y = after_stat(density)), fill = "grey69", 
+  #                color = "black", alpha = 0.7) +
+  # Set plot labels and title
+  labs(title="Beneficiary relationship to household head", x="Relationship to household head", y="Density", 1) +
+  
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+#Save the plot as an image
+ggsave("output/img/beneficiary relation with hhh.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+### Household head literacy
+
+
+```{r}
+
+
+followup_MRT_hh %>% 
+  mutate(hhh_lit_bin = factor(hhh_lit, levels = c("0", "1"),
+                 labels = c("No", "Yes"))) %>% 
+  group_by(hhh_lit_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+  ggplot(aes(x = hhh_lit_bin, y=Prop, fill = hhh_lit_bin, label = scales::percent(Prop))) +
+  
+  # Bar chart with proper counts or proportions
+  # geom_bar(fill = c("grey69","black"), 
+  #          color = "black", alpha = 0.7) +
+  geom_col(fill = c("grey69","grey25"), 
+            color = "black", alpha = 0.7)+
+  geom_text(aes(label = scales::percent(Prop)), position = position_stack(.5)) +
+  # Add plot labels
+  labs(title="Household head literacy", x="", y="Proportion", fill="Household head is literate") +
+  
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/Household head literacy.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+### Beneficiary literacy
+
+
+```{r}
+
+
+followup_MRT_hh %>% 
+  mutate(pben_lit_bin = factor(pben_lit, levels = c("0", "1"),
+                 labels = c("No", "Yes"))) %>% 
+  group_by(pben_lit_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+  ggplot(aes(x = pben_lit_bin, y=Prop, fill = pben_lit_bin, label = scales::percent(Prop))) +
+  
+  # Bar chart with proper counts or proportions
+  # geom_bar(fill = c("grey69","black"), 
+  #          color = "black", alpha = 0.7) +
+  geom_col(fill = c("grey69","grey25"), 
+            color = "black", alpha = 0.7)+
+  geom_text(aes(label = scales::percent(Prop)), position = position_stack(.5)) +
+  # Add plot labels
+  labs(title="Beneficiary literacy", x="", y="Proportion", fill="Beneficiary is literate") +
+  
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/Beneficiary literacy.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+
+### Household head nbr. of years of education
+
+
+```{r}
+### Control over earnings
+#### Graph
+followup_MRT_hh %>% 
+  mutate(hhh_edu_bin = hhh_edu) %>% 
+  group_by(hhh_edu_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+    # Begin creating the plot
+  ggplot(aes(x = hhh_edu_bin, y=Prop, label = scales::percent(Prop))) +
+  
+  # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency
+    geom_col(fill = c("grey69"), 
+            color = "black", alpha = 0.7)+
+  # geom_histogram(aes(y = after_stat(density)), fill = "grey69", 
+  #                color = "black", alpha = 0.7) +
+  
+  # Add a vertical line for the mean age gap
+  geom_vline(aes(xintercept = mean(followup_MRT_hh$hhh_edu, na.rm = TRUE)), 
+             color = "red", linetype = "dashed", size = .5) +
+  
+  # Annotate the mean value on the plot
+  annotate("text", x=mean(followup_MRT_hh$hhh_edu, na.rm = TRUE)  + 0.25, y=0.5, 
+           label=paste0("Mean = ",round(mean(followup_MRT_hh$hhh_edu, na.rm = TRUE),2)), 
+           angle=90, size=5, color="red") +
+  
+  # Add a vertical line for the median age gap
+  geom_vline(aes(xintercept = median(followup_MRT_hh$hhh_edu, na.rm = TRUE)), 
+             color = "blue", linetype = "dashed", size = .5) +
+  
+  # Annotate the median value on the plot
+  annotate("text", x=median(followup_MRT_hh$hhh_edu, na.rm = TRUE) + 0.25, y=0.5, 
+           label=paste0("Median = ", round(median(followup_MRT_hh$hhh_edu, na.rm = TRUE),2)), 
+           angle=90, size=5, color="blue") +
+  
+  
+  # Set plot labels and title
+  labs(title="hhh's nbr. of years of education", x="nbr. of years of education", y="Density", 1) +
+  
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+#Save the plot as an image
+ggsave("output/img/Household head nbr. of years of education.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+
+### Beneficiary nbr. of years of education
+
+
+
+```{r}
+### Control over earnings
+#### Graph
+followup_MRT_hh %>% 
+  mutate(pben_edu_bin = pben_edu) %>% 
+  group_by(pben_edu_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+    # Begin creating the plot
+  ggplot(aes(x = pben_edu_bin, y=Prop, label = scales::percent(Prop))) +
+  
+  # Create a histogram with black outline, and slight transparency
+    geom_col(fill = c("grey69"), 
+            color = "black", alpha = 0.7)+
+  # geom_histogram(aes(y = after_stat(density)), fill = "grey69", 
+  #                color = "black", alpha = 0.7) +
+  
+  # Add a vertical line for the mean age gap
+  geom_vline(aes(xintercept = mean(followup_MRT_hh$pben_edu, na.rm = TRUE)), 
+             color = "red", linetype = "dashed", size = .5) +
+  
+  # Annotate the mean value on the plot
+  annotate("text", x=mean(followup_MRT_hh$pben_edu, na.rm = TRUE)  + 0.25, y=0.5, 
+           label=paste0("Mean = ",round(mean(followup_MRT_hh$pben_edu, na.rm = TRUE),2)), 
+           angle=90, size=5, color="red") +
+  
+  # Add a vertical line for the median age gap
+  geom_vline(aes(xintercept = median(followup_MRT_hh$pben_edu, na.rm = TRUE)), 
+             color = "blue", linetype = "dashed", size = .5) +
+  
+  # Annotate the median value on the plot
+  annotate("text", x=median(followup_MRT_hh$pben_edu, na.rm = TRUE) + 0.25, y=0.5, 
+           label=paste0("Median = ", round(median(followup_MRT_hh$pben_edu, na.rm = TRUE),2)), 
+           angle=90, size=5, color="blue") +
+  
+  
+  # Set plot labels and title
+  labs(title="Beneficiary's nbr. of years of education", x="nbr. of years of education", y="Density", 1) +
+  
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+#Save the plot as an image
+ggsave("output/img/beneficiary's nbr. of years of education.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+
+
+
+### Beneficiary is handicapped
+
+
+```{r}
+
+followup_MRT_hh %>% 
+  mutate(pben_handicap_bin = factor(pben_handicap, levels = c("0", "1"),
+                 labels = c("No", "Yes"))) %>% 
+  group_by(pben_handicap_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+  ggplot(aes(x = pben_handicap_bin, y=Prop, fill = pben_handicap_bin, label = scales::percent(Prop))) +
+  
+  # Bar chart with proper counts or proportions
+  # geom_bar(fill = c("grey69","black"), 
+  #          color = "black", alpha = 0.7) +
+  geom_col(fill = c("grey69","grey25"), 
+            color = "black", alpha = 0.7)+
+  geom_text(aes(label = scales::percent(Prop)), position = position_stack(.5)) +
+  # Add plot labels
+  labs(title="Beneficiary is handicapped", x="", y="Proportion", fill="Beneficiary is handicapped") +
+  
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/Beneficiary is handicapped.pdf", width = 18, height = 10, units = "cm")
+
+```
+
+### Beneficiary is in a polygamous union
+
+
+```{r}
+
+followup_MRT_hh %>% 
+  mutate(pben_poly_bin = factor(pben_poly, levels = c("0", "1"),
+                 labels = c("No", "Yes"))) %>% 
+  group_by(pben_poly_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+  ggplot(aes(x = pben_poly_bin, y=Prop, fill = pben_poly_bin, label = scales::percent(Prop))) +
+  
+  # Bar chart with proper counts or proportions
+  # geom_bar(fill = c("grey69","black"), 
+  #          color = "black", alpha = 0.7) +
+  geom_col(fill = c("grey69","grey25"), 
+            color = "black", alpha = 0.7)+
+  geom_text(aes(label = scales::percent(Prop)), position = position_stack(.5)) +
+  # Add plot labels
+  labs(title="Beneficiary is in a polygamous union", x="", y="Proportion", fill="Beneficiary is handicapped") +
+  
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/Beneficiary is in a polygamous union.pdf", width = 18, height = 10, units = "cm")
+
+```
+
+### Share of saving own by partner
+
+```{r}
+followup_MRT_hh %>% 
+  mutate(save_share_d_bin = factor(save_share_d, levels = c("0", "1"),
+                 labels = c("None (0)", "All (1)"))) %>% 
+  group_by(save_share_d_bin) %>% 
+  summarise(Freq = n()) %>%
+  mutate(Prop = Freq / sum(Freq)) %>% 
+  ggplot(aes(x = save_share_d_bin, y=Prop, label = scales::percent(Prop))) +
+  
+  geom_col(color = "black", alpha = 0.7)+
+  geom_text(aes(label = scales::percent(Prop)), position = position_stack(.5)) +
+  # Add plot labels
+  labs(title="Beneficiary share of saving own by partner", x="", y="Proportion", fill="share of saving own by partner") +
+  
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/Beneficiary share of saving own by partner.pdf", width = 18, height = 10, units = "cm")
+
+```
+
+### Control over earnings
+
+```{r}
+### Control over earnings
+#### Graph
+followup_MRT_hh %>% 
+    # Begin creating the plot
+  ggplot(aes(x = ctrl_earn_index_tr_bl, y = after_stat(density))) +
+  
+  # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency
+  geom_histogram(aes(y = after_stat(density)), fill = "grey69", 
+                 color = "black", alpha = 0.7) +
+  
+  # Add a vertical line for the mean age gap
+  geom_vline(aes(xintercept = mean(ctrl_earn_index_tr_bl, na.rm = TRUE)), 
+             color = "red", linetype = "dashed", size = .5) +
+  
+  # Annotate the mean value on the plot
+  annotate("text", x=mean(followup_MRT_hh$ctrl_earn_index_tr_bl, na.rm = TRUE) - 0.1, y=0.40, 
+           label=paste0("Mean = ",round(mean(followup_MRT_hh$ctrl_earn_index_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="red") +
+  
+  # Add a vertical line for the median age gap
+  geom_vline(aes(xintercept = median(ctrl_earn_index_tr_bl, na.rm = TRUE)), 
+             color = "blue", linetype = "dashed", size = .5) +
+  
+  # Annotate the median value on the plot
+  annotate("text", x=median(followup_MRT_hh$ctrl_earn_index_tr_bl, na.rm = TRUE) + 0.1, y=0.40, 
+           label=paste0("Median = ", round(median(followup_MRT_hh$ctrl_earn_index_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="blue") +
+  
+  # Add a density curve over the histogram
+  geom_density(color = "black", size = .4, alpha = 0.5) +
+  
+    # Set plot labels and title
+  labs(title="Control over earning (all female)", x="Control over earning z-index", y="Density", 1) +
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+#Save the plot as an image
+ggsave("output/img/control over earnings z-index distribution_all.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+### Control over household resources
+
+
+```{r}
+### Control over hh. resources
+#### Graph
+followup_MRT_hh %>% 
+  # Begin creating the plot
+  ggplot(aes(x = ctrl_hh_index_tr_bl, y = after_stat(density))) +
+  
+  # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency
+  geom_histogram(aes(y = after_stat(density)), fill = "grey69", 
+                 color = "black", alpha = 0.7) +
+  
+  # Add a vertical line for the mean age gap
+  geom_vline(aes(xintercept = mean(ctrl_hh_index_tr_bl, na.rm = TRUE)), 
+             color = "red", linetype = "dashed", size = .5) +
+  
+  # Annotate the mean value on the plot
+  annotate("text", x=mean(followup_MRT_hh$ctrl_hh_index_tr_bl, na.rm = TRUE) - 0.05, y=0.40, 
+           label=paste0("Mean = ",round(mean(followup_MRT_hh$ctrl_hh_index_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="red") +
+  
+  # Add a vertical line for the median age gap
+  geom_vline(aes(xintercept = median(ctrl_hh_index_tr_bl, na.rm = TRUE)), 
+             color = "blue", linetype = "dashed", size = .5) +
+  
+  # Annotate the median value on the plot
+  annotate("text", x=median(followup_MRT_hh$ctrl_hh_index_tr_bl, na.rm = TRUE) + 0.05, y=0.40, 
+           label=paste0("Median = ", round(median(followup_MRT_hh$ctrl_hh_index_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="blue") +
+  
+  # Add a density curve over the histogram
+  geom_density(color = "black", size = .4, alpha = 0.5) +
+  
+  # Set plot labels and title
+  labs(title="Control over hh. resources (all female)", x="Control over resources z-index", y="Density", 1) +
+  
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+#Save the plot as an image
+ggsave("output/img/control over hh. resources z-index distribution_all.pdf", width = 18, height = 10, units = "cm")
+
+
+
+```
+
+### Intra-household dynamics 
+
+
+```{r}
+### Intra-household dynamics 
+#### Graph
+followup_MRT_hh %>% 
+  # Begin creating the plot
+  ggplot(aes(x = intrahh_vars_index_tr_bl, y = after_stat(density))) +
+  
+  # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency
+  geom_histogram(aes(y = after_stat(density)), bins = 40, fill = "grey69", 
+                 color = "black", alpha = 0.7) +
+  
+  # Add a vertical line for the mean age gap
+  geom_vline(aes(xintercept = mean(intrahh_vars_index_tr_bl, na.rm = TRUE)), 
+             color = "red", linetype = "dashed", size = .5) +
+  
+  # Annotate the mean value on the plot
+  annotate("text", x=mean(followup_MRT_hh$intrahh_vars_index_tr_bl, na.rm = TRUE) - 0.1, y=0.20, 
+           label=paste0("Mean = ",round(mean(followup_MRT_hh$intrahh_vars_index_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="red") +
+  
+  # Add a vertical line for the median age gap
+  geom_vline(aes(xintercept = median(intrahh_vars_index_tr_bl, na.rm = TRUE)), 
+             color = "blue", linetype = "dashed", size = .5) +
+  
+  # Annotate the median value on the plot
+  annotate("text", x=median(followup_MRT_hh$intrahh_vars_index_tr_bl, na.rm = TRUE) + 0.1, y=0.20, 
+           label=paste0("Median = ", round(median(followup_MRT_hh$intrahh_vars_index_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="blue") +
+  
+  # Add a density curve over the histogram
+  geom_density(color = "black", size = .4, alpha = 0.5) +
+  
+  # Set plot labels and title
+  labs(title="Intra-hh. dynamics (all female)", x="Intra-hh. dynamics z-index z-index", y="Density", 1) +
+  
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+#Save the plot as an image
+ggsave("output/img/intra-hh. dynamics z-index distribution_all.pdf", width = 18, height = 10, units = "cm")
+
+
+
+```
+
+### Benef. share of total household revenues
+
+
+```{r}
+### Benef. share of total hh. revenues
+#### Graph
+followup_MRT_hh %>% 
+  # Begin creating the plot
+  ggplot(aes(x = rev_sum_bohh_wemp_98_tr_bl, y = after_stat(density))) +
+  
+  # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency
+  geom_histogram(aes(y = after_stat(density)), fill = "grey69",
+                 color = "black", alpha = 0.7) +
+  
+  # Add a vertical line for the mean age gap
+  geom_vline(aes(xintercept = mean(rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE)), 
+             color = "red", linetype = "dashed", size = .5) +
+  
+  # Annotate the mean value on the plot
+  annotate("text", x=mean(followup_MRT_hh$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE) - 0.015, y=2.5, 
+           label=paste0("Mean = ",round(mean(followup_MRT_hh$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="red") +
+  
+  # Add a vertical line for the median age gap
+  geom_vline(aes(xintercept = median(rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE)), 
+             color = "blue", linetype = "dashed", size = .5) +
+  
+  # Annotate the median value on the plot
+  annotate("text", x=median(followup_MRT_hh$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE) + 0.015, y=2.5, 
+           label=paste0("Median = ", round(median(followup_MRT_hh$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE),2)), 
+           angle=90, size=5, color="blue") +
+  
+  # Add a density curve over the histogram
+  geom_density(color = "black", size = .4, alpha = 0.5) +
+  
+  # Set plot labels and title
+  labs(title="Benef. share of total hh. rev.", x="Benef. share of total hh. rev.", y="Density", 1) +
+  
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+#Save the plot as an image
+ggsave("output/img/benef. share of total hh. rev. distribution_all.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+### Age distribution
+
+
+Around 55 percent of the hhh are female benef.
+```{r}
+#### Age distribution plot
+# Filter the dataset to only include phase 2 data
+followup_MRT_hh %>% 
+  # Begin creating the plot
+  ggplot(aes(x = age_gap, y = after_stat(density))) +
+  
+  # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency
+  geom_histogram(aes(y = after_stat(density)), bins = 40, fill = "grey69", 
+                 color = "black", alpha = 0.7) +
+  
+  # Add a vertical line for the mean age gap
+  geom_vline(aes(xintercept = mean(age_gap, na.rm = TRUE)), 
+             color = "red", linetype = "dashed", size = .5) +
+  
+  # Annotate the mean value on the plot
+  annotate("text", x=mean(followup_MRT_hh$age_gap, na.rm = TRUE) + 2, y=0.10, 
+           label=paste0("Mean = ",round(mean(followup_MRT_hh$age_gap, na.rm = TRUE),2)), 
+           angle=90, size=5, color="red") +
+  
+  # Add a vertical line for the median age gap
+  geom_vline(aes(xintercept = median(age_gap, na.rm = TRUE)), 
+             color = "blue", linetype = "dashed", size = .5) +
+  
+  # Annotate the median value on the plot
+  annotate("text", x=median(followup_MRT_hh$age_gap, na.rm = TRUE) - 2, y=0.10, 
+           label=paste0("Median = ", round(median(followup_MRT_hh$age_gap, na.rm = TRUE),2)), 
+           angle=90, size=5, color="blue") +
+  
+  # Add a density curve over the histogram
+  geom_density(color = "black", size = .4, alpha = 0.5) +
+  
+  # Set plot labels and title
+  labs(title="Age gap distribution (all)", subtitle = "hhh - benef. age" , x="Age gap", y="Density", 1) +
+  
+  # Apply a minimal theme for clean appearance
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+  #Save the plot as an image
+  ggsave("output/img/age gap distribution_all.pdf", width = 18, height = 10, units = "cm")
+
+
+```
+
+
+
+### Enumerator
+#### All
+
+```{r}
+
+followup_MRT_hh %>% 
+  group_by(type_treatment, surveyor) %>% 
+  summarise(Freq = n()) %>%
+    mutate(Prop = Freq / sum(Freq),
+           surveyor = as.factor(surveyor),
+           type_treatment=labelled::unlabelled(type_treatment)) %>% 
+    # Begin creating the plot
+    ggplot(aes(x = surveyor, y=Prop, fill = type_treatment, color= type_treatment)) +   
+  geom_col(color = "black", alpha = 0.7) +
+    # Correctly define fill colors for treatment groups
+  scale_fill_manual(values = c("Cash transfert" = "grey69", "Productive inclusion" = "black")) + 
+  # Add plot labels
+  labs(title="Enumerator of the IPV module", x="Enumerator ID", y="Proportion", fill="Treatment") +
+  
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/enumerator-ID-All.pdf", width = 18, height = 10, units = "cm")
+```
+
+#### Tekavoul
+
+```{r}
+followup_MRT_hh_csh_trnsfr %>% 
+  # Group data by treatment type and surveyor
+  group_by(treatment_csh_trnsfr, surveyor) %>% 
+  # Calculate frequency counts for each group
+  summarise(Freq = n()) %>%
+  
+  # Compute proportions and adjust factor labels
+  mutate(
+    Prop = Freq / sum(Freq),  # Proportion of each group
+    surveyor = as.factor(surveyor),  # Convert surveyor to factor for plotting
+    treatment_csh_trnsfr = labelled::unlabelled(treatment_csh_trnsfr)  # Remove labels if present
+  ) %>% 
+  
+  # Start the plot
+  ggplot(aes(x = surveyor, y = Prop, fill = treatment_csh_trnsfr)) + 
+  
+  # Use `geom_col()` to create the bar plot with 70% transparency
+  geom_col(color = "black", alpha = 0.7) +
+  
+  # Correctly define fill colors for treatment groups
+  scale_fill_manual(values = c("Control" = "grey69", "Cash Assignment" = "black")) + 
+  
+  # Add labels for better readability
+  labs(
+    title = "Enumerator of the IPV module (Tekavoul)",
+    x = "Enumerator ID",
+    y = "Proportion",
+    fill = "Type of treatment"
+  ) +
+  
+  # Use a clean theme with light background and smaller text for better visualization
+  theme_light(base_size = 8) +
+  theme(
+    legend.position = 'bottom',        # Position legend at the bottom
+    text = element_text(size = 8),     # Reduce text size for readability
+    legend.direction = "horizontal"    # Arrange legend items horizontally
+  )
+
+# Save the plot as a PDF with defined dimensions
+ggsave("output/img/enumerator-ID-Tekavoul.pdf", width = 18, height = 10, units = "cm")
+```
+
+
+#### Productive inclusion
+
+```{r}
+
+followup_MRT_hh_pi %>% 
+  group_by(treatment_pi, surveyor) %>% 
+  summarise(Freq = n()) %>%
+    mutate(Prop = Freq / sum(Freq),
+           surveyor = as.factor(surveyor),
+           treatment_pi=labelled::unlabelled(treatment_pi)) %>% 
+    # Begin creating the plot
+    ggplot(aes(x = surveyor, y=Prop, fill = treatment_pi, colour = treatment_pi)) +   geom_col( color = "black", alpha = 0.7) +
+  # Add plot labels
+  labs(title="Enumerator of the IPV module (Productive inclusion)", x="Enumerator ID", y="Proportion", fill="Type of treatment") +
+    # Correctly define fill colors for treatment groups
+  scale_fill_manual(values = c("Control" = "#FFFFFF", "Capital" = "#C8C8C8", "Psychosocial" = "#717171", "Full" = "black")) + 
+  # Clean theme
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+
+# Save the plot
+ggsave("output/img/enumerator-ID-PI.pdf", width = 18, height = 10, units = "cm")
+```
+
+
+```{r}
+# # Create a histogram
+# followup_MRT_hh %>% 
+#   mutate(type_treatment=labelled::unlabelled(type_treatment)) %>% 
+#   ggplot(aes(x = age_gap, fill = type_treatment)) +
+#   geom_histogram(bins = 40, position = "identity", alpha = 0.7) +
+#     
+#   # Add vertical lines for mean and median
+#   geom_vline(aes(xintercept = mean(followup_MRT_hh$age_gap, na.rm = TRUE), 
+#                   color = type_treatment), linetype = "dotted", size = 1) +
+#   geom_vline(aes(xintercept = median(followup_MRT_hh$age_gap, na.rm = TRUE), 
+#                color = type_treatment), linetype = "dotted", size = 1) +
+#     # Annotate the mean value on the plot
+#   annotate("text", x=mean(followup_MRT_hh$age_gap, na.rm = TRUE) - 0.05, y=50, 
+#            label=paste0("Mean = ",round(mean(followup_MRT_hh$age_gap, na.rm = TRUE),2)), 
+#            angle=90, size=5, color="black") +
+#     # Annotate the median value on the plot
+#   annotate("text", x=median(followup_MRT_hh$age_gap, na.rm = TRUE) - 2, y=50, 
+#            label=paste0("Median = ", round(median(followup_MRT_hh$age_gap, na.rm = TRUE),2)), 
+#            angle=90, size=5, color="gray") +
+#     # Customize color and theme
+#     scale_fill_manual(values = c("red","blue", "green","yellow")) +
+#     # scale_color_manual(values = c("red", "black","white")) +
+#     theme_minimal() +
+#     
+#     # Add titles and labels
+#     # Set plot labels and title
+#     labs(title="Age gap distribution", 
+#          subtitle = "hhh - benef. age" ,
+#          x="Age gap", 
+#          y="Frequency",
+#          fill="",
+#          1) +
+#     
+#   # Apply a minimal theme for clean appearance
+#   theme_light(base_size = 8) +
+#     theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal")
+#   
+#   #Save the plot as an image
+#   ggsave("output/img/age gap distribution_all.pdf", width = 18, height = 10, units = "cm")
+
+```
+
+<!-- ## Productive inclusion program -->
+<!-- ### Partner literacy -->
+<!-- ```{r} -->
+
+<!-- ######################## Variables for heterogeneity ########################### -->
+
+<!-- ### Partner literacy -->
+
+<!-- ``` -->
+
+<!-- ### Control over earnings -->
+<!-- ```{r} -->
+<!-- ### Control over earnings -->
+<!-- #### Graph -->
+<!-- followup_MRT_hh_pi %>%  -->
+<!--   # Begin creating the plot -->
+<!--   ggplot(aes(x = ctrl_earn_index_tr_bl, y = after_stat(density))) + -->
+
+<!--   # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency -->
+<!--   geom_histogram(aes(y = after_stat(density)), bins = 40, fill = "lightblue",  -->
+<!--                  color = "black", alpha = 0.7) + -->
+
+<!--   # Add a vertical line for the mean age gap -->
+<!--   geom_vline(aes(xintercept = mean(ctrl_earn_index_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "red", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the mean value on the plot -->
+<!--   annotate("text", x=mean(followup_MRT_hh_pi$ctrl_earn_index_tr_bl, na.rm = TRUE) - 0.05, y=0.20,  -->
+<!--            label=paste0("Mean = ",round(mean(followup_MRT_hh_pi$ctrl_earn_index_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="red") + -->
+
+<!--   # Add a vertical line for the median age gap -->
+<!--   geom_vline(aes(xintercept = median(ctrl_earn_index_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "blue", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the median value on the plot -->
+<!--   annotate("text", x=median(followup_MRT_hh_pi$ctrl_earn_index_tr_bl, na.rm = TRUE) + 0.05, y=0.20,  -->
+<!--            label=paste0("Median = ", round(median(followup_MRT_hh_pi$ctrl_earn_index_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="blue") + -->
+
+<!--   # Add a density curve over the histogram -->
+<!--   geom_density(color = "black", size = .4, alpha = 0.5) + -->
+
+<!--   # Set plot labels and title -->
+<!--   labs(title="Control over earnings (productive inclusion)", x="Control over earnings z-index", y="Density", 1) + -->
+
+<!--   # Apply a minimal theme for clean appearance -->
+<!--   theme_light(base_size = 8) + -->
+<!--   theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal") -->
+
+<!-- #Save the plot as an image -->
+<!-- ggsave("output/img/control over earnings z-index distribution_productive inclusion.pdf", width = 18, height = 10, units = "cm") -->
+
+
+<!-- ``` -->
+
+<!-- ### Control over hh. resources -->
+<!-- ```{r} -->
+<!-- ### Control over hh. resources -->
+<!-- #### Graph -->
+<!-- followup_MRT_hh_pi %>%  -->
+<!--   # Begin creating the plot -->
+<!--   ggplot(aes(x = ctrl_hh_index_tr_bl, y = after_stat(density))) + -->
+
+<!--   # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency -->
+<!--   geom_histogram(aes(y = after_stat(density)), fill = "lightblue",  -->
+<!--                  color = "black", alpha = 0.7) + -->
+
+<!--   # Add a vertical line for the mean age gap -->
+<!--   geom_vline(aes(xintercept = mean(ctrl_hh_index_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "red", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the mean value on the plot -->
+<!--   annotate("text", x=mean(followup_MRT_hh_pi$ctrl_hh_index_tr_bl, na.rm = TRUE) - 0.05, y=0.20,  -->
+<!--            label=paste0("Mean = ",round(mean(followup_MRT_hh_pi$ctrl_hh_index_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="red") + -->
+
+<!--   # Add a vertical line for the median age gap -->
+<!--   geom_vline(aes(xintercept = median(ctrl_hh_index_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "blue", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the median value on the plot -->
+<!--   annotate("text", x=median(followup_MRT_hh_pi$ctrl_hh_index_tr_bl, na.rm = TRUE) + 0.05, y=0.20,  -->
+<!--            label=paste0("Median = ", round(median(followup_MRT_hh_pi$ctrl_hh_index_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="blue") + -->
+
+<!--   # Add a density curve over the histogram -->
+<!--   geom_density(color = "black", size = .4, alpha = 0.5) + -->
+
+<!--   # Set plot labels and title -->
+<!--   labs(title="Control over hh. resources (productive inclusion)", x="Control over resources z-index", y="Density", 1) + -->
+
+<!--   # Apply a minimal theme for clean appearance -->
+<!--   theme_light(base_size = 8) + -->
+<!--   theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal") -->
+
+<!-- #Save the plot as an image -->
+<!-- ggsave("output/img/control over hh. resources z-index distribution_productive inclusion.pdf", width = 18, height = 10, units = "cm") -->
+
+
+
+<!-- ``` -->
+
+<!-- ### Intra-household dynamics  -->
+<!-- ```{r} -->
+<!-- ### Intra-household dynamics  -->
+<!-- #### Graph -->
+<!-- followup_MRT_hh_pi %>%  -->
+<!--   # Begin creating the plot -->
+<!--   ggplot(aes(x = intrahh_vars_index_tr_bl, y = after_stat(density))) + -->
+
+<!--   # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency -->
+<!--   geom_histogram(aes(y = after_stat(density)), bins = 40, fill = "lightblue",  -->
+<!--                  color = "black", alpha = 0.7) + -->
+
+<!--   # Add a vertical line for the mean age gap -->
+<!--   geom_vline(aes(xintercept = mean(intrahh_vars_index_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "red", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the mean value on the plot -->
+<!--   annotate("text", x=mean(followup_MRT_hh_pi$intrahh_vars_index_tr_bl, na.rm = TRUE) - 0.05, y=0.20,  -->
+<!--            label=paste0("Mean = ",round(mean(followup_MRT_hh_pi$intrahh_vars_index_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="red") + -->
+
+<!--   # Add a vertical line for the median age gap -->
+<!--   geom_vline(aes(xintercept = median(intrahh_vars_index_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "blue", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the median value on the plot -->
+<!--   annotate("text", x=median(followup_MRT_hh_pi$intrahh_vars_index_tr_bl, na.rm = TRUE) + 0.05, y=0.20,  -->
+<!--            label=paste0("Median = ", round(median(followup_MRT_hh_pi$intrahh_vars_index_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="blue") + -->
+
+<!--   # Add a density curve over the histogram -->
+<!--   geom_density(color = "black", size = .4, alpha = 0.5) + -->
+
+<!--   # Set plot labels and title -->
+<!--   labs(title="Intra-hh. dynamics (productive inclusion)", x="Intra-hh. dynamics z-index z-index", y="Density", 1) + -->
+
+<!--   # Apply a minimal theme for clean appearance -->
+<!--   theme_light(base_size = 8) + -->
+<!--   theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal") -->
+
+<!-- #Save the plot as an image -->
+<!-- ggsave("output/img/intra-hh. dynamics z-index distribution_productive inclusion.pdf", width = 18, height = 10, units = "cm") -->
+
+
+
+<!-- ``` -->
+
+<!-- ### Benef. share of total hh. revenues -->
+<!-- ```{r} -->
+<!-- ### Benef. share of total hh. revenues -->
+<!-- #### Graph -->
+<!-- followup_MRT_hh_pi %>%  -->
+<!--   # Begin creating the plot -->
+<!--   ggplot(aes(x = rev_sum_bohh_wemp_98_tr_bl, y = after_stat(density))) + -->
+
+<!--   # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency -->
+<!--   geom_histogram(aes(y = after_stat(density)), fill = "lightblue",  -->
+<!--                  color = "black", alpha = 0.7) + -->
+
+<!--   # Add a vertical line for the mean age gap -->
+<!--   geom_vline(aes(xintercept = mean(rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "red", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the mean value on the plot -->
+<!--   annotate("text", x=mean(followup_MRT_hh_pi$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE) - 0.05, y=2.5,  -->
+<!--            label=paste0("Mean = ",round(mean(followup_MRT_hh_pi$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="red") + -->
+
+<!--   # Add a vertical line for the median age gap -->
+<!--   geom_vline(aes(xintercept = median(rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE)),  -->
+<!--              color = "blue", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the median value on the plot -->
+<!--   annotate("text", x=median(followup_MRT_hh_pi$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE) + 0.05, y=2.5,  -->
+<!--            label=paste0("Median = ", round(median(followup_MRT_hh_pi$rev_sum_bohh_wemp_98_tr_bl, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="blue") + -->
+
+<!--   # Add a density curve over the histogram -->
+<!--   geom_density(color = "black", size = .4, alpha = 0.5) + -->
+
+<!--   # Set plot labels and title -->
+<!--   labs(title="Benef. share of total hh. rev. (productive inclusion)", x="Benef. share of total hh. rev.", y="Density", 1) + -->
+
+<!--   # Apply a minimal theme for clean appearance -->
+<!--   theme_light(base_size = 8) + -->
+<!--   theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal") -->
+
+<!-- #Save the plot as an image -->
+<!-- ggsave("output/img/benef. share of total hh. rev. distribution_productive inclusion.pdf", width = 18, height = 10, units = "cm") -->
+
+
+<!-- ``` -->
+
+<!-- ### Age distribution -->
+<!-- ```{r} -->
+<!-- #### Age distribution plot -->
+<!-- # Filter the dataset to only include phase 2 data -->
+<!-- followup_MRT_hh_pi %>%  -->
+<!--   # Begin creating the plot -->
+<!--   ggplot(aes(x = age_gap, y = after_stat(density))) + -->
+
+<!--   # Create a histogram with 40 bins, light blue fill, black outline, and slight transparency -->
+<!--   geom_histogram(aes(y = after_stat(density)), bins = 40, fill = "lightblue",  -->
+<!--                  color = "black", alpha = 0.7) + -->
+
+<!--   # Add a vertical line for the mean age gap -->
+<!--   geom_vline(aes(xintercept = mean(age_gap, na.rm = TRUE)),  -->
+<!--              color = "red", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the mean value on the plot -->
+<!--   annotate("text", x=mean(followup_MRT_hh_pi$age_gap, na.rm = TRUE) + 2, y=0.10,  -->
+<!--            label=paste0("Mean = ",round(mean(followup_MRT_hh_pi$age_gap, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="red") + -->
+
+<!--   # Add a vertical line for the median age gap -->
+<!--   geom_vline(aes(xintercept = median(age_gap, na.rm = TRUE)),  -->
+<!--              color = "blue", linetype = "dashed", size = .5) + -->
+
+<!--   # Annotate the median value on the plot -->
+<!--   annotate("text", x=median(followup_MRT_hh_pi$age_gap, na.rm = TRUE) - 2, y=0.10,  -->
+<!--            label=paste0("Median = ", round(median(followup_MRT_hh_pi$age_gap, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="blue") + -->
+
+<!--   # Add a density curve over the histogram -->
+<!--   geom_density(color = "black", size = .4, alpha = 0.5) + -->
+
+<!--   # Set plot labels and title -->
+<!--   labs(title="Age gap distribution (productive inclusion)", subtitle = "hhh - benef. age" , x="Age gap", y="Density", 1) + -->
+
+<!--   # Apply a minimal theme for clean appearance -->
+<!--   theme_light(base_size = 8) + -->
+<!--   theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal") -->
+
+<!--   #Save the plot as an image -->
+<!--   ggsave("output/img/age gap distribution_productive inclusion.pdf", width = 18, height = 10, units = "cm") -->
+
+
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- # Create a histogram -->
+<!-- followup_MRT_hh_pi %>%  -->
+<!--   mutate(treatment_pi=labelled::unlabelled(treatment_pi)) %>%  -->
+<!--   ggplot(aes(x = age_gap, fill = treatment_pi)) + -->
+<!--   geom_histogram(bins = 40, position = "identity", alpha = 0.7) + -->
+
+<!--   # Add vertical lines for mean and median -->
+<!--   geom_vline(aes(xintercept = mean(followup_MRT_hh_pi$age_gap, na.rm = TRUE),  -->
+<!--                   color = treatment_pi), linetype = "dotted", size = 1) + -->
+<!--   geom_vline(aes(xintercept = median(followup_MRT_hh_pi$age_gap, na.rm = TRUE),  -->
+<!--                color = treatment_pi), linetype = "dotted", size = 1) + -->
+<!--         # Annotate the mean value on the plot -->
+<!--   annotate("text", x=mean(followup_MRT_hh_pi$age_gap, na.rm = TRUE) - 0.05, y=50,  -->
+<!--            label=paste0("Mean = ",round(mean(followup_MRT_hh_pi$age_gap, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="black") + -->
+<!--     # Annotate the median value on the plot -->
+<!--   annotate("text", x=median(followup_MRT_hh_pi$age_gap, na.rm = TRUE) - 2, y=50,  -->
+<!--            label=paste0("Median = ", round(median(followup_MRT_hh_pi$age_gap, na.rm = TRUE),2)),  -->
+<!--            angle=90, size=5, color="gray") + -->
+<!--     # Customize color and theme -->
+<!--     scale_fill_manual(values = c("red","blue", "green","yellow")) + -->
+<!--     # scale_color_manual(values = c("red", "black","white")) + -->
+<!--     theme_minimal() + -->
+
+<!--     # Add titles and labels -->
+<!--     # Set plot labels and title -->
+<!--     labs(title="Age gap distribution (productive inclusion)",  -->
+<!--          subtitle = "hhh - benef. age" , -->
+<!--          x="Age gap",  -->
+<!--          y="Frequency", -->
+<!--          fill="", -->
+<!--          1) + -->
+
+<!--   # Apply a minimal theme for clean appearance -->
+<!--   theme_light(base_size = 8) + -->
+<!--     theme(legend.position = 'bottom', text = element_text(size = 8), legend.direction = "horizontal") -->
+
+<!--   #Save the plot as an image -->
+<!--   ggsave("output/img/age gap distribution_productive inclusion.pdf", width = 18, height = 10, units = "cm") -->
+
+<!-- ``` -->
+
+

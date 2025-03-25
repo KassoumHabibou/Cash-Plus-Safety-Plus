@@ -1,0 +1,339 @@
+---
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+subtitle: "Data visualization"
+author: "IBRAHIM KASSOUM Habibou"
+date: '`r format (Sys.Date(), "%d %B %Y")`'
+output: 
+  officedown::rdocx_document:
+    mapstyles:
+      Normal: ['First Paragraph']
+---
+
+```{r setup, include=FALSE}
+# Set random seed for reproducibility
+set.seed(7654)
+
+# Set number of decimal places to display
+options(digits = 3)
+
+# Configure knitr chunk options:
+knitr::opts_chunk$set(
+ echo = FALSE,          # Don't show R code in output
+ message = FALSE,       # Don't show messages
+ warning = FALSE,       # Don't show warnings
+ cache = FALSE,         # Don't cache results
+ fig.align = 'center',  # Center figures
+ fig.width = 6,         # Figure width in inches
+ fig.asp = 0.618,       # Figure aspect ratio (golden ratio)
+ fig.show = "hold"      # Hold multiple plots until end of chunk
+)
+
+# Set dplyr print options to show 6 rows max
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+
+```
+
+# Preambule
+
+## Importing library and external files
+
+```{r}
+
+######################## Importing library and external files ##################
+### List of required packages
+required_packages <- c("tidyverse", "dplyr","readr","ggplot2","ggmap",
+                       "labelled","ggspatial","gridExtra","sf","cowplot")
+
+### Check if packages are installed
+missing_packages <- setdiff(required_packages, installed.packages()[,"Package"])
+
+### Install missing packages
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+### Load all packages
+lapply(required_packages, library, character.only = TRUE)
+
+# Remove all objects
+#rm(list = ls())
+
+```
+
+## Visualization support
+```{r, include=TRUE, echo=TRUE, eval=FALSE}
+# Load visualization support package
+install.packages("remotes")
+remotes::install_github("wilkelab/cowplot")
+install.packages("colorspace", repos = "http://R-Forge.R-project.org")
+remotes::install_github("clauswilke/colorblindr")
+remotes::install_github("clauswilke/dviz.supp")
+library(dviz.supp)
+```
+
+
+
+## Functions
+```{r}
+#extract legend
+#https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+```
+
+## Loading the datasets
+
+```{r}
+
+######################## Loading the datasets ##################################
+# Read the stata file containing the global dataframe into allrounds_MRT_hh
+#allrounds_MRT_hh <-  read_rds("output/data/allrounds_MRT_hh.rds")
+baseline_MRT_hh <- read_rds("output/data/baseline_MRT_hh.rds")
+
+# Load geospatial data in R
+sf_MRT <- read_sf("input/data/shapefile_MRT/geoBoundaries-MRT-ADM2_simplified.shp")
+```
+
+# Mapping the localisation
+ Souce of the code can be found here: https://github.com/clauswilke/dataviz/blob/master/geospatial_data.Rmd
+ https://info5940.infosci.cornell.edu/notes/geoviz/raster-maps-with-ggmap/
+```{r}
+# Removing the label in the cash assignment variable
+baseline_MRT_hh$cash_trsfr <- as.character(labelled::unlabelled(baseline_MRT_hh$cash_trsfr))
+baseline_MRT_hh$treatment <- as.character(labelled::unlabelled(baseline_MRT_hh$treatment))
+baseline_MRT_hh$ru_lat_bl_tr <- as.numeric(as.character(labelled::unlabelled(baseline_MRT_hh$ru_lat_bl_tr)))
+baseline_MRT_hh$ru_lon_bl_tr <- as.numeric(as.character(labelled::unlabelled(baseline_MRT_hh$ru_lon_bl_tr)))
+
+# Get the coordinates of sélibaby
+crdnt_selibaby <- baseline_MRT_hh %>% 
+  filter(region==2, cash_trsfr=="Cash Assignment") %>% 
+  select(treatment, cluster, ru_lat_bl_tr, ru_lon_bl_tr) %>% 
+  distinct(.keep_all = TRUE) #%>% 
+  #st_as_sf( coords = c("ru_lon_bl_tr", "ru_lat_bl_tr"))
+
+# Get the coordinates of Barkéol
+crdnt_barkeol <- baseline_MRT_hh %>% 
+  filter(region==1, cash_trsfr=="Cash Assignment") %>% 
+  select(treatment, cluster, ru_lat_bl_tr, ru_lon_bl_tr) %>% 
+  distinct(.keep_all = TRUE)#%>% 
+  #st_as_sf( coords = c("ru_lon_bl_tr", "ru_lat_bl_tr"))
+
+```
+
+```{r}
+#Api: 48e122b1-e101-4f8e-bd34-3f770ebf4b09
+register_stadiamaps("48e122b1-e101-4f8e-bd34-3f770ebf4b09", write = TRUE)
+```
+
+
+
+
+```{r, echo=TRUE, eval=FALSE}
+
+# Adjust the bbox to have the same aspect ratio
+bbox_selibaby <- c(left = -13.9, right = -9.9, top = 16.65, bottom = 14.65)
+bbox_barkeol <- c(left = -13.7, right = -10.7, top = 17.5, bottom = 15.5)
+
+stadia_map_selibaby <- get_stadiamap(
+  bbox = bbox_selibaby,
+  zoom = 12,
+  maptype = c("stamen_terrain")) %>% 
+  ggmap()
+
+
+stadia_map_barkeol <- get_stadiamap(
+  bbox = bbox_barkeol,
+  zoom = 12,  # Higher zoom for more details
+  maptype = c("stamen_terrain")) %>% 
+  ggmap()
+# Map for selibaby
+map_selibaby <- stadia_map_selibaby + 
+  geom_point(
+    data = crdnt_selibaby,
+    aes(x = ru_lon_bl_tr, y =  ru_lat_bl_tr, color=treatment),
+    size = 1.5, stroke = 0.2
+  ) +
+  ggspatial::annotation_north_arrow(
+    width = grid::unit(1, "cm"),
+    height = grid::unit(1, "cm"),
+    pad_x = grid::unit(0.01, "cm"),
+    pad_y = grid::unit(0.01, "cm"),
+    style = ggspatial::north_arrow_fancy_orienteering(
+      line_width = 1,
+      text_size = 12
+    ),
+    location ="bl"
+  ) +
+  coord_fixed() +  # Ensures same aspect ratio
+  labs(title = "Selibaby")+
+  xlab(label = NULL) +
+  ylab(label = NULL) +
+  scale_colour_manual(name = "",
+    guide = guide_legend(
+      order = 2,
+      reverse = FALSE),
+    breaks = c("Full","Psychosocial","Capital","Control"),
+  values = c("Capital" = "darkblue","Psychosocial" = "darkgreen","Full" = "darkgoldenrod1", "Control"="darkgray")) +
+  theme_map(font_size = 8) +
+  theme(
+    legend.position="bottom",
+    legend.key.width = grid::unit(12, "pt")
+  )
+
+map_selibaby
+
+# Map for barkeol
+map_barkeol <- stadia_map_barkeol + 
+  geom_point(
+    data = crdnt_barkeol,
+    aes(x = ru_lon_bl_tr, y =  ru_lat_bl_tr, color=treatment),
+    size = 1.5, stroke = 0.2
+  ) +
+  ggspatial::annotation_north_arrow(
+    width = grid::unit(1, "cm"),
+    height = grid::unit(1, "cm"),
+    pad_x = grid::unit(0.01, "cm"),
+    pad_y = grid::unit(0.01, "cm"),
+    style = ggspatial::north_arrow_fancy_orienteering(
+      line_width = 1,
+      text_size = 12
+    ),
+    location ="bl"
+  ) +
+  coord_fixed() +  # Ensures same aspect ratio
+  labs(title = "Barkeol")+
+  xlab(label = NULL) +
+  ylab(label = NULL) +
+  scale_colour_manual(name = "",
+    guide = guide_legend(
+      order = 2,
+      reverse = FALSE),
+  values = c("Capital" = "darkblue","Psychosocial" = "darkgreen","Full" = "darkgoldenrod1", "Control"="darkgray")) + 
+  theme_map(font_size = 8) +
+  theme(
+    legend.position="bottom",
+    legend.key.width = grid::unit(12, "pt")
+  )
+
+mylegend<-g_legend(map_selibaby)
+
+map_treatment <- grid.arrange(arrangeGrob(map_selibaby + theme(legend.position="none"),
+                         map_barkeol + theme(legend.position="none"), 
+                         nrow=1,  widths = c(1, 1)),  # Set equal width for both maps),
+             mylegend, nrow=2,heights=c(10, 1))
+
+map_treatment
+
+ggsave("output/img/map_treatment.pdf", map_treatment)
+```
+
+
+```{r}
+# Adjust the bbox to have the same aspect ratio
+# Defines the bounding box for the Selibaby region
+bbox_selibaby <- c(left = -12.5, right = -11.6, top = 15.5, bottom = 14.65)
+
+# Defines the bounding box for the Barkeol region
+# These coordinates are selected to highlight the study area in Barkeol
+bbox_barkeol <- c(left = -13, right = -11.65, top = 17.2, bottom = 16.1)
+
+# Filter dataset to include only households that received cash transfers
+crdnt <- baseline_MRT_hh %>% 
+  filter(cash_trsfr=="Cash Assignment") %>% 
+  select(treatment, cluster, region, ru_lat_bl_tr, ru_lon_bl_tr) %>% 
+  distinct(.keep_all = TRUE)
+
+# Defines the bounding box for the entire map area
+bbox <- c(left = -14.1, right = -10.1, top = 17.5, bottom = 14.65)
+
+# Fetches a terrain-style map from the Stadia Maps service
+stadia_map <- get_stadiamap(
+  bbox = bbox,
+  zoom = 13,
+  maptype = c("stamen_terrain_background")) %>% 
+  ggmap()
+
+# Generate the map visualization
+map_global <- stadia_map + 
+  # Adds points representing households
+  geom_point(
+    data = crdnt,
+    aes(x = ru_lon_bl_tr, y = ru_lat_bl_tr, color=treatment),
+    size = 1.5, stroke = 0.2
+  ) +
+  
+  # Adds a north arrow for orientation
+  ggspatial::annotation_north_arrow(
+    width = grid::unit(1, "cm"),
+    height = grid::unit(1, "cm"),
+    pad_x = grid::unit(0.01, "cm"),
+    pad_y = grid::unit(0.01, "cm"),
+    style = ggspatial::north_arrow_fancy_orienteering(
+      line_width = 1,
+      text_size = 8
+    ),
+    location ="bl"
+  ) +
+  
+  # Highlights the bounding boxes of the two study areas
+  geom_rect(
+    data = data.frame(rbind(t(bbox_selibaby), t(bbox_barkeol))),
+    aes(xmin = left, xmax = right, ymin = bottom, ymax = top),
+    size = 0.5,
+    color = "black",
+    fill = NA,
+    inherit.aes = FALSE
+  ) +  # Ensures same aspect ratio
+  
+  # Labels for Selibaby and Barkeol study areas
+  geom_text(
+    data = data.frame(x = 0.5*(bbox_selibaby['left'] + bbox_selibaby['right']), y = bbox_selibaby['top'], label = "Selibaby"),
+    aes(x, y, label = label),
+    hjust = 0.512,
+    vjust = -0.51,
+    color = "black",
+    size = 11/.pt
+  ) +
+  
+  geom_text(
+    data = data.frame(x = 0.5*(bbox_barkeol['left'] + bbox_barkeol['right']), y = bbox_barkeol['top'], label = "Barkeol"),
+    aes(x, y, label = label),
+    hjust = 0.5,
+    vjust = -0.5,
+    size = 11/.pt
+  ) +
+  
+  # Map title and legend customization
+  labs(title = "Social promotion space by treatment status")+
+  xlab(label = NULL) +
+  ylab(label = NULL) +
+  
+  scale_colour_manual(name = "",
+    guide = guide_legend(
+      order = 2,
+      reverse = FALSE),
+    breaks = c("Full","Psychosocial","Capital","Control"),
+    values = c("Capital" = "darkblue","Psychosocial" = "darkgreen","Full" = "darkgoldenrod1", "Control"="darkgray")) +
+  
+  theme_map(font_size = 8) +
+  theme(
+    legend.position="bottom",
+    legend.key.width = grid::unit(12, "pt")
+  )
+
+# Display the final map
+map_global
+
+ggsave("output/img/map_global.png", map_global)
+```
+
+# Remove all objects
+```{r}
+# Remove all objects
+rm(list = ls())
+```
+
