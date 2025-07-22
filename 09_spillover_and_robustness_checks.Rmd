@@ -1,0 +1,142 @@
+---
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+subtitle: "Robustness checks"
+author: "IBRAHIM KASSOUM Habibou"
+date: '`r format (Sys.Date(), "%d %B %Y")`'
+output: 
+  officedown::rdocx_document:
+    mapstyles:
+      Normal: ['First Paragraph']
+---
+
+
+```{r setup, include=FALSE}
+# Set random seed for reproducibility
+set.seed(7654)
+
+# Set number of decimal places to display
+options(digits = 3)
+
+# Configure knitr chunk options:
+knitr::opts_chunk$set(
+ echo = FALSE,          # Don't show R code in output
+ message = FALSE,       # Don't show messages
+ warning = FALSE,       # Don't show warnings
+ cache = FALSE,         # Don't cache results
+ fig.align = 'center',  # Center figures
+ fig.width = 6.3,         # Figure width in inches
+ fig.height= 7,          # Figure height in inches
+ fig.asp = 0.8,       # Figure aspect ratio (golden ratio)
+ fig.show = "hold"      # Hold multiple plots until end of chunk
+)
+
+# Set dplyr print options to show 6 rows max
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+```
+
+
+```{r, include=FALSE, results='hide', echo=FALSE}
+
+######################## Importing library and external files ##################
+### List of required packages
+required_packages <- c("tidyverse", "dplyr","officedown", "officer", "gtsummary",
+                       "stargazer", "lfe","labelled","car","broom","purrr",
+                       "flextable")
+
+### Check if packages are installed
+missing_packages <- setdiff(required_packages, installed.packages()[,"Package"])
+
+### Install missing packages
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+### Load all packages
+lapply(required_packages, library, character.only = TRUE)
+
+# Remove all objects
+rm(list = ls())
+
+# Source functions from external file
+source("functions.R")
+```
+
+
+```{r echo=F}
+
+set_gtsummary_theme(theme_gtsummary_compact())
+
+######### Create default BioAVR table from dataframe
+#
+# Dependencies : dplyr, flextable, officer
+# source link : https://www.r-bloggers.com/2021/11/publication-ready-tables-with-flextable-and-own-theme-in-r/
+customtab_defaults <- function(){
+set_flextable_defaults(font.family = "Times New Roman",
+font.size = 10,
+border.color = "black")
+}
+FitFlextableToPage <- function(ft, pgwidth = 8){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+custom_tab <- function(df, header, footer){
+flextable(df) %>%
+add_header_lines(header) %>%
+add_footer_lines(footer) %>%
+bold(i = 1, part = "header") %>%
+hline_top(part = "header",
+border = fp_border(color = "white",
+width = 3,
+style = "solid")) %>%
+hline(i = 1,
+part = "header",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_top(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_bottom(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_bottom(part = "footer",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+border_inner_h(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "dotted")) %>%
+autofit(part = "body") %>%
+bg(part = "body", bg = "white") %>%
+align(part = "all", align = "center") %>%
+align(j = 1, part = "all", align = "left")
+}
+```
+
+
+```{r}
+
+######################## Loading the datasets ##################################
+# Read the file containing the global dataframe into followup_MRT_hh
+
+followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_MRT_hh_and_ipv_MRT_hh.rds"))
+
+# Convert treatment variables from numeric to factor variables for both datasets
+# This is useful for regression analysis and plotting as factors are treated as categorical variables
+
+ # Convert PM treatment to factor
+followup_MRT_hh$treatment_pi <- haven::as_factor(followup_MRT_hh$treatment_pi)
+
+# Convert cash transfer treatment to factor
+followup_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(followup_MRT_hh$treatment_csh_trnsfr)
+
+
+```
+

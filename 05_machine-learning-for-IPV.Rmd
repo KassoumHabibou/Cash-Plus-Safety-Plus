@@ -1,0 +1,459 @@
+---
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+subtitle: "Empirical strategy & Results"
+author: "IBRAHIM KASSOUM Habibou"
+date: '`r format (Sys.Date(), "%d %B %Y")`'
+output: 
+  officedown::rdocx_document:
+    mapstyles:
+      Normal: ['First Paragraph']
+---
+
+
+```{r setup, include=FALSE}
+# Set random seed for reproducibility
+set.seed(7654)
+
+# Set number of decimal places to display
+options(digits = 3)
+
+# Configure knitr chunk options:
+knitr::opts_chunk$set(
+ echo = FALSE,          # Don't show R code in output
+ message = FALSE,       # Don't show messages
+ warning = FALSE,       # Don't show warnings
+ cache = FALSE,         # Don't cache results
+ fig.align = 'center',  # Center figures
+ fig.width = 6.3,         # Figure width in inches
+ fig.height= 7,          # Figure height in inches
+ fig.asp = 0.8,       # Figure aspect ratio (golden ratio)
+ fig.show = "hold"      # Hold multiple plots until end of chunk
+)
+
+# Set dplyr print options to show 6 rows max
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+
+# Sometimes temporary files accumulate and cause issues. You can clear them manually or use:
+#unlink(tempdir(), recursive = TRUE)
+```
+
+
+```{r, include=FALSE, results='hide', echo=FALSE}
+
+######################## Importing library and external files ##################
+### List of required packages
+required_packages <- c("tidyverse", "dplyr","officedown", "officer", "gtsummary",
+                       "stargazer", "lfe","labelled","car","broom","purrr","VIM","klaR","missForest", "doMC","doParallel",
+                       "flextable","caret", "funModeling","gbm","rlang","glmnet","e1071","kernlab", "tibble","xgboost")
+
+
+### Check if packages are installed
+missing_packages <- setdiff(required_packages, installed.packages()[,"Package"])
+
+### Install missing packages
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+### Load all packages
+lapply(required_packages, library, character.only = TRUE)
+
+# Remove all objects
+rm(list = ls())
+
+# Source functions from external file
+source("functions.R")
+```
+
+
+```{r echo=F}
+
+set_gtsummary_theme(theme_gtsummary_compact())
+
+######### Create default BioAVR table from dataframe
+#
+# Dependencies : dplyr, flextable, officer
+# source link : https://www.r-bloggers.com/2021/11/publication-ready-tables-with-flextable-and-own-theme-in-r/
+customtab_defaults <- function(){
+set_flextable_defaults(font.family = "Times New Roman",
+font.size = 10,
+border.color = "black")
+}
+FitFlextableToPage <- function(ft, pgwidth = 8){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+custom_tab <- function(df, header, footer){
+flextable(df) %>%
+add_header_lines(header) %>%
+add_footer_lines(footer) %>%
+bold(i = 1, part = "header") %>%
+hline_top(part = "header",
+border = fp_border(color = "white",
+width = 3,
+style = "solid")) %>%
+hline(i = 1,
+part = "header",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_top(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_bottom(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_bottom(part = "footer",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+border_inner_h(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "dotted")) %>%
+autofit(part = "body") %>%
+bg(part = "body", bg = "white") %>%
+align(part = "all", align = "center") %>%
+align(j = 1, part = "all", align = "left")
+}
+```
+
+
+```{r}
+
+######################## Loading the datasets ##################################
+# Read the file containing the global dataframe into followup_MRT_hh
+followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_MRT_hh_and_ipv_MRT_hh.rds"))
+
+
+# Convert treatment variables from numeric to factor variables for both datasets
+# This is useful for regression analysis and plotting as factors are treated as categorical variables
+
+ # Convert PM treatment to factor
+followup_MRT_hh$treatment_pi <- haven::as_factor(followup_MRT_hh$treatment_pi)
+
+# Convert cash transfer treatment to factor
+followup_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(followup_MRT_hh$treatment_csh_trnsfr)
+
+# Filtering for control data
+control_ipv_vars <- c("control_ipv_12m","control_ipv_inten_index")
+emotional_ipv_vars <- c("emo_ipv_12m","emo_ipv_inten_index","emo_severity_12m", "emo_severity_12m_z")
+physical_ipv_vars <- c("phy_ipv_12m","phy_ipv_inten_index","phy_severity_12m", "phy_severity_12m_z")
+sexual_ipv_vars <- c("sex_ipv_12m","sex_ipv_inten_index","sex_severity_12m", "sex_severity_12m_z")
+economic_ipv_vars <- c("eco_ipv_12m","eco_ipv_inten_index","eco_severity_12m", "eco_severity_12m_z")
+other_ipv_vars <- c("ipv_all_12m","ipv_all2_12m","all_ipv_inten_index")
+
+lst_outcome_ml = c("control_ipv_inten_index", "emo_ipv_inten_index", "emo_severity_12m", "phy_ipv_inten_index","phy_severity_12m", "sex_ipv_inten_index","sex_severity_12m", "eco_ipv_inten_index","eco_severity_12m")
+
+# Define the two treatment variables 
+treatment_vars=c("treatment_csh_trnsfr","treatment_pi","treatment_pi_pool")
+
+
+# All outcomes variables
+listOutcomes=c(control_ipv_vars, emotional_ipv_vars, physical_ipv_vars, sexual_ipv_vars, economic_ipv_vars, other_ipv_vars)
+
+# followup_MRT_hh <-  followup_MRT_hh %>%
+#   # Removes rows that have missing values (NA) in any of the outcome variables listed in 'listOutcomes'
+#   filter(if_all(all_of(listOutcomes), ~ !is.na(.))) %>%
+#   # Selects columns that end with "_bl", the treatment type column, and all outcome variables
+#   dplyr::select(ends_with("_bl"), all_of(listOutcomes), type_treatment, treatment_pi, treatment_csh_trnsfr, treatment_pi_pool) %>%
+#   select_if(~ mean(is.na(.)) <= 0.1) #%>%  # Selecting row with less than 10 percent of NAN
+
+followup_MRT_hh <- followup_MRT_hh %>%
+  # Remove rows with missing values in any of the outcome variables
+  filter(if_all(all_of(listOutcomes), ~ !is.na(.))) %>%
+  
+  # Select baseline variables, outcomes, and treatment indicators
+  dplyr::select(hhid,strata,cluster,p_region,p_commune,p_village,region,commune, village,phase, surveyor, het_hhh_edu, het_pben_edu, het_ctrl_earn_index, het_ctrl_hh_index, het_intrahh_index, het_rev_sum_bohh, het_age_gap, age_gap, 
+    ends_with("_bl"), # It select all the baseline variables that are collected during the survey
+    all_of(listOutcomes),
+    type_treatment,
+    all_of(treatment_vars)
+  )
+
+# Get names of variables to keep based on missing values, excluding treatment variables
+non_treatment_vars <- setdiff(
+  names(followup_MRT_hh),
+  treatment_vars
+)
+
+# Keep variables with less than or equal to 10% missing (excluding treatment vars)
+vars_to_keep <- non_treatment_vars[
+  colMeans(is.na(followup_MRT_hh[non_treatment_vars])) <= 0.05
+]
+
+# Final dataset including treatment variables
+followup_MRT_hh <- followup_MRT_hh %>%
+  dplyr::select(
+    all_of(vars_to_keep),
+    all_of(treatment_vars),
+  )
+
+
+followup_MRT_hh <- followup_MRT_hh %>%
+  mutate(across(where(is.character), ~ replace_na(., "None"))) %>%
+  mutate(across(where(is.factor), ~ fct_explicit_na(., na_level = "None")))
+
+# Set Randomness
+set.seed(13111998)
+
+
+
+# All factors to character variables
+# followup_MRT_hh <- followup_MRT_hh %>% 
+#   mutate(across(where(is.character), as.factor))
+
+# Remove zero-variance columns (i.e., constants)
+followup_MRT_hh <- followup_MRT_hh %>%
+  dplyr::select(where(~ length(unique(na.omit(.))) > 1))
+
+# Perform KNN imputation (default k = 10)
+# It returns a data.frame with imputed values
+followup_MRT_hh_imptd <- kNN(followup_MRT_hh, k = 10, imp_var = FALSE, impNA = TRUE, numFun=mean)  # Don't keep extra columns showing where imputations happened
+
+
+
+# Detect number of available cores
+num_cores <- parallel::detectCores()
+
+
+# # Register the parallel backend
+# cl <- makeCluster(num_cores)
+# registerDoParallel(cl)
+
+## Impute missing values
+# followup_MRT_hh_imptd <- missForest(followup_MRT_hh , maxiter = 100, ntree = 100, 
+#                        decreasing = FALSE, verbose = TRUE, replace = TRUE, 
+#                        maxnodes = num_cores)
+
+# Stop the cluster after running
+#stopCluster(cl)
+
+write_rds(followup_MRT_hh_imptd, "followup_MRT_hh_imptd.rds")
+followup_MRT_hh_imptd <- readRDS("followup_MRT_hh_imptd.rds")
+
+# Creates a new dataframe 'followup_MRT_hh_cntrl' from 'followup_MRT_hh' that contains only control groups
+followup_MRT_hh_cntrl <- followup_MRT_hh_imptd %>%
+  # Filters to keep only rows where either 'treatment_pi' or 'treatment_csh_trnsfr' is "Control"
+  filter(treatment_pi == "Control" | treatment_csh_trnsfr == "Control") 
+  # The commented-out line would select only columns that have no missing values
+  #dplyr::select(where(~ all(!is.na(.))))  # Selecting columns with no missing values
+
+
+```
+
+<!---BLOCK_TOC--->
+
+
+
+
+<!---BLOCK_LANDSCAPE_START--->
+
+# Some concerns 
+- Why Manuela use the baseline values of the control variables for the IPV instead of the followup-value for the control group (to prevent spill over effect ??)
+
+- I remove the row with missing data in any of the IPV outcome variables.
+- All variables can't be used in the algorithm as some can explain the results just by pur chance. With all baseline variables t
+- A Recursive Feature Elimination (RFE) is used to select features.
+  * RFE is a feature selection technique that iteratively removes features based on their importance, aiming to find the optimal subset of features that provides the best model performance. It starts with a model trained on all features, then calculates feature importances, and removes the least important ones. This process is repeated until the desired number of features is reached or the model performance stops improving. 
+  
+- I use Knn algorithm to impute missing values in the features of the training dataset. The same algorythm can be use to complete the for the prediction dataset (it is important so that we can adapt the number). The *mean* function is used as the aggregation 
+  * the Euclidean distance
+  * 10 neigbor
+  
+
+  
+- source: https://livebook.datascienceheroes.com/selecting-best-variables.html#general_aspects_selecting_best_variables
+
+# ML algorithm  
+
+It’s quite common to find in literature and algorithms, that covers this topic an univariate analysis, which is a ranking of variables given a particular metric.
+We’re going to create two models: random forest and gradient boosting machine (GBM) using *caret* R package to cross-validate the data. Next, we’ll compare the best variable ranking that every model returns.
+
+
+
+```{r}
+
+# Define model methods - this creates a vector of machine learning algorithms to test
+model_methods <- c("rf", "lm", "gbm", "glmnet", "svmRadial", "knn", "xgbTree", "treebag")
+
+# Define model names for display - creates a named vector to use friendly names in output
+model_names <- c(
+  rf = "Random Forest",
+  lm = "Linear Regression",
+  gbm = "Gradient Boosting",
+  glmnet = "Elastic Net",
+  svmRadial = "Support Vector Machine",
+  knn = "K-nearest Neighbors",
+  xgbTree = "Extreme Gradient Boosting",
+  treebag = "Bagging"
+)
+
+# Set up 10-fold cross-validation
+fitControl = trainControl(method = "cv",
+                          number = 10,
+                          search = "grid",
+                          classProbs = FALSE,  # Since this is regression
+                          verboseIter = TRUE,
+                          allowParallel = TRUE)
+
+
+# mainResults <- map_dfr(treatment_vars, function(curr_treat_var) {
+#   tempResults <- map_dfr(control_ipv_vars, function(depvar) {    
+#     %>%
+#         mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+#     )
+#   })
+# })
+
+df_ML_results <- purrr::map_dfr(lst_outcome_ml, function(curr_ipv) {
+# Set the response variable
+     bind_rows(
+      getEstimateML_IPV(curr_ipv, listOutcomes, treatment_vars, followup_MRT_hh_cntrl)
+
+    )
+# Predict with the best model
+# followup_MRT_hh_imptd_pred <- followup_MRT_hh_imptd %>%
+#   mutate(!!sym(paste0(curr_ipv,"_pred")) := predict(best_model_ranked$Model[[1]]$rf, newdata = .)) 
+}, .progress = TRUE)
+```
+
+
+
+```{r}
+followup_MRT_hh_imptd_pred %>% 
+  filter(!is.na(treatment_pi_pool)) %>% 
+  ggplot() + 
+  geom_smooth(mapping = aes(x = !!sym(paste0(curr_ipv,"_pred")), y = !!sym(curr_ipv), color = treatment_pi_pool))+
+  #geom_abline(intercept = 0, slope = 1, size = 0.5, linetype = "dashed") +
+  labs(
+    x = "predicted baseline ipv",
+    y = "ipv at follow",
+    color = ""
+  ) +
+  theme_light(base_size = 8) +
+  theme(legend.position = 'bottom', text = element_text(size = 8), 
+        legend.direction = "horizontal")
+    #Save the plot as an image
+    ggsave(paste0("output/img/",curr_ipv,".jpeg"),  width = 10, height = 14, units = "cm")
+
+```
+
+
+
+```{r}
+
+# 
+# train_data_imptd <- train_data_imptd %>% 
+#    dplyr::select(lst_feature_lm, !!sym(curr_ipv))
+# 
+# 
+# # Helper formula
+# model_formula <- reformulate(".", response = curr_ipv)
+# 
+# # Create a list to store all models
+# model_list <- list()
+# 
+# # Random Forest
+# model_list$rf <- train(model_formula, data = train_data_imptd, method = "rf", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# # Linear Model
+# model_list$lm <- train(model_formula, data = train_data_imptd, method = "lm", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# # Gradient Boosting
+# model_list$gbm <- train(model_formula, data = train_data_imptd, method = "gbm", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# # Elastic Net
+# model_list$glmnet <- train(model_formula, data = train_data_imptd, method = "glmnet", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# # Support Vector Machine (Radial Kernel)
+# model_list$svm <- train(model_formula, data = train_data_imptd, method = "svmRadial", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# # K-Nearest Neighbors
+# model_list$knn <- train(model_formula, data = train_data_imptd, method = "knn", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# # XGBoost 
+# model_list$xgb <- train(model_formula, data = train_data_imptd, method = "xgbTree", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# # Bagging
+# model_list$bag <- train(model_formula, data = train_data_imptd, method = "treebag", trControl = fitControl, metric = "RMSE", verbose = TRUE)
+# 
+# 
+# # Define pretty model names
+# model_names <- c(
+#   rf = "Random Forest",
+#   lm = "Linear Regression",
+#   gbm = "Gradient Boosting",
+#   glmnet = "Elastic Net",
+#   svm = "Support Vector Machine",
+#   knn = "K-nearest Neighbors",
+#   xgb = "Extreme Gradient Boosting",
+#   bag = "Bagging"
+# )
+# 
+# # Step 1: Collect model performance in a data frame
+# model_metrics <- data.frame(
+#   Model = c("Random Forest", "Linear Regression", "Gradient Boosting","Elastic Net","Support Vector Machine", "K-nearest Neighbor", "Extreme Gradient Boosting", "Bagging"),
+#   RMSE = c(
+#     min(model_list$rf$results$RMSE),
+#     min(model_list$lm$results$RMSE),
+#     min(model_list$gbm$results$RMSE),
+#     min(model_list$glmnet$results$RMSE),
+#     min(model_list$svm$results$RMSE),
+#     min(model_list$knn$results$RMSE),
+#     min(model_list$xgb$results$RMSE),
+#     min(model_list$bag$results$RMSE)
+#   ),
+#   MAE = c(
+#     min(model_list$rf$results$MAE),
+#     min(model_list$lm$results$MAE),
+#     min(model_list$gbm$results$MAE),
+#     min(model_list$glmnet$results$MAE),
+#     min(model_list$svm$results$MAE),
+#     min(model_list$knn$results$MAE),
+#     min(model_list$xgb$results$MAE),
+#     min(model_list$bag$results$MAE)
+#   ),
+#   Rsquared = c(
+#     max(model_list$rf$results$Rsquared),
+#     max(model_list$lm$results$Rsquared),
+#     max(model_list$gbm$results$Rsquared),
+#     max(model_list$glmnet$results$Rsquared),
+#     max(model_list$svm$results$Rsquared),
+#     max(model_list$knn$results$Rsquared),
+#     max(model_list$xgb$results$Rsquared),
+#     max(model_list$bag$results$Rsquared)
+#   )
+# )
+# 
+# # Step 2: Identify the best model by RMSE
+# best_model_name <- model_metrics$Model[which.min(model_metrics$RMSE)]
+# 
+#   
+# # Step 3: Get the corresponding model object
+# best_model <- switch(
+#   best_model_name,
+#   "Random Forest" = model_list$rf,
+#   "Linear Regression" = model_list$lm,
+#   "Gradient Boosting" = model_list$gbm,
+#   "Elastic Net" = model_list$glmnet,
+#   "Support Vector Machine" = model_list$svm,
+#   "K-nearest Neighbor" = model_list$knn,
+#   "Extreme Gradient Boosting" = model_list$xgb,
+#   "Bagging" = model_list$bag
+# )
+# 
+# 
+# #  Print best model and the updated data
+# print(paste("Best model based on RMSE:", best_model_name))
+# 
+# 
+# 
+# 
+
+```

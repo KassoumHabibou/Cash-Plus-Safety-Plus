@@ -154,6 +154,7 @@ followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_MRT_hh.rds"))
 
 ipv_df_all <- readRDS(paste0(getwd(),"/output/data/ipv_df_all.rds"))
 
+
 followup_MRT_hh <- followup_MRT_hh %>%  # Keep only relevant phases (the followup_MRT_hh)
   filter(phase == 2)
 
@@ -219,9 +220,7 @@ var_vec = c("same_cb",
             "pben_prim",
             "hhh_lit",
             "pben_lit",
-            # "hhh_health_index",
-            # "pben_health_index",
-            "ctrl_earn_index_tr_bl", #B.10.5 Control Earnings Z-index at bl, 
+            "ctrl_earn_index_tr_bl", #B.10.5 Control Earnings Z-index at bl,
             "ctrl_hh_index_tr_bl", # B.10.6 Control HH Z-index at bl
             "intrahh_vars_index_tr_bl", # C.2.3.A Intra-HH Dynamics Z-index at Baseline
             "rev_sum_bohh_wemp_98_tr_bl", # beneficiary share of household total rev 98 wins baseline
@@ -249,9 +248,7 @@ label_vec = c("Benef. is HH head",
               "Primary education (0/1, benef.)",
               "Literate (hh. head)",
               "Literate (benef.)",
-              # "Health index (HH head)",
-              # "Health index (beneficiary)",
-            "Control over earnings", #B.10.5 Control Earnings Z-index at bl, 
+            "Control over earnings", #B.10.5 Control Earnings Z-index at bl,
             "Control over hh. resources", # B.10.6 Control HH Z-index at bl
             "Intra hh. dynamics index", # C.2.3.A Intra-HH Dynamics Z-index at Baseline
             "Benef. share of total hh. rev.", # beneficiary share of household total rev 98 wins baseline
@@ -261,12 +258,218 @@ label_vec = c("Benef. is HH head",
               "Minutes to market",
               "Minutes to water source")
 
+
+
+# # Create vectors of variable names and their corresponding labels
+var_vec = c(
+            "treatment_csh_trnsfr_bin",
+            "treatment_capital_bin",
+            "treatment_psychosocial_bin",
+            "treatment_full_bin",
+            "same_cb_bl",
+            "het_married_ben",
+            "hhh_fem_bl",
+            "pben_fem_bl",
+            "hhh_poly_bl",
+            "pben_poly_bl",
+            "hhh_age_bl",
+            "pben_age_bl",
+            "age_gap",
+            "het_age_gap",
+            "age_at_mrrg",
+            "age_at_mrrg_above18",
+            "het_age_at_mrrg",
+            'nbr_adult_mal',
+            "het_nbr_adult_mal",
+            "shr_adult_mal",
+            "het_shr_adult_mal",
+            "nbr_adult_mal_tot",
+            "het_nbr_adult_mal_tot",
+            "nbr_adult_fem",
+            "het_nbr_adult_fem",
+            "shr_adult_fem",
+            "het_shr_adult_fem",
+            "nbr_adult_fem_tot",
+            "het_nbr_adult_fem_tot",
+            "shr_adult_fem_mal",
+            "het_shr_adult_fem_mal",
+            "het_wtht_adult_mal",
+            "het_wtht_adult_mal_tot",
+            "nbr_adult",
+            "het_nbr_adult",
+            "shr_adult",
+            "het_shr_adult",
+            "nbr_adult_tot",
+            "het_nbr_adult_tot",
+            "nbr_elder",
+            "het_nbr_elder",
+            "shr_elder",
+            "het_shr_elder",
+            "hh_has_kid",
+            "nbr_kid",
+            "het_nbr_kid",
+            "nbr_hh_number",
+            "het_nbr_hh_number",
+            "hhh_edu_bl",
+            "pben_edu_bl",
+            "hhh_prim_bl",
+            "pben_prim_bl",
+            "hhh_lit_bl",
+            "pben_lit_bl",
+            "ctrl_earn_index_tr_bl", #B.10.5 Control Earnings Z-index at bl,
+            "ctrl_hh_index_tr_bl", # B.10.6 Control HH Z-index at bl
+            "intrahh_vars_index_tr_bl", # C.2.3.A Intra-HH Dynamics Z-index at Baseline
+            "gse_index_tr_bl",
+            "soc_cohsn_index_tr_bl",
+            "soc_stand_index_bl",
+            "los1_bl",
+            "los2_bl",
+            "rev_sum_bohh",     # Revenue/income sum for household
+            "region", # Region
+            "tot_hh_rev", # Baseline revenu
+            "consum",
+            "dec_pow_earn_d_bl",
+            "dec_could_earn_d_bl",      # Power/capacity to earn
+            "dec_pow_ag_d_bl",
+            "dec_pow_liv_d_bl",
+            "dec_pow_bus_d_bl",  # Power in productive sectors
+            "dec_pow_spend_d_bl",
+            "dec_could_spend_d_bl",
+            "dec_pow_large_d_bl",
+            "dec_could_large_d_bl",
+            "dec_pow_fert_d_bl",
+            "dec_could_fert_d_bl",
+            "dec_pow_edu_d_bl",
+            "tot_emp_2rev12_ben_98_ppp_bl", 		#"Wage\n earnings\n (yearly, USD)"
+          	"crop_ctrl_dum_bl", 	#"Benef. controls\n crop\n revenue \{0,1\}"
+            "na_bus2_op_wn_12_ben_bl", # No. of\n beneficiary\n businesses
+            "bus2_ben_dum_bl",	 	#"Beneficiary\n has a\n business \{0,1\}"
+            "tot_busmths_uniq_ben_bl", #No. of months benef worked last year
+            "div_n_na_12_ben_bl", # Entrepreneurial\n business types\n (yearly)
+            "bus2_within_12_dum_ben_bl",	#Beneficiary\n launched a\n business \{0,1\}
+            "tot_ben_rev12_98_ppp_bl", # Business\n revenues\n (yearly, USD)
+          	"tot_ben_pro12_98_ppp_bl", # Business\n profits\n (yearly, USD)
+            "bus_assval_98_ppp_bl", # Business\n asset\n value (USD)
+            'tot_ben_rev30_98_ppp_bl',	#"Business revenue\n (beneficiary,\n monthly, USD)"
+            "ani_ben_dum_bl", 		#"Benef. owns\n livestock\n \{0,1\}"
+            "sleep_prod_dum_bl"	#"Benef. traveled\n for work\n \{0,1\}"
+
+            )
+
+# 
+# # Create corresponding human-readable labels for each variable
+label_vec = c(
+              "Benef. of cash transfert only (0,1)",
+              "Benef. of capital (0,1)",
+              "Benef. of psychosocial package (0,1)",
+              "Benef. of full package (0,1)",
+              "Benef. is HH head",
+              "Benef. is married (0,1)",
+              "Benef. is handicapped",
+              "Female (hh. head)",
+              "Female (benef.)",
+              "Polygamy (hh. head)",
+              "Polygamy (benef.)",
+              "Age (Hh. head)",
+              "Age (benef.)",
+              "Age gap (hh. head - benef.)",
+              "Age gap (hh. head - benef.) above med. (0,1)",
+              "Ben. age at marriage",
+              "Ben. married after 18 (0,1)",
+              "Ben. married aged above med. (0,1)",
+              'Nbr adults males (age 25-65)',
+              "Nbr adults males (age 25-65) above med. (0,1)",
+              "Shr adults males (age 25-65)",
+              "Shr adults males (age 25-65) above med. (0,1)",
+              'Nbr males (age 15+)',
+              "Nbr males (age 15+) above med. (0,1)",
+              'Nbr adults females (age 25-65)',
+              "Nbr adults females (age 25-65) above med. (0,1)",
+              "Shr adults females (age 25-65)",
+              "Shr adults females (age 25-65) above med. (0,1)",
+              'Nbr females (age 15+)',
+              "Nbr females (age 15+) above med. (0,1)",
+              "Shr females (age 15+) in adults",
+              "Shr females (age 15+) in adults above med. (0,1)",
+              "Shr of hh. without males (age 25-65)",
+              "Shr of hh. without males (age 15+)",
+              'Nbr adults tot (age 25-65)',
+              "Nbr adults tot (age 25-65) above med. (0,1)",
+              "Shr adults tot (age 25-65)",
+              "Shr adults tot (age 25-65) above med. (0,1)",
+              "Nbr members (age 15+) in hh.",
+              "Nbr members (age 15+) in hh. above med. (0,1)",
+              "Nbr of elders (age 66+)",
+              "Nbr of elders (age 66+) above med. (0,1)",
+              "Shr of elders (age 66+)",
+              "Shr of elders (age 66+) above med. (0,1)",
+              "Hh. has a kid (age 0-30 mnth)",
+              'Nbr kid (age 0-30 mnth)',
+              "Nbr kid (age 0-30 mnth) above med. (0,1)",
+              "Nbr hh. members",
+              "Nbr hh. members above med. (0,1)",
+              "Education (years, HH head)",
+              "Education (years, benef.)",
+              "Primary education (0/1, H-hh. head)",
+              "Primary education (0/1, benef.)",
+              "Literate (hh. head)",
+              "Literate (benef.)",
+              "Control over earnings", #B.10.5 Control Earnings Z-index at bl,
+              "Control over hh. resources", # B.10.6 Control HH Z-index at bl
+              "Intra hh. dynamics index", # C.2.3.A Intra-HH Dynamics Z-index at Baseline
+              "Self efficacy",
+              "Social cohesion and closeness to community",
+              "Social standing",
+              "Partner inclusiveness (1-4)",
+              "Community inclusiveness (1-4)",
+              "Ben. revenue tot.",     # Revenue/income sum for household
+              "Household in Sélibaby (0,1)", # Region
+              "Tot. hh. revenue", # Baseline revenu
+              "Consumption eq ppp",
+              "Own earnings influence (0,1)",
+              "Can Decide to Earn Alone (0,1)",
+              "Agriculture influence (0,1)",
+              "Livestock influence (0,1)",
+              "Off-farm business influence (0,1)",
+              "Daily spending influence (0,1)",
+              "Can Decide to Spend Alone (0,1)",
+              "Large purchases influence (0,1)",
+              "Can Decide to Spend Large Amounts Alone (0,1)",
+              "Family planning influence (0,1)",
+              "Can Make Fertility Choices Alone (0,1)",
+              "Child education influence (0,1)",
+              "Wage earnings (yearly, USD)",
+              "Benef. controls crop revenue (0,1)",
+              "No. of beneficiary businesses",
+              "Beneficiary has a business (0,1)",
+              "No. of months benef worked last year",
+              "Entrepreneurial business types (yearly)",
+              "Beneficiary launched a business (0,1)",
+              "Business revenues (yearly, USD)",
+              "Business profits (yearly, USD)",
+              "Business asset value hh. (USD)",
+              "Business revenue (beneficiary, monthly, USD)",
+              "Benef. owns livestock (0,1)",
+              "Benef. traveled for work (0,1)"
+            )
+
 label_var = c("Balance test")
 
 var_lab = c("Balance")
 
+# Filter to get the cash recipient in the followup_MRT_hh that receive Tekavoul programt
+# and is in the age transfert
+baseline_MRT_hh_csh_trnsfr <- baseline_MRT_hh %>%
+  filter(reg_hh_csh_mrt == 1)  %>% 
+  mutate(treatment_pool_bin = 0,
+  treatment_csh_trnsfr_bin = as.numeric(ifelse(treatment_csh_trnsfr == "Cash Assignment" & reg_hh_csh_mrt==1, 1, 0)),
+      treatment_capital_bin = 0,
+      treatment_psychosocial_bin = 0,
+      treatment_full_bin = 0)  %>% 
+  mutate(pben_relation_bin = labelled::unlabelled(pben_relation))
+
 # Convert all variables in var_vec to numeric type
-baseline_MRT_hh <- baseline_MRT_hh  %>% 
+baseline_MRT_hh_csh_trnsfr <- baseline_MRT_hh_csh_trnsfr  %>% 
   dplyr::mutate(across(var_vec, as.numeric))
 
 # Create a tibble mapping variable names to their labels
@@ -279,14 +482,11 @@ description = tibble(
 var_labels <- setNames(as.list(description$label), description$name)
 
 # Apply the variable labels to the dataset
-baseline_MRT_hh <- baseline_MRT_hh %>%
+baseline_MRT_hh_csh_trnsfr <- baseline_MRT_hh_csh_trnsfr %>%
   set_variable_labels(.labels = var_labels, .strict = FALSE)
 
 
-# Filter to get the cash recipient in the followup_MRT_hh that receive Tekavoul programt
-# and is in the age transfert
-baseline_MRT_hh_csh_trnsfr <- baseline_MRT_hh %>%
-  filter(reg_hh_csh_mrt == 1)
+
 
 
 # Create summary statistics table grouped by treatment
@@ -398,7 +598,34 @@ This balance table was created by restricting the sample to recipients of cash t
 ```{r}
 
 baseline_MRT_hh_pi <- baseline_MRT_hh %>%
-  filter(reg_hh_pi_mrt == 1)
+  filter(reg_hh_pi_mrt == 1) %>% 
+        mutate(treatment_pool_bin = as.numeric(ifelse(treatment_pi_pool=="Pool" & reg_hh_pi_mrt==1, 1, 0)),
+        treatment_csh_trnsfr_bin = as.numeric(ifelse(treatment_pi_pool =="Control" & reg_hh_pi_mrt==1, 1,0)),
+        
+        treatment_capital_bin = as.numeric(ifelse(treatment_pi=="Capital" & reg_hh_pi_mrt==1, 1, 0)),
+        
+        treatment_psychosocial_bin = as.numeric(ifelse(treatment_pi=="Psychosocial" & reg_hh_pi_mrt==1, 1, 0)),
+        
+        treatment_full_bin = as.numeric(ifelse(treatment_pi=="Full" & reg_hh_pi_mrt==1, 1, 0)))
+
+# Convert all variables in var_vec to numeric type
+baseline_MRT_hh_pi <- baseline_MRT_hh_pi  %>% 
+  dplyr::mutate(across(var_vec, as.numeric))
+
+# Create a tibble mapping variable names to their labels
+description = tibble(
+  name = var_vec,
+  label = label_vec
+)
+
+# Create a named list of variable labels
+var_labels <- setNames(as.list(description$label), description$name)
+
+# Apply the variable labels to the dataset
+baseline_MRT_hh_pi <- baseline_MRT_hh_pi %>%
+  set_variable_labels(.labels = var_labels, .strict = FALSE)
+
+
 
 # Create summary statistics table grouped by treatment
 balance_tab_1 = baseline_MRT_hh_pi %>% 
@@ -564,7 +791,7 @@ custom_tab(balance_tab, header, footer)
 
 # the variable of interest is v_name
 var_vec = c("consent_fu2_cond")
-label_vec = c("followup_MRT_hh 2")
+label_vec = c("Followup survey")
 
 # Load Baseline Data
 baseline <- baseline_MRT_hh_csh_trnsfr %>%
@@ -971,49 +1198,6 @@ customtab_defaults()
 custom_tab(compliance_rates, header, footer)
 ```
 
-```{r}
-# # 2. Compute Compliance Rates
-# stubs <- c("coach", "avec", "video", "germe", "acv", "grant")
-# 
-# #coach : coach visits
-# #avec : vsla
-# #video : video (sensitization)
-# #germe : IGA (entrepreneurship) training
-# #acv : LCA (life skills) training
-# #bourse : subsidy (cash grant)
-# #  // depending on the variable, condition on treatment group that recieved said measure
-#   
-# #compliance_rates <- list()
-# 
-# compliance_rates <- purrr::map_dfr(stubs, function(stub){ 
-#     # if(stub %in% c("coach", "avec", "germe")) {
-#     #   filtered_data <- followup_MRT_hh %>% filter(treatment %in% c(1, 2, 3))
-#     # } else if (stub %in% c("video", "acv")) {
-#     #   filtered_data <- followup_MRT_hh %>% filter(treatment %in% c(1, 3))
-#     #   } else if (stub == "bourse") {
-#     # filtered_data <- followup_MRT_hh %>% filter(treatment %in% c(2, 3))
-#     # }
-#   
-#   #Overall mean on every one
-#   overall_mean <- round(mean(followup_MRT_hh[[paste0("got_", stub)]], na.rm = TRUE),3) * 100
-#   
-#     temp_balance <- followup_MRT_hh %>% 
-#       split(.$treatment) %>%
-#       purrr::map_dfr(., function(splitted_df){
-#         
-#         treatment_mean <- round(mean(splitted_df[[paste0("got_", stub)]], na.rm = TRUE),3) * 100
-#         
-#   })
-#     
-#     temp_balance <- tibble(
-#       variable = stub, 
-#       Overall_mean=overall_mean, 
-#       temp_balance)
-#     
-#     temp_balance
-# })
-
-```
 
 
 ## Cross comparison (Tekavoul and the PI)
@@ -1036,8 +1220,6 @@ var_vec = c("same_cb",
             "pben_prim_bl",
             "hhh_lit",
             "pben_lit",
-            # "hhh_health_index",
-            # "pben_health_index",
             "ctrl_earn_index_tr_bl", #B.10.5 Control Earnings Z-index at bl, 
             "ctrl_hh_index_tr_bl", # B.10.6 Control HH Z-index at bl
             "intrahh_vars_index_tr_bl", # C.2.3.A Intra-HH Dynamics Z-index at Baseline
@@ -1065,8 +1247,6 @@ label_vec = c("Benef. is HH head",
               "Primary education (0/1, benef.)",
               "Literate (hh. head)",
               "Literate (benef.)",
-              # "Health index (HH head)",
-              # "Health index (beneficiary)",
             "Control over earnings", #B.10.5 Control Earnings Z-index at bl, 
             "Control over hh. resources", # B.10.6 Control HH Z-index at bl
             "Intra hh. dynamics index", # C.2.3.A Intra-HH Dynamics Z-index at Baseline
@@ -1149,3 +1329,7 @@ customtab_defaults()
 custom_tab(cross_tab, header, footer)
 ```
 
+```{r}
+# remove data to free space
+rm(list = ls())
+```
