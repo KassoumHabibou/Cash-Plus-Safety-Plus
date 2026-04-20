@@ -6,3 +6,22 @@ output/extract-df-kelsey.dta
 output/extract-kelsey.zip
 /Draft - paper
 /output
+/draft code
+/out_reg
+/output
+/sources
+/output
+/output
+followup_MRT_hh_cntrl.rds
+followup_MRT_hh_imptd.rds
+df_ML_results_final.rds
+draft.Rmd
+draft_functions.R
+test_sensibility to control var.R
+script/draft_ipv.R
+/output
+*.pdf
+script/draft_ipv.R
+.Rhistory
+.RData
+/output
