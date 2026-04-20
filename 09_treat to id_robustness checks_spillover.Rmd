@@ -1,0 +1,1626 @@
+---
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Economic Inclusion in Mauritania"
+subtitle: "Robustness checks"
+author: "IBRAHIM KASSOUM Habibou"
+date: '`r format(Sys.Date(), "%d %B %Y")`'
+output: 
+  officedown::rdocx_document:
+    mapstyles:
+      Normal: ['First Paragraph']
+    number_sections: true
+    fig_caption: true
+---
+
+
+```{r setup, include=FALSE}
+# Set random seed for reproducibility
+set.seed(7654)
+
+# Set number of decimal places to display
+options(digits = 3)
+
+# Configure knitr chunk options:
+knitr::opts_chunk$set(
+ screenshot.force = TRUE,           # turn HTML widgets into PNGs
+ echo = FALSE,          # Don't show R code in output
+ message = FALSE,       # Don't show messages
+ warning = FALSE,       # Don't show warnings
+ cache = FALSE,         # Don't cache results
+ fig.align = 'center',  # Center figures
+ fig.width = 6,         # Figure width in inches
+ fig.asp = 0.618,       # Figure aspect ratio (golden ratio)
+ fig.show = "hold",      # Hold multiple plots until end of chunk
+ screenshot.opts = list(vwidth = 1200, vheight = 800, delay = 0.2)
+)
+
+
+# Set dplyr print options to show 6 rows max
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+```
+
+
+```{r, include=FALSE, results='hide', echo=FALSE}
+
+######################## Importing library and external files ##################
+### List of required packages
+required_packages <- c("tidyverse", "dplyr","officedown", "officer", "gtsummary","stargazer", "lfe","labelled","car","broom","purrr","flextable")
+
+### Check if packages are installed
+missing_packages <- setdiff(required_packages, installed.packages()[,"Package"])
+
+### Install missing packages
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+### Load all packages
+lapply(required_packages, library, character.only = TRUE)
+
+# Remove all objects
+rm(list = ls())
+
+# Source functions from external file
+source("functions.R")
+```
+
+
+```{r echo=F}
+
+set_gtsummary_theme(theme_gtsummary_compact())
+
+######### Create default BioAVR table from dataframe
+#
+# Dependencies : dplyr, flextable, officer
+# source link : https://www.r-bloggers.com/2021/11/publication-ready-tables-with-flextable-and-own-theme-in-r/
+customtab_defaults <- function(){
+set_flextable_defaults(font.family = "Times New Roman",
+font.size = 10,
+border.color = "black")
+}
+
+custom_tab <- function(df, header, footer){
+flextable(df) %>%
+add_header_lines(header) %>%
+add_footer_lines(footer) %>%
+bold(i = 1, part = "header") %>%
+hline_top(part = "header",
+border = fp_border(color = "white",
+width = 3,
+style = "solid")) %>%
+hline(i = 1,
+part = "header",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_top(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_bottom(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+hline_bottom(part = "footer",
+border = fp_border(color = "black",
+width = 0.25,
+style = "solid")) %>%
+border_inner_h(part = "body",
+border = fp_border(color = "black",
+width = 0.25,
+style = "dotted")) %>%
+autofit(part = "body") %>%
+bg(part = "body", bg = "white") %>%
+align(part = "all", align = "center") %>%
+align(j = 1, part = "all", align = "left")
+}
+```
+
+
+```{r}
+
+######################## Loading the datasets ##################################
+# Read the file containing the global dataframe into 
+followup_ipv_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_ipv_MRT_hh.rds"))
+
+df_treat_id <- readRDS(paste0(getwd(),"/output/data/df_treat_id.rds"))
+
+followup_ipv_MRT_hh_spill <- readRDS(paste0(getwd(),"/output/data/followup_ipv_MRT_hh_spill.rds"))
+
+
+# Convert treatment variables from numeric to factor variables for both datasets
+# This is useful for regression analysis and plotting as factors are treated as categorical variables
+
+# Convert treatments to factor
+followup_ipv_MRT_hh$treatment_pi <- haven::as_factor(followup_ipv_MRT_hh$treatment_pi)
+followup_ipv_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(followup_ipv_MRT_hh$treatment_csh_trnsfr)
+
+df_treat_id$treatment_pi <- haven::as_factor(df_treat_id$treatment_pi) 
+df_treat_id$treatment_csh_trnsfr <- haven::as_factor(df_treat_id$treatment_csh_trnsfr) 
+
+followup_ipv_MRT_hh_spill$treatment_pi_spill <- haven::as_factor(followup_ipv_MRT_hh_spill$treatment_pi_spill) 
+followup_ipv_MRT_hh_spill$treatment_pi_pool_spill <- haven::as_factor(followup_ipv_MRT_hh_spill$treatment_pi_pool_spill) 
+
+
+# Convert Strata vars to factor
+followup_ipv_MRT_hh <- followup_ipv_MRT_hh %>% 
+  mutate(strata = as.factor(strata),
+         commune = as.factor(commune))
+
+df_treat_id <- df_treat_id %>% 
+  mutate(strata = as.factor(strata),
+         commune = as.factor(commune))
+
+followup_ipv_MRT_hh_spill <- followup_ipv_MRT_hh_spill %>% 
+  mutate(strata = as.factor(strata),
+         commune = as.factor(commune))
+
+# Define the list of outcomes variables
+
+control_ipv_vars <- c("control_ipv_sev_12m","control_ipv_sev_index")
+emotional_ipv_vars <- c("emo_ipv_sev_12m", "emo_ipv_sev_index") #"emo_ipv_inten_index","emo_sev_12m",
+physical_ipv_vars <- c("phy_ipv_sev_12m","phy_ipv_sev_index")
+sexual_ipv_vars <- c("sex_ipv_sev_12m", "sex_ipv_sev_index") #"sex_ipv_inten_index","sex_sev_12m",
+sexual_physical_ipv_vars  <- c("sex_phy_ipv_sev_12m","sex_phy_ipv_sev_index")
+economic_ipv_vars <- c("eco_ipv_sev_12m", "eco_ipv_sev_index") #"eco_ipv_inten_index","eco_sev_12m",
+all_ipv_vars <- c("all_ipv_sev_12m","all_ipv_sev_index") #,"all2_ipv_12m"
+
+
+control_ipv_vars_bin <- c("control_ipv_sev_12m")
+emotional_ipv_vars_bin <- c("emo_ipv_sev_12m") #"emo_ipv_inten_index","emo_sev_12m",
+physical_ipv_vars_bin <- c("phy_ipv_sev_12m")
+sexual_ipv_vars_bin <- c("sex_ipv_sev_12m") #"sex_ipv_inten_index","sex_sev_12m",
+sexual_physical_ipv_vars_bin  <- c("sex_phy_ipv_sev_12m")
+economic_ipv_vars_bin <- c("eco_ipv_sev_12m") #"eco_ipv_inten_index","eco_sev_12m",
+all_ipv_vars_bin <- c("all_ipv_sev_12m") #,"all2_ipv_12m"
+
+
+# All outcomes variables
+listOutcomes=c(control_ipv_vars, emotional_ipv_vars, physical_ipv_vars, sexual_ipv_vars, sexual_physical_ipv_vars, economic_ipv_vars, all_ipv_vars)
+
+
+# Define the two treatment variables ("treatment_csh_trnsfr",)
+treatment_vars=c("treatment_csh_trnsfr","treatment_pi","treatment_pi_pool")
+
+# Label for the treatment variables
+labels_vars = c("Cash transfert","Capital","Psychosocial","Full")
+
+
+# Define controls variables for the regression 
+# control_vars = c(
+#                 "pben_handicap_bl", 
+#                 "hhh_prim_bl",
+#                 "pben_prim_bl", 
+#                 "het_nbr_elder",
+#                 "hh_has_kid", 
+#                 "het_wtht_adult_mal", 
+#                 "hhh_fem_bl",
+#                 "same_cb",
+#                 "pben_age_bl",
+#                 "age_gap",
+#                 "hhh_edu_bl",
+#                 "pben_edu_bl",
+#                 "hhh_lit_bl",
+#                 "pben_lit_bl"
+#             )
+# control_vars = c(
+#   # Elder/children with imbalance
+#   "nbr_elder",         
+#   "het_nbr_elder",      
+#   "shr_elder",           
+#   # Education with imbalance
+#   "hhh_prim_bl",          
+#   "pben_lit_bl",         
+#   # Economic with imbalance
+#   "tot_emp_2rev12_ben_98_ppp_bl", 
+#   # Business with imbalance
+#   "bus2_within_12_dum_ben_bl" 
+# )
+
+  control_vars = c(
+    # Demographics with imbalance
+    #"age_gap",              # Significant in (2)-(3), Joint F-test
+    
+    
+    # Elder/children with imbalance
+    "nbr_elder",            # Significant in (1)-(2), (2)-(3), JoiÒnt F-test
+    "het_nbr_elder",        # Significant in (1)-(2), (2)-(3), Joint F-test
+    "shr_elder",            # Significant in (1)-(2), (2)-(3), Joint F-test
+    
+    # Education with imbalance
+    "hhh_prim_bl",          # Significant in (1)-(4), (3)-(4), Joint F-test
+    "pben_lit_bl",          # Significant in (1)-(2), (1)-(4), (2)-(3), (3)-(4), Joint F-test
+    
+    
+    # Economic with imbalance
+   "tot_emp_2rev12_ben_98_ppp_bl", # Significant in (1)-(2), (1)-(4), (2)-(4), Joint F-test
+    
+    # Business with imbalance
+    "bus2_within_12_dum_ben_bl" # Significant in (1)-(3), (1)-(4), (2)-(4), Joint F-test, Pooled
+  )
+  
+# Define strata variables: strata
+strata_vars <- c("strata") 
+
+# Define cluster variables 
+cluster_vars <- c("cluster")
+
+# List of outcomes definition mechanism
+#----------------------------------------
+# Revenue and Consumption Outcome Variables
+#----------------------------------------
+revenue_consum_vars_hh <- c(
+  "consum_2_day_eq_ppp",        # Consumption per capita (PPP-adjusted)
+  "food_2_day_eq_ppp", 	# "Food\n consumption\n (daily, USD/adult eq.)"
+  "nonfood_day_eq_ppp",	 # Non food consumption
+  "eatout_day_eq_ppp",	#"Eating out\n expenditure\n (daily, USD/adult eq.)"
+	"edu_day_eq_ppp", # Education expenditures
+  "health_day_eq_ppp", # Health expenditures
+  "cel_day_eq_ppp", # # Celebration expenditures
+  "ton_or_avec_hh", # "Takes part in\n tontine/AVEC\n \{0,1\}"
+  "tot_cred_out_ppp", #  "Total\n debt\n (yearly, USD)"	
+  "tot_cred_amt_ppp", #  "Total\n borrowed\n (yearly, USD)"
+  "gross_trans_ppp", #"Household\n Gross transfers\n (yearly, USD)"
+  "saving_ppp", # Saving tot
+  "FIES_rvrs_raw",            # Food Insecurity Experience Scale (reversed)
+  "FCS",                      # Food Consumption Score
+
+  # Revenue-related variables
+  "rev_sum_hh_wemp_98",       # Total household revenue from work (women employment sample, 98th
+  "tot_hh_rev12_98_ppp",      # Total household revenue in past 12 months (98th pctl, PPP)
+  "tot_emp_2rev12_hh_98_ppp", # Total employment-related revenue over 12 months (winsorized 98th pctl)
+  "tot_ani_hh_contr_98_ppp",
+  
+  # Income diversification variables
+  "all_income_cat",           # Number of income categories
+  "all_income_div",           # Income diversification index
+  "div_emp12_n"              # Number of employment sources over 12 months
+)
+
+revenue_consum_vars_ben <- c(
+  # Revenue-related variables
+  "rev_sum_hh_wemp_98",
+  "rev_sum_ben_wemp_98",       # Total ben revenue from work (women employment sample, 98th percentile winsorized)
+  "rev_sum_prt_wemp_98",
+  "tot_hh_rev12_98_ppp", 
+  "tot_ben_rev12_98_ppp",      # Total ben revenue in past 12 months (98th pctl, PPP)
+  "tot_prt_rev12_98_ppp",
+  "tot_emp_2rev12_hh_98_ppp",
+  "tot_emp_2rev12_ben_98_ppp", # Total ben employment-related revenue over 12 months (winsorized 98th pctl)
+  "tot_emp_2rev12_prt_98_ppp",
+  "tot_ani_hh_contr_98_ppp",
+  "tot_ani_ben_contr_98_ppp",
+  "tot_ani_prt_contr_98_ppp"
+)
+
+
+# Control group in Main
+followup_ipv_MRT_hh_control_pi <- followup_ipv_MRT_hh %>% 
+  filter(treatment_pi=="Control") %>% 
+  filter(reg_hh_pi_mrt==1)
+followup_ipv_MRT_hh_control_csh_trnsfr <- followup_ipv_MRT_hh %>% filter(treatment_csh_trnsfr=="Control") %>% 
+      filter(reg_hh_csh_mrt==1)
+
+df_treat_id_control_pi <- df_treat_id %>% 
+  filter(treatment_pi=="Control") %>% 
+  filter(reg_hh_pi_mrt==1)
+df_treat_id_control_csh_trnsfr <- df_treat_id %>% 
+  filter(treatment_csh_trnsfr=="Control") %>% 
+  filter(reg_hh_csh_mrt==1)
+
+# Control group in Spillover group
+followup_ipv_MRT_hh_spill_control_pi <- followup_ipv_MRT_hh_spill %>% 
+  filter(treatment_pi_pool_spill=="Control") 
+
+# Creating some variables at partner level
+followup_ipv_MRT_hh <- followup_ipv_MRT_hh %>% 
+  mutate(rev_sum_prt_wemp_98 = rev_sum_hh_wemp_98 - rev_sum_ben_wemp_98,  
+         tot_prt_rev12_98_ppp = tot_hh_rev12_98_ppp - tot_ben_rev12_98_ppp,   
+         tot_emp_2rev12_prt_98_ppp = tot_emp_2rev12_hh_98_ppp - tot_emp_2rev12_ben_98_ppp,  
+         tot_ani_prt_contr_98_ppp = tot_ani_hh_contr_98_ppp - tot_ani_ben_contr_98_ppp)
+
+# Title for each index
+control_ipv_title = "**Table : effect of the program on controlling Behavior**"
+emotional_ipv_title = "**Table : effect of the program on emotional violence**"
+physical_ipv_title = "**Table : effect of the program on physical violence**"
+sexual_ipv_title = "**Table : effect of the program on sexual violence**"
+economic_ipv_title = "**Table : effect of the program on economic violence**"
+other_ipv_title = "**Table : effect of the program on other ipv index**"
+```
+
+
+\newpage
+
+# Treat to identification
+
+### Program effectiveness : Economic Security & Emotional Well-being
+
+Cash reduces poverty stress and improve emotional well-being.
+Impact: generally reduces IPV.
+
+```{r}
+
+######################## Fist estimate ##########################################
+####################### Household level
+# Create a data frame of results examining heterogeneous treatment effects
+# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
+mainResults_mech_hh <- map_dfr(revenue_consum_vars_hh, function(depvar) {
+
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+####################### Ben
+# Create a data frame of results examining heterogeneous treatment effects
+# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
+mainResults_mech_ben <- map_dfr(revenue_consum_vars_ben, function(depvar) {
+ 
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+
+
+```
+
+
+#### Household level
+```{r}
+
+# Extract results for the outcome variable 
+
+outcome_labels <- c(
+    "Gross \n consumption\n (daily, USD/capita)",
+    "Food\n consumption\n (daily, USD/adult eq.)",
+    "Non Food\n consumption\n (daily, USD/adult eq.)",
+    "Eating out\n expenditure\n (daily, USD/adult eq.)",
+    "Education\n expenditure\n (daily, USD/adult eq.)",
+    "Health\n expenditure\n (daily, USD/adult eq.)",
+    "Celebration\n expenditure\n (daily, USD/adult eq.)",
+    "Takes part in\n tontine/AVEC\n (0,1)",
+    "Total\n debt\n (yearly, USD)",
+    "Total\n borrowed\n (yearly, USD)",
+    "Household\n Gross transfers\n (yearly, USD)",
+    "Total\n savings\n (3 months, USD)",
+    "Food \n security \n (FIES)",
+    "Dietary \n diversity \n (FCS)",
+    "Total \n revenue \n (yearly, USD)",
+    "Business \n revenues \n (yearly, USD)",
+    "Wage \n earnings \n (yearly, USD)",
+    "Livestock \n revenue \n (yearly, USD)",
+    "Count of \n income sources \n (yearly)",
+    "No. \n of income \n sources\n (Household)",
+    "Wage \n types \n (Household)"
+  )
+  
+table_title = "Effects of the programs on revenue and consumption"
+tbl <- getTable1_mech(revenue_consum_vars_hh, mainResults_mech_hh, outcome_labels, table_title)
+tbl
+```
+
+
+#### Ben level
+```{r}
+
+
+outcome_labels <- c(
+  "Total \n revenue \n (yearly, USD) hh.",
+  "Total \n revenue \n (yearly, USD) part.",
+  "Total \n revenue \n (yearly, USD) ben.",
+  "Business \n revenues \n (yearly, USD) hh.",
+  "Business \n revenues \n (yearly, USD) part.",
+  "Business \n revenues \n (yearly, USD) ben.",
+  "Wage \n earnings \n (yearly, USD) hh.",
+  "Wage \n earnings \n (yearly, USD) part.",
+  "Wage \n earnings \n (yearly, USD) ben.",
+  "Livestock \n revenue \n (yearly, USD) hh.",
+  "Livestock \n revenue \n (yearly, USD) part.",
+  "Livestock \n revenue \n (yearly, USD) ben."
+  )
+
+table_title = "Effects of the programs on revenue and consumption per hh. member"
+tbl <- getTable1_mech(revenue_consum_vars_ben, mainResults_mech_ben, outcome_labels, table_title)
+tbl
+
+```
+
+## Treatment and Demographics
+
+### Husband in the household and Marriage
+
+Among the beneficiary leaving with their partner at followup, how the treatment affect the probability of leaving with their partner.
+```{r}
+
+# Outcome variables
+outcome_var = c("married_ben_fl","spouse_in_fl")
+
+tbl_curr <- getTable_IPV(
+  ipv_vars = outcome_var,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = df_treat_id,
+  followup_ipv_MRT_hh_control_pi = df_treat_id_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = df_treat_id_control_csh_trnsfr,
+  col_group_labels = c( "Binary for ben. married at FL", "Binary for spouse in the hh. at FL"),
+  table_title = "Effect of the program on marriage"
+)
+
+tbl_curr
+```
+
+### Househould composition
+
+#### Fertility choice (baby born in the household)
+
+The full reduces the probability of having a new born 12 months before the survey than the capital and full and that explain why we have a reduction of time use for taking care of child and handicaped relatives as they have less children. ALso because of that they spend less time in the household as such they are less exposed to violence than the other group
+```{r}
+
+# Outcome variables
+outcome_var = c("baby_d_fl","baby_n_fl")
+
+######################## MODIFIED TABLE GENERATION ##########################################
+
+######################## Main Analysis with Comparison ##########################################
+
+# Fertility choice
+tbl_curr <- getTable_IPV(
+  ipv_vars = outcome_var,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for new baby born in the last 12 months at FL", "Nbr. of new baby born in the last 12 months at FL"),
+  table_title = "Effect of the program on fertility choice"
+)
+
+tbl_curr
+```
+
+#### Children underfive (0-5 years old)
+
+```{r}
+
+# Outcome variables
+outcome_var = c("earlychild_d_fl","earlychild_n_fl")
+
+######################## MODIFIED TABLE GENERATION ##########################################
+
+######################## Main Analysis with Comparison ##########################################
+
+# Use map_dfr to iterate over each outcome and estimate effects WITH and WITHOUT controls
+tbl_curr <- getTable_IPV(
+  ipv_vars = outcome_var,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for new children aged 0-5 years at FL", "Nbr. of new children aged 0-5 years at FL"),
+  table_title = "Effect of the program on children underfive"
+)
+
+tbl_curr
+```
+
+#### Children aged 6-14 years old
+
+There is a reduction in the number of 6-14 in the household for the full but not for the capital
+```{r}
+
+# Outcome variables
+outcome_var = c("olderchild_d_fl","olderchild_n_fl")
+
+######################## MODIFIED TABLE GENERATION ##########################################
+
+######################## Main Analysis with Comparison ##########################################
+
+tbl_curr <- getTable_IPV(
+  ipv_vars = outcome_var,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for new children aged 6-14 years at FL", "Nbr. of new children aged 6-14 years at FL"),
+  table_title = "Effect of the program on children aged 6-14 years"
+)
+
+tbl_curr
+
+```
+#### Total household size
+
+```{r}
+
+# Outcome variables
+outcome_var = c("tot_mem_d_fl","tot_mem_n_fl")
+
+######################## MODIFIED TABLE GENERATION ##########################################
+
+######################## Main Analysis with Comparison ##########################################
+
+tbl_curr <- getTable_IPV(
+  ipv_vars = outcome_var,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for new hh. member at FL", "Nbr. of new hh. member at FL"),
+  table_title = "Effect of the program on the number of hh. member at FL"
+)
+
+tbl_curr
+
+```
+
+# Robustness checks
+## Multiple hypothesis test
+### Controlling Behavior
+
+```{r}
+######################## Fist estimate ##########################################
+
+tbl_control <- getTable_IPV_with_Holm(
+  ipv_vars      = control_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for control IPV in the last 12 months",
+    "Control IPV severity index"
+  ),
+  table_title   = "Effects of the programs on controlling behaviour"
+)
+
+tbl_control
+
+```
+
+### Emotional Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+tbl_emotional <- getTable_IPV_with_Holm(
+  ipv_vars      = emotional_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for emotional IPV in the last 12 months",
+    "Emotional IPV severity index"
+  ),
+  table_title   = "Effects of the programs on emotional IPV"
+)
+tbl_emotional
+```
+
+
+### Physical Violence
+
+```{r}
+######################## Fist estimate ##########################################
+## 1) Physical IPV
+tbl_physical <- getTable_IPV_with_Holm(
+  ipv_vars       = physical_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for physical IPV in the last 12 months",
+    "Physical IPV severity index"
+  ),
+  table_title   = "Effects of the programs on physical IPV"
+)
+tbl_physical
+```
+
+### Sexual Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+## 2) Sexual IPV
+tbl_sexual <- getTable_IPV_with_Holm(
+  ipv_vars       = sexual_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for sexual IPV in the last 12 months",
+    "Sexual IPV severity index"
+  ),
+  table_title   = "Effects of the programs on sexual IPV"
+)
+tbl_sexual
+```
+
+
+
+### Sexual and physical violence
+
+
+```{r}
+######################## Fist estimate ##########################################
+tbl_sexual_physical <- getTable_IPV_with_Holm(
+  ipv_vars       = sexual_physical_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for phy. or sex. IPV in the last 12 months", 
+    "Phy. or sex. IPV sev. index"
+  ),
+  table_title   = "Effects of the programs on sexual and physical IPV Results")
+
+tbl_sexual_physical
+```
+
+### Economic Violence
+
+```{r}
+######################## Fist estimate ##########################################
+## 3) Economic IPV
+tbl_economic <- getTable_IPV_with_Holm(
+  ipv_vars       = economic_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for economic IPV in the last 12 months",
+    "Economic IPV severity index"
+  ),
+  table_title   = "Effects of the programs on economic IPV"
+)
+tbl_economic
+```
+
+
+### All types of violences
+
+```{r}
+######################## Fist estimate ##########################################
+## 3) Economic IPV
+tbl_all <- getTable_IPV_with_Holm(
+  ipv_vars       = all_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for at least one type of IPV (exclu. eco.) in the last 12 months", 
+    "All IPV (exclu. eco.) sev. index"
+  ),
+  table_title   = "All Types of Violence IPV Results"
+)
+tbl_all
+```
+
+## Surveyor FE
+
+### Controlling Behavior
+```{r}
+######################## Fist estimate ##########################################
+tbl_control_robust <- getTable_IPV_robust(
+  ipv_vars       = control_ipv_vars,
+  fe_var         = "surveyor",
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for control IPV in the last 12 months",
+    "Control IPV severity index"
+  ),
+  table_title   = "Robustness: Effects of the programs on controlling behaviour (with surveyor FE)"
+)
+
+tbl_control_robust
+
+```
+
+### Emotional Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+tbl_emo_robust <- getTable_IPV_robust(
+  ipv_vars       = emotional_ipv_vars,
+  fe_var         = "surveyor",
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for emo. IPV in the last 12 months", 
+    "Emo. IPV sev. index"
+  ),
+  table_title   = "Robustness: Effects of the programs on emotional Violence Results (with surveyor FE)"
+)
+
+tbl_emo_robust
+```
+
+
+### Physical Violence
+
+```{r}
+######################## Fist estimate ##########################################
+tbl_emo_robust <- getTable_IPV_robust(
+  ipv_vars       = physical_ipv_vars,
+  fe_var         = "surveyor",
+  treatment_vars = treatment_vars,
+  control_vars   = control_vars,
+  strata_vars    = strata_vars,
+  cluster_vars   = cluster_vars,
+  followup_ipv_MRT_hh                 = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi      = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+   "Binary for phy. IPV in the last 12 months", 
+   "Phy. IPV sev. index"
+  ),
+  table_title   = "Robustness: Effects of the programs on physical violence results (with surveyor FE)"
+)
+
+tbl_emo_robust
+```
+
+### Sexual Violence
+
+```{r}
+######################## Fist estimate ##########################################
+# 4. Sexual IPV
+tbl_sexual_ipv_fe <- getTable_IPV_robust(
+  ipv_vars                         = sexual_ipv_vars,
+  treatment_vars                   = treatment_vars,
+  control_vars                     = control_vars,
+  strata_vars                      = strata_vars,
+  cluster_vars                     = cluster_vars,
+  followup_ipv_MRT_hh                  = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi       = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for sexual IPV in the last 12 months",
+    "Sexual IPV sev. index"
+  ),
+  table_title = "Effects of the programs on sexual IPV (surveyor FE)",
+  fe_var      = "surveyor"
+)
+tbl_sexual_ipv_fe
+```
+
+
+
+
+### Sexual and physical violence
+
+```{r}
+######################## Fist estimate ##########################################
+# 5. Sexual or physical IPV (combined)
+tbl_sex_phy_ipv_fe <- getTable_IPV_robust(
+  ipv_vars                         = sexual_physical_ipv_vars,
+  treatment_vars                   = treatment_vars,
+  control_vars                     = control_vars,
+  strata_vars                      = strata_vars,
+  cluster_vars                     = cluster_vars,
+  followup_ipv_MRT_hh                  = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi       = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for sexual or physical IPV in the last 12 months",
+    "Sexual or physical IPV sev. index"
+  ),
+  table_title = "Effects of the programs on sexual or physical IPV (surveyor FE)",
+  fe_var      = "surveyor"
+)
+tbl_sex_phy_ipv_fe
+
+
+```
+
+### Economic Violence
+
+```{r}
+######################## Fist estimate ##########################################
+# 6. Economic IPV
+tbl_economic_ipv_fe <- getTable_IPV_robust(
+  ipv_vars                         = economic_ipv_vars,
+  treatment_vars                   = treatment_vars,
+  control_vars                     = control_vars,
+  strata_vars                      = strata_vars,
+  cluster_vars                     = cluster_vars,
+  followup_ipv_MRT_hh                  = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi       = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for economic IPV in the last 12 months",
+    "Economic IPV sev. index"
+  ),
+  table_title = "Effects of the programs on economic IPV (surveyor FE)",
+  fe_var      = "surveyor"
+)
+tbl_economic_ipv_fe
+
+```
+
+
+### All type of violence
+
+```{r}
+######################## Fist estimate ##########################################
+# 7. Any IPV (all types)
+tbl_all_ipv_fe <- getTable_IPV_robust(
+  ipv_vars                         = all_ipv_vars,
+  treatment_vars                   = treatment_vars,
+  control_vars                     = control_vars,
+  strata_vars                      = strata_vars,
+  cluster_vars                     = cluster_vars,
+  followup_ipv_MRT_hh                  = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi       = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_labels = c(
+    "Binary for at least one type of IPV (excl. eco.)",
+    "All IPV inten./sev. index"
+  ),
+  table_title = "Effects of the programs on any IPV (surveyor FE)",
+  fe_var      = "surveyor"
+)
+tbl_all_ipv_fe
+```
+
+
+
+## Non linear effect
+
+### Controlling Behavior
+
+```{r}
+######################## Fist estimate ##########################################
+
+tbl_control_nonlin <- getTable_IPV_nonlin(
+  ipv_vars_bin                      = control_ipv_vars_bin,
+  treatment_vars                    = treatment_vars,
+  control_vars                      = control_vars,
+  strata_vars                       = strata_vars,
+  cluster_vars                      = cluster_vars,
+  followup_ipv_MRT_hh                   = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi        = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_label = "Binary for control IPV in the last 12 months",
+  table_title  = "Nonlinear effects on controlling behavior IPV"
+)
+
+tbl_control_nonlin
+
+```
+
+### Emotional Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+tbl_emotional_nonlin <- getTable_IPV_nonlin(
+  ipv_vars_bin                      = emotional_ipv_vars_bin,
+  treatment_vars                    = treatment_vars,
+  control_vars                      = control_vars,
+  strata_vars                       = strata_vars,
+  cluster_vars                      = cluster_vars,
+  followup_ipv_MRT_hh                   = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi        = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_label = "Binary for emo. IPV in the last 12 months",
+  table_title  = "Nonlinear effects on emotional IPV"
+)
+
+tbl_emotional_nonlin
+
+
+```
+
+
+### Physical Violence
+
+```{r}
+######################## Fist estimate ##########################################
+tbl_physical_nonlin <- getTable_IPV_nonlin(
+  ipv_vars_bin                      = physical_ipv_vars_bin,
+  treatment_vars                    = treatment_vars,
+  control_vars                      = control_vars,
+  strata_vars                       = strata_vars,
+  cluster_vars                      = cluster_vars,
+  followup_ipv_MRT_hh                   = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi        = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_label = "Binary for phy. IPV in the last 12 months",
+  table_title  = "Nonlinear effects on physical IPV"
+)
+
+tbl_physical_nonlin
+
+```
+
+### Sexual Violence
+
+```{r}
+######################## Fist estimate ##########################################
+tbl_sexual_nonlin <- getTable_IPV_nonlin(
+  ipv_vars_bin                      = sexual_ipv_vars_bin,
+  treatment_vars                    = treatment_vars,
+  control_vars                      = control_vars,
+  strata_vars                       = strata_vars,
+  cluster_vars                      = cluster_vars,
+  followup_ipv_MRT_hh                   = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi        = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_label = "Binary for sex. IPV in the last 12 months",
+  table_title  = "Nonlinear effects on sexual IPV"
+)
+
+tbl_sexual_nonlin
+
+```
+
+
+
+
+### Sexual and physical violence
+
+```{r}
+######################## Fist estimate ##########################################
+tbl_sex_phy_nonlin <- getTable_IPV_nonlin(
+  ipv_vars_bin                      = sexual_physical_ipv_vars_bin,
+  treatment_vars                    = treatment_vars,
+  control_vars                      = control_vars,
+  strata_vars                       = strata_vars,
+  cluster_vars                      = cluster_vars,
+  followup_ipv_MRT_hh                   = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi        = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_label = "Binary for phy. or sex. IPV in the last 12 months",
+  table_title  = "Nonlinear effects on sexual or physical IPV"
+)
+
+tbl_sex_phy_nonlin
+
+```
+
+### Economic Violence
+
+```{r}
+######################## Fist estimate ##########################################
+tbl_economic_nonlin <- getTable_IPV_nonlin(
+  ipv_vars_bin                      = economic_ipv_vars_bin,
+  treatment_vars                    = treatment_vars,
+  control_vars                      = control_vars,
+  strata_vars                       = strata_vars,
+  cluster_vars                      = cluster_vars,
+  followup_ipv_MRT_hh                   = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi        = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_label = "Binary for eco. IPV in the last 12 months",
+  table_title  = "Nonlinear effects on economic IPV"
+)
+
+tbl_economic_nonlin
+
+```
+
+
+### Any type of violence
+
+```{r}
+######################## Fist estimate ##########################################
+tbl_any_ipv_nonlin <- getTable_IPV_nonlin(
+  ipv_vars_bin                      = all_ipv_vars_bin,
+  treatment_vars                    = treatment_vars,
+  control_vars                      = control_vars,
+  strata_vars                       = strata_vars,
+  cluster_vars                      = cluster_vars,
+  followup_ipv_MRT_hh                   = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi        = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  header_label = "Binary for at least one type of IPV (excl. eco.) in the last 12 months",
+  table_title  = "Nonlinear effects on any IPV"
+)
+
+tbl_any_ipv_nonlin
+
+```
+
+
+## Missing observations in the outcome variables
+
+### Replacing missing with 0
+
+```{r}
+
+#####################################################################################
+######################### Regression on the nbr of event ############################
+#####################################################################################
+
+fe_var = "0"
+# Define the list of outcomes variables
+
+control_ipv_vars <- c("control_ipv_sev_12m_m0","control_ipv_sev_index_m0")
+emotional_ipv_vars <- c("emo_ipv_sev_12m_m0", "emo_ipv_sev_index_m0") 
+physical_ipv_vars <- c("phy_ipv_sev_12m_m0","phy_ipv_sev_index_m0")
+sexual_ipv_vars <- c("sex_ipv_sev_12m_m0", "sex_ipv_sev_index_m0") 
+sexual_physical_ipv_vars  <- c("sex_phy_ipv_sev_12m_m0","sex_phy_ipv_sev_index_m0")
+economic_ipv_vars <- c("eco_ipv_sev_12m_m0", "eco_ipv_sev_index_m0") 
+all_ipv_vars <- c("all_ipv_sev_12m_m0","all_ipv_sev_index_m0") 
+
+control_ipv_vars_bin <- c("control_ipv_sev_12m_m0")
+emotional_ipv_vars_bin <- c("emo_ipv_sev_12m_m0") 
+physical_ipv_vars_bin <- c("phy_ipv_sev_12m_m0")
+sexual_ipv_vars_bin <- c("sex_ipv_sev_12m_m0") 
+sexual_physical_ipv_vars_bin  <- c("sex_phy_ipv_sev_12m_m0")
+economic_ipv_vars_bin <- c("eco_ipv_sev_12m_m0") 
+all_ipv_vars_bin <- c("all_ipv_sev_12m_m0") 
+
+
+
+```
+
+#### Controlling Behavior
+
+```{r}
+# Controlling Behavior
+tbl_control <- getTable_IPV(
+  ipv_vars = control_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for control IPV in the last 12 months", "Control IPV sev. index"),
+  table_title = "Controlling Behavior IPV Results (Replacing missing with 0)"
+)
+tbl_control
+```
+
+#### Emotional Violence
+
+```{r}
+# Emotional Violence
+tbl_emotional <- getTable_IPV(
+  ipv_vars = emotional_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for emo. IPV in the last 12 months", "Emo. IPV sev. index"),
+  table_title = "Emotional Violence IPV Results (Replacing missing with 0)"
+)
+tbl_emotional
+```
+
+
+#### Physical Violence
+
+```{r}
+# Physical Violence
+tbl_physical <- getTable_IPV(
+  ipv_vars = physical_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for phy. IPV in the last 12 months", "Phy. IPV sev. index"),
+  table_title = "Physical Violence IPV Results (Replacing missing with 0)"
+)
+tbl_physical
+```
+
+#### Sexual Violence
+
+```{r}
+# Sexual Violence
+tbl_sexual <- getTable_IPV(
+  ipv_vars = sexual_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for sex. IPV in the last 12 months", "Sex. IPV sev. index"),
+  table_title = "Sexual Violence IPV Results (Replacing missing with 0)"
+)
+
+tbl_sexual
+```
+
+#### Sexual and Physical Violence
+```{r}
+# Sexual and Physical Violence
+tbl_sexual_physical <- getTable_IPV(
+  ipv_vars = sexual_physical_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for phy. or sex. IPV in the last 12 months", "Phy. or sex. IPV sev. index"),
+  table_title = "Sexual and Physical Violence IPV Results (Replacing missing with 0)"
+)
+tbl_sexual_physical
+```
+
+#### Economic Violence
+
+```{r}
+# Economic Violence
+tbl_economic <- getTable_IPV(
+  ipv_vars = economic_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for eco. IPV in the last 12 months", "Eco. IPV sev. index"),
+  table_title = "Economic Violence IPV Results (Replacing missing with 0)"
+)
+tbl_economic
+```
+
+
+#### All types of violence
+
+```{r}
+# All types of violence
+tbl_all <- getTable_IPV(
+  ipv_vars = all_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for at least one type of IPV (exclu. eco.) in the last 12 months", "All IPV (exclu. eco.) sev. index"),
+  table_title = "All Types of Violence IPV Results (Replacing missing with 0)"
+)
+
+tbl_all
+```
+
+### Replacing missing with 1
+
+```{r}
+
+#####################################################################################
+######################### Regression on the nbr of event ############################
+#####################################################################################
+
+# Define the list of outcomes variables
+
+control_ipv_vars <- c("control_ipv_sev_12m_m1","control_ipv_sev_index_m1")
+emotional_ipv_vars <- c("emo_ipv_sev_12m_m1", "emo_ipv_sev_index_m1") 
+physical_ipv_vars <- c("phy_ipv_sev_12m_m1","phy_ipv_sev_index_m1")
+sexual_ipv_vars <- c("sex_ipv_sev_12m_m1", "sex_ipv_sev_index_m1") 
+sexual_physical_ipv_vars  <- c("sex_phy_ipv_sev_12m_m1","sex_phy_ipv_sev_index_m1")
+economic_ipv_vars <- c("eco_ipv_sev_12m_m1", "eco_ipv_sev_index_m1") 
+all_ipv_vars <- c("all_ipv_sev_12m_m1","all_ipv_sev_index_m1") 
+
+control_ipv_vars_bin <- c("control_ipv_sev_12m_m1")
+emotional_ipv_vars_bin <- c("emo_ipv_sev_12m_m1") 
+physical_ipv_vars_bin <- c("phy_ipv_sev_12m_m1")
+sexual_ipv_vars_bin <- c("sex_ipv_sev_12m_m1") 
+sexual_physical_ipv_vars_bin  <- c("sex_phy_ipv_sev_12m_m1")
+economic_ipv_vars_bin <- c("eco_ipv_sev_12m_m1") 
+all_ipv_vars_bin <- c("all_ipv_sev_12m_m1") 
+
+```
+
+#### Controlling Behavior
+
+```{r}
+# Controlling Behavior
+tbl_control <- getTable_IPV(
+  ipv_vars = control_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for control IPV in the last 12 months", "Control IPV sev. index"),
+  table_title = "Controlling Behavior IPV Results (Replacing missing with 1)"
+)
+tbl_control
+```
+
+#### Emotional Violence
+
+```{r}
+# Emotional Violence
+tbl_emotional <- getTable_IPV(
+  ipv_vars = emotional_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for emo. IPV in the last 12 months", "Emo. IPV sev. index"),
+  table_title = "Emotional Violence IPV Results (Replacing missing with 1)"
+)
+tbl_emotional
+```
+
+
+#### Physical Violence
+
+```{r}
+# Physical Violence
+tbl_physical <- getTable_IPV(
+  ipv_vars = physical_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for phy. IPV in the last 12 months", "Phy. IPV sev. index"),
+  table_title = "Physical Violence IPV Results (Replacing missing with 1)"
+)
+tbl_physical
+```
+
+#### Sexual Violence
+
+```{r}
+# Sexual Violence
+tbl_sexual <- getTable_IPV(
+  ipv_vars = sexual_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for sex. IPV in the last 12 months", "Sex. IPV sev. index"),
+  table_title = "Sexual Violence IPV Results (Replacing missing with 1)"
+)
+
+tbl_sexual
+```
+
+#### Sexual and Physical Violence
+```{r}
+# Sexual and Physical Violence
+tbl_sexual_physical <- getTable_IPV(
+  ipv_vars = sexual_physical_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for phy. or sex. IPV in the last 12 months", "Phy. or sex. IPV sev. index"),
+  table_title = "Sexual and Physical Violence IPV Results (Replacing missing with 1)"
+)
+tbl_sexual_physical
+```
+
+#### Economic Violence
+
+```{r}
+# Economic Violence
+tbl_economic <- getTable_IPV(
+  ipv_vars = economic_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for eco. IPV in the last 12 months", "Eco. IPV sev. index"),
+  table_title = "Economic Violence IPV Results (Replacing missing with 1)"
+)
+tbl_economic
+```
+
+
+#### All types of violence
+
+```{r}
+# All types of violence
+tbl_all <- getTable_IPV(
+  ipv_vars = all_ipv_vars,
+  treatment_vars = treatment_vars,
+  control_vars = control_vars,
+  strata_vars = strata_vars,
+  cluster_vars = cluster_vars,
+  followup_ipv_MRT_hh = followup_ipv_MRT_hh,
+  followup_ipv_MRT_hh_control_pi = followup_ipv_MRT_hh_control_pi,
+  followup_ipv_MRT_hh_control_csh_trnsfr = followup_ipv_MRT_hh_control_csh_trnsfr,
+  col_group_labels = c("Binary for at least one type of IPV (exclu. eco.) in the last 12 months", "All IPV (exclu. eco.) sev. index"),
+  table_title = "All Types of Violence IPV Results (Replacing missing with 1)"
+)
+
+tbl_all
+```
+
+
+
+## Spillover effect
+
+```{r}
+######################## Fist estimate ##########################################
+treatment_vars=c("treatment_pi_spill","treatment_pi_pool_spill")
+
+# Define the list of outcomes variables
+control_ipv_vars <- c("control_ipv_sev_12m","control_ipv_sev_index")
+emotional_ipv_vars <- c("emo_ipv_sev_12m", "emo_ipv_sev_index") 
+physical_ipv_vars <- c("phy_ipv_sev_12m","phy_ipv_sev_index")
+sexual_ipv_vars <- c("sex_ipv_sev_12m", "sex_ipv_sev_index") 
+sexual_physical_ipv_vars  <- c("sex_phy_ipv_sev_12m","sex_phy_ipv_sev_index")
+economic_ipv_vars <- c("eco_ipv_sev_12m", "eco_ipv_sev_index") 
+all_ipv_vars <- c("all_ipv_sev_12m","all_ipv_sev_index") 
+
+control_ipv_vars_bin <- c("control_ipv_sev_12m")
+emotional_ipv_vars_bin <- c("emo_ipv_sev_12m") 
+physical_ipv_vars_bin <- c("phy_ipv_sev_12m")
+sexual_ipv_vars_bin <- c("sex_ipv_sev_12m") 
+sexual_physical_ipv_vars_bin  <- c("sex_phy_ipv_sev_12m")
+economic_ipv_vars_bin <- c("eco_ipv_sev_12m") 
+all_ipv_vars_bin <- c("all_ipv_sev_12m")
+
+
+# All outcomes variables
+listOutcomes=c(control_ipv_vars, emotional_ipv_vars, physical_ipv_vars, sexual_ipv_vars, sexual_physical_ipv_vars, economic_ipv_vars, all_ipv_vars)
+
+followup_ipv_MRT_hh_spill <- followup_ipv_MRT_hh_spill %>% 
+  select(all_of(listOutcomes), all_of(treatment_vars), all_of(control_vars) ,village, all_of(strata_vars), all_of(cluster_vars), reg_hh_pi_mrt, reg_hh_pi_spl_mrt)
+
+
+```
+
+
+### Controlling Behavior
+
+```{r}
+######################## Main Analysis with Comparison ##########################################
+
+# 1) Controlling behavior
+tbl_spill_control <- getTable_IPV_spill(
+  ipv_vars                        = control_ipv_vars,
+  binary_header                   = "Binary for control IPV in the last 12 months",
+  index_header                    = "Control IPV sev. index",
+  table_title                     = "Spillover effects on controlling IPV",
+  treatment_vars                  = treatment_vars,
+  control_vars                    = control_vars,
+  strata_vars                     = strata_vars,
+  cluster_vars                    = cluster_vars,
+  followup_ipv_MRT_hh_spill           = followup_ipv_MRT_hh_spill,
+  followup_ipv_MRT_hh_spill_control_pi = followup_ipv_MRT_hh_spill_control_pi
+)
+tbl_spill_control
+```
+
+### Emotional Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+
+# 2) Emotional IPV
+tbl_spill_emotional <- getTable_IPV_spill(
+  ipv_vars                        = emotional_ipv_vars,
+  binary_header                   = "Binary for emo. IPV \n in the last 12 months",
+  index_header                    = "Emo. IPV s \n index",
+  table_title                     = "Spillover effects on emotional IPV",
+  treatment_vars                  = treatment_vars,
+  control_vars                    = control_vars,
+  strata_vars                     = strata_vars,
+  cluster_vars                    = cluster_vars,
+  followup_ipv_MRT_hh_spill           = followup_ipv_MRT_hh_spill,
+  followup_ipv_MRT_hh_spill_control_pi = followup_ipv_MRT_hh_spill_control_pi
+)
+
+tbl_spill_emotional
+```
+
+
+### Physical Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+# 3) Physical IPV
+tbl_spill_physical <- getTable_IPV_spill(
+  ipv_vars                        = physical_ipv_vars,
+  binary_header                   = "Binary for phy. IPV \n in the last 12 months",
+  index_header                    = "Phy. IPV sev. \n index",
+  table_title                     = "Spillover effects on physical IPV",
+  treatment_vars                  = treatment_vars,
+  control_vars                    = control_vars,
+  strata_vars                     = strata_vars,
+  cluster_vars                    = cluster_vars,
+  followup_ipv_MRT_hh_spill           = followup_ipv_MRT_hh_spill,
+  followup_ipv_MRT_hh_spill_control_pi = followup_ipv_MRT_hh_spill_control_pi
+)
+
+tbl_spill_physical
+```
+
+### Sexual Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+# 4) Sexual IPV
+tbl_spill_sexual <- getTable_IPV_spill(
+  ipv_vars                        = sexual_ipv_vars,
+  binary_header                   = "Binary for sex. IPV \n in the last 12 months",
+  index_header                    = "Sex. IPV sev. \n index",
+  table_title                     = "Spillover effects on sexual IPV",
+  treatment_vars                  = treatment_vars,
+  control_vars                    = control_vars,
+  strata_vars                     = strata_vars,
+  cluster_vars                    = cluster_vars,
+  followup_ipv_MRT_hh_spill           = followup_ipv_MRT_hh_spill,
+  followup_ipv_MRT_hh_spill_control_pi = followup_ipv_MRT_hh_spill_control_pi
+)
+
+tbl_spill_sexual
+```
+
+
+
+
+### Sexual and physical violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+# 5) Sexual or physical IPV
+tbl_spill_sex_phy <- getTable_IPV_spill(
+  ipv_vars                        = sexual_physical_ipv_vars,
+  binary_header                   = "Binary for phy. or sex. \n IPV in the last 12 months",
+  index_header                    = "Phy. or sex. IPV sev. index",
+  table_title                     = "Spillover effects on sexual or physical IPV",
+  treatment_vars                  = treatment_vars,
+  control_vars                    = control_vars,
+  strata_vars                     = strata_vars,
+  cluster_vars                    = cluster_vars,
+  followup_ipv_MRT_hh_spill           = followup_ipv_MRT_hh_spill,
+  followup_ipv_MRT_hh_spill_control_pi = followup_ipv_MRT_hh_spill_control_pi
+)
+
+tbl_spill_sex_phy
+```
+
+### Economic Violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+# 6) Economic IPV
+tbl_spill_economic <- getTable_IPV_spill(
+  ipv_vars                        = economic_ipv_vars,
+  binary_header                   = "Binary for eco. IPV \n in the last 12 months",
+  index_header                    = "Eco. IPV sev. \n index",
+  table_title                     = "Spillover effects on economic IPV",
+  treatment_vars                  = treatment_vars,
+  control_vars                    = control_vars,
+  strata_vars                     = strata_vars,
+  cluster_vars                    = cluster_vars,
+  followup_ipv_MRT_hh_spill           = followup_ipv_MRT_hh_spill,
+  followup_ipv_MRT_hh_spill_control_pi = followup_ipv_MRT_hh_spill_control_pi
+)
+
+tbl_spill_economic
+```
+
+
+### Any type of violence
+
+```{r}
+######################## Fist estimate ##########################################
+
+# 7) Any IPV (excluding economic)
+tbl_spill_any <- getTable_IPV_spill(
+  ipv_vars                        = all_ipv_vars,
+  binary_header                   = "Binary for at least one type of \n IPV (exclu. eco.) \n in the last 12 months",
+  index_header                    = "All IPV (exclu. eco.) sev. \n index",
+  table_title                     = "Spillover effects on any IPV (excluding economic IPV)",
+  treatment_vars                  = treatment_vars,
+  control_vars                    = control_vars,
+  strata_vars                     = strata_vars,
+  cluster_vars                    = cluster_vars,
+  followup_ipv_MRT_hh_spill           = followup_ipv_MRT_hh_spill,
+  followup_ipv_MRT_hh_spill_control_pi = followup_ipv_MRT_hh_spill_control_pi
+)
+tbl_spill_any
+```
+
+    
+```{r}
+# remove data to free space
+rm(list = ls())
+```
+
+

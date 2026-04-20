@@ -1,5 +1,5 @@
 ---
-title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Economic Inclusion in Mauritania"
 subtitle: "Empirical strategy & Results"
 author: "IBRAHIM KASSOUM Habibou"
 date: '`r format (Sys.Date(), "%d %B %Y")`'
@@ -174,6 +174,64 @@ treatment_vars=c("treatment_csh_trnsfr","treatment_pi","treatment_pi_pool")
 
 # All outcomes variables
 listOutcomes=c(control_ipv_vars, emotional_ipv_vars, physical_ipv_vars, sexual_ipv_vars,sexual_physical_ipv_vars, economic_ipv_vars, other_ipv_vars)
+
+# Define controls variables for the regression 
+control_vars = c(
+                "pben_handicap_bl", 
+                #"hhh_edu_bl", 
+                #"pben_edu_bl", 
+                "hhh_prim_bl",
+                "pben_prim_bl", 
+                #"age_at_mrrg", 
+                "het_nbr_elder",
+                #"age_gap",
+                "hh_has_kid", 
+                "het_wtht_adult_mal", 
+                #"pben_lit_bl", 
+                "hhh_fem_bl",
+                #"mem_n_bl",
+                "same_cb",
+                #"hhh_poly",
+                #"pben_poly",
+                #"hhh_age",
+                "pben_age_bl",
+                "age_gap",
+                "hhh_edu_bl",
+                "pben_edu_bl",
+                "hhh_lit_bl",
+                "pben_lit_bl"
+            # 
+            # "ctrl_hh_index_tr_bl",
+            # "consum",
+            # "ctrl_earn_index_tr_bl",
+            # "tot_hh_rev",
+            # "hhh_age_bl",
+            # "soc_cohsn_index_tr_bl",
+            # "intrahh_vars_index_tr_bl",
+            # "soc_stand_index_bl",
+            # ##"rev_sum_bohh",
+            # #"pben_age_bl",
+            # # "age_gap",
+            # # "nbr_hh_number",
+            # "age_at_mrrg",
+            # "region",
+            #  "gse_index_tr_bl",
+            #  "shr_adult",
+            # "tot_ben_rev12_98_ppp_bl", 
+            # "bus_assval_98_ppp_bl", 
+            # "nbr_kid", 
+            # "shr_adult_fem",
+            # "tot_ben_pro12_98_ppp_bl", 
+            # "nbr_adult_tot", 
+            # #"hhh_edu_bl", 
+            # #"shr_adult_mal", 
+            # "nbr_adult",
+            # "los1_bl", 
+            # "shr_adult_fem_mal", 
+            # "los2_bl", 
+            # "dec_pow_bus_d_bl", 
+            # "nbr_adult_fem_tot"
+            )
 
 # Define controls variables for the regression 
 control_vars = c("hhh_fem_bl", 
@@ -859,7 +917,7 @@ df_curr1 <- df_curr1 %>%
     median_cate_csh = as.factor(ntile(estimated_ate_value, 2))     # Create median (binary high/low) factor
   )
 
-# Create df_curr2 by filtering households registered for the productive inclusion program (reg_hh_pi_mrt == 1)
+# Create df_curr2 by filtering households registered for the Economic Inclusion program (reg_hh_pi_mrt == 1)
 df_curr2 <- df_curr2 %>%
   mutate(
     decile_cate_pool = as.factor(ntile(estimated_ate_value, 10)),   # Create decile factor based on predicted IPV at baseline
@@ -1582,7 +1640,7 @@ custom_tab(balance_tab, header, footer)
 
 ```
 
-### Productive inclusion
+### Economic Inclusion
 
 ```{r}
 
@@ -1780,10 +1838,9 @@ customtab_defaults()
 custom_tab(balance_tab, header, footer)
 
 ```
+
+
 ### Other tables 
-
-
-
 
 
 ## Estimates of treatment effect 
@@ -1857,7 +1914,7 @@ mainResults_het <- mainResults_het %>%
         # Recode 'name' variable
       name = dplyr::recode(name,
         cash = "(a) Tekavoul program",
-        pi = "(b) Productive inclusion program"
+        pi = "(b) Economic Inclusion program"
       ),
       het_var = dplyr::recode(het_var,
                       median_cate="Below median CATE"
@@ -1969,7 +2026,7 @@ mainResults_reg_group %>%
     x = "",
     y = "Effect",
     color = first(mainResults_reg_group$het_var),
-    caption = sprintf(paste0("N = %s Tekavoul, %s productive inclusion."), 
+    caption = sprintf(paste0("N = %s Tekavoul, %s Economic Inclusion."), 
                      first(mainResults_reg_group$N), last(mainResults_reg_group$N))
   ) +
   guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))+
@@ -2028,7 +2085,7 @@ mainResults_reg_group %>%
     x = "",
     y = "Effect",
     color = first(mainResults_reg_group$het_var),
-    caption = sprintf(paste0("N = %s Tekavoul, %s productive inclusion."), 
+    caption = sprintf(paste0("N = %s Tekavoul, %s Economic Inclusion."), 
                      first(mainResults_reg_group$N), last(mainResults_reg_group$N))
   ) +
   guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))+
@@ -2087,7 +2144,7 @@ mainResults_reg_group %>%
     x = "",
     y = "Effect",
     color = first(mainResults_reg_group$het_var),
-    caption = sprintf(paste0("N = %s Tekavoul, %s productive inclusion."), 
+    caption = sprintf(paste0("N = %s Tekavoul, %s Economic Inclusion."), 
                      first(mainResults_reg_group$N), last(mainResults_reg_group$N))
   ) +
   guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))+
@@ -2146,7 +2203,7 @@ mainResults_reg_group %>%
     x = "",
     y = "Effect",
     color = first(mainResults_reg_group$het_var),
-    caption = sprintf(paste0("N = %s Tekavoul, %s productive inclusion."), 
+    caption = sprintf(paste0("N = %s Tekavoul, %s Economic Inclusion."), 
                      first(mainResults_reg_group$N), last(mainResults_reg_group$N))
   ) +
   guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))+
@@ -2206,7 +2263,7 @@ mainResults_reg_group %>%
     x = "",
     y = "Effect",
     color = first(mainResults_reg_group$het_var),
-    caption = sprintf(paste0("N = %s Tekavoul, %s productive inclusion."), 
+    caption = sprintf(paste0("N = %s Tekavoul, %s Economic Inclusion."), 
                      first(mainResults_reg_group$N), last(mainResults_reg_group$N))
   ) +
   guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))+
@@ -2266,7 +2323,7 @@ mainResults_reg_group %>%
     x = "",
     y = "Effect",
     color = first(mainResults_reg_group$het_var),
-    caption = sprintf(paste0("N = %s Tekavoul, %s productive inclusion."), 
+    caption = sprintf(paste0("N = %s Tekavoul, %s Economic Inclusion."), 
                      first(mainResults_reg_group$N), last(mainResults_reg_group$N))
   ) +
   guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))+
@@ -2325,7 +2382,7 @@ mainResults_reg_group %>%
     x = "",
     y = "Effect",
     color = first(mainResults_reg_group$het_var),
-    caption = sprintf(paste0("N = %s Tekavoul, %s productive inclusion."), 
+    caption = sprintf(paste0("N = %s Tekavoul, %s Economic Inclusion."), 
                      first(mainResults_reg_group$N), last(mainResults_reg_group$N))
   ) +
   guides(colour = guide_legend(order = 1), shape = guide_legend(order = 2))+
@@ -2335,6 +2392,7 @@ mainResults_reg_group %>%
     #Save the plot as an image
     ggsave(paste0("output/heterogeneity/",first(mainResults_reg_group$het_var),"_",first(mainResults_reg_group$depvar),".jpeg"),  width = 10, height = 14, units = "cm")
 ```
+
 ```{r}
 # remove data to free space
 rm(list = ls())

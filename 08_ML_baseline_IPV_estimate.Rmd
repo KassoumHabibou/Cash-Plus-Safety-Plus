@@ -128,7 +128,7 @@ align(j = 1, part = "all", align = "left")
 
 ######################## Loading the datasets ##################################
 # Read the file containing the global dataframe into followup_MRT_hh
-followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_MRT_hh_and_ipv_MRT_hh.rds"))
+followup_MRT_hh <-  readRDS(paste0(getwd(),"/output/data/followup_ipv_MRT_hh.rds"))
 
 
 # Convert treatment variables from numeric to factor variables for both datasets

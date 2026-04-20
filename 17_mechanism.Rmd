@@ -1,5 +1,5 @@
 ---
-title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Economic Inclusion in Mauritania"
 subtitle: "Mechanism"
 author: "IBRAHIM KASSOUM Habibou"
 date: '`r format (Sys.Date(), "%d %B %Y")`'
@@ -7,6 +7,8 @@ output:
   officedown::rdocx_document:
     mapstyles:
       Normal: ['First Paragraph']
+    number_sections: true
+    fig_caption: true
 ---
 
 
@@ -62,8 +64,8 @@ lapply(required_packages, library, character.only = TRUE)
 rm(list = ls())
 
 # Source functions from external file
-source("functions2.R")
-
+source("functions.R")
+#source("functions2.R")
 #  Importing module to concatenate several model
 #remotes::install_github("ChandlerLutz/starpolishr")
 ```
@@ -83,13 +85,7 @@ set_flextable_defaults(font.family = "Times New Roman",
 font.size = 10,
 border.color = "black")
 }
-FitFlextableToPage <- function(ft, pgwidth = 8){
 
-  ft_out <- ft %>% autofit()
-
-  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
-  return(ft_out)
-}
 custom_tab <- function(df, header, footer){
 flextable(df) %>%
 add_header_lines(header) %>%
@@ -131,30 +127,33 @@ align(j = 1, part = "all", align = "left")
 ```{r}
 
 ######################## Loading the datasets ##################################
-# Read the file containing the global dataframe into followup_MRT_hh
+# Read the file containing the global dataframe into followup_ipv_MRT_hh
 
-followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_MRT_hh_and_ipv_MRT_hh.rds"))
+followup_ipv_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_ipv_MRT_hh.rds"))
 
 # Creating some variables at partner level
-followup_MRT_hh <- followup_MRT_hh %>% 
+followup_ipv_MRT_hh <- followup_ipv_MRT_hh %>% 
   mutate(rev_sum_prt_wemp_98 = rev_sum_hh_wemp_98 - rev_sum_ben_wemp_98,  
          tot_prt_rev12_98_ppp = tot_hh_rev12_98_ppp - tot_ben_rev12_98_ppp,   
          tot_emp_2rev12_prt_98_ppp = tot_emp_2rev12_hh_98_ppp - tot_emp_2rev12_ben_98_ppp,  
          tot_ani_prt_contr_98_ppp = tot_ani_hh_contr_98_ppp - tot_ani_ben_contr_98_ppp)
-
-
-
 # Convert treatment variables from numeric to factor variables for both datasets
 # This is useful for regression analysis and plotting as factors are treated as categorical variables
  # Convert PM treatment to factor
-followup_MRT_hh$treatment_pi <- haven::as_factor(followup_MRT_hh$treatment_pi)
+followup_ipv_MRT_hh$treatment_pi <- haven::as_factor(followup_ipv_MRT_hh$treatment_pi)
 
 # Convert cash transfer treatment to factor
-followup_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(followup_MRT_hh$treatment_csh_trnsfr)
-followup_MRT_hh_control <- followup_MRT_hh %>% filter(treatment_pi == "Control" | treatment_csh_trnsfr == "Control") 
+followup_ipv_MRT_hh$treatment_csh_trnsfr <- haven::as_factor(followup_ipv_MRT_hh$treatment_csh_trnsfr)
+
+followup_ipv_MRT_hh_control_pi <- followup_ipv_MRT_hh %>% filter(treatment_pi=="Control") %>%
+      filter(reg_hh_pi_mrt==1)
+
+followup_ipv_MRT_hh_control_csh_trnsfr <- followup_ipv_MRT_hh %>% filter(treatment_csh_trnsfr=="Control") %>% 
+      filter(reg_hh_csh_mrt==1)
+
 
 # Define controls variables for the regression 
-# control_vars = c("hhh_fem_bl", 
+# control_vars = c("hhh_fem_bl",
 #             "mem_n_bl",
 #             "same_cb",
 #             "pben_handicap",
@@ -169,31 +168,73 @@ followup_MRT_hh_control <- followup_MRT_hh %>% filter(treatment_pi == "Control" 
 #             "pben_lit")
 
 # Define controls variables for the regression 
-control_vars = c(
-                "pben_handicap_bl", 
-                #"hhh_edu_bl", 
-                #"pben_edu_bl", 
-                "hhh_prim_bl",
-                "pben_prim_bl", 
-                #"age_at_mrrg", 
-                "het_nbr_elder",
-                #"age_gap",
-                "hh_has_kid", 
-                "het_wtht_adult_mal", 
-                #"pben_lit_bl", 
-                "hhh_fem_bl",
-                #"mem_n_bl",
-                "same_cb",
-                #"hhh_poly",
-                #"pben_poly",
-                #"hhh_age",
-                "pben_age_bl",
-                "age_gap",
-                "hhh_edu_bl",
-                "pben_edu_bl",
-                "hhh_lit_bl",
-                "pben_lit_bl"
-            )
+# control_vars = c(
+#                 "pben_handicap_bl",
+#                 "hhh_prim_bl",
+#                 "pben_prim_bl",
+#                 "het_nbr_elder",
+#                 "hh_has_kid",
+#                 "het_wtht_adult_mal",
+#                 "hhh_fem_bl",
+#                 "same_cb",
+#                 "pben_age_bl",
+#                 "age_gap",
+#                 "hhh_edu_bl",
+#                 "pben_edu_bl",
+#                 "hhh_lit_bl",
+#                 "pben_lit_bl"
+#             )
+
+  # PRIORITY 1: Imbalanced variables that MUST be controlled
+  # These showed statistical differences at baseline
+  control_vars = c(
+    # Demographics with imbalance
+    #"age_gap",              # Significant in (2)-(3), Joint F-test
+    
+    
+    # Elder/children with imbalance
+    "nbr_elder",            # Significant in (1)-(2), (2)-(3), JoiÒnt F-test
+    "het_nbr_elder",        # Significant in (1)-(2), (2)-(3), Joint F-test
+    "shr_elder",            # Significant in (1)-(2), (2)-(3), Joint F-test
+    
+    # Education with imbalance
+    "hhh_prim_bl",          # Significant in (1)-(4), (3)-(4), Joint F-test
+    "pben_lit_bl",          # Significant in (1)-(2), (1)-(4), (2)-(3), (3)-(4), Joint F-test
+    
+    
+    # Economic with imbalance
+   "tot_emp_2rev12_ben_98_ppp_bl", # Significant in (1)-(2), (1)-(4), (2)-(4), Joint F-test
+    
+    # Business with imbalance
+    "bus2_within_12_dum_ben_bl" # Significant in (1)-(3), (1)-(4), (2)-(4), Joint F-test, Pooled
+  )
+# Define strata variables: strata
+strata_vars <- c("strata") 
+
+# Define cluster variables 
+cluster_vars <- c("cluster")
+
+# PRIORITY 1: Imbalanced variables that MUST be controlled
+# These showed statistical differences at baseline
+  # control_vars = c(
+  #   # Elder/children with imbalance
+  #   "nbr_elder",            # Significant in (1)-(2), (2)-(3), JoiÒnt F-test
+  #   "het_nbr_elder",        # Significant in (1)-(2), (2)-(3), Joint F-test
+  #   "shr_elder",            # Significant in (1)-(2), (2)-(3), Joint F-test
+  #   
+  #   # Education with imbalance
+  #   "hhh_prim_bl",          # Significant in (1)-(4), (3)-(4), Joint F-test
+  #   "pben_lit_bl",          # Significant in (1)-(2), (1)-(4), (2)-(3), (3)-(4), Joint F-test
+  #   
+  #   
+  #   # Economic with imbalance
+  #  "tot_emp_2rev12_ben_98_ppp_bl", # Significant in (1)-(2), (1)-(4), (2)-(4), Joint F-test
+  #   
+  #   # Business with imbalance
+  #   "bus2_within_12_dum_ben_bl" # Significant in (1)-(3), (1)-(4), (2)-(4), Joint F-test, Pooled
+  # )
+  # 
+
 # List of outcomes definition mechanism
 #----------------------------------------
 # Revenue and Consumption Outcome Variables
@@ -252,44 +293,6 @@ intra_hh_vars <- c(
   "gender_attitudes_index"    # Index measuring gender role attitudes
 )
 
-#----------------------------------------
-# Time Use Variables (hours or dummies)
-#----------------------------------------
-time_use_int <- c(
-  # Weekly time use by activity
-  "time_wk_ben_nonag",        # Time in non-ag activities
-  "time_wk_ben_water",        # Time fetching water
-  "time_wk_ben_cook",         # Time cooking
-  "time_wk_ben_ag",           # Time in agricultural activities
-  "time_wk_ben_firewood",     # Time collecting firewood
-  "time_wk_ben_clean",        # Time cleaning
-  "time_wk_ben_study_coran",  # Time studying the Quran
-  "time_wk_ben_laundry",      # Time doing laundry
-  "time_wk_ben_liv",          # Time in livestock activities
-  "time_wk_ben_study_trad",   # Time in traditional study
-  "time_wk_ben_shop",         # Time shopping
-  "time_wk_ben_child",           # Time with children
-  "time_wk_ben_handicap",        # Time with disabled
-  "time_wk_ben_family",          # Time with friends
-  "time_wk_ben_radio",           # Time listening to radio
-  "time_wk_ben_rest",            # Time resting
-  "time_wk_ben_study_trad",   # Time studying traditional school
-  "time_wk_ben_shop",            # Time spent shopping
-  "time_wk_ben_pray"            # Time praying
-)
-
-
-
-time_use_ext <- c(
-
-  # Dummy variables indicating whether these activities were done
-  "time_ben_nonag_d", "time_ben_ag_d", "time_ben_study_coran_d", 
-  "time_ben_study_trad_d", "time_ben_water_d","time_ben_firewood_d", 
-  "time_ben_laundry_d", "time_ben_shop_d", "time_ben_cook_d", "time_ben_clean_d",
-  "time_ben_liv_d", "time_ben_child_d", "time_ben_handicap_d", "time_ben_family_d",
-  "time_ben_radio_d", "time_ben_rest_d", "time_ben_study_trad_d","time_ben_shop_d",
-  "time_ben_pray_d"
-)
 
 #----------------------------------------
 # Decision-Making and Control Over Income
@@ -298,7 +301,7 @@ dec_making <- c(
   "ctrl_hh_index",            # Index of control over household decisions
   "ctrl_earn_index",          # Index of control over earnings
   "dec_pow_earn", "dec_could_earn",      # Power/capacity to earn
-  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in productive sectors
+  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in Economic sectors
   "dec_pow_spend", "dec_could_spend", "dec_pow_large", "dec_could_large",
   "dec_pow_fert", "dec_could_fert", "dec_pow_care", "dec_could_care",
   "dec_pow_his_earn", "dec_pow_edu"
@@ -312,9 +315,10 @@ dec_making <- c(
 intra_hh_index_components_vars <- c(
   "intrahh_vars_index",        # Overall intra-HH index
   "partner_vars_index",        # Partner dynamics index
-  "hh_vars_index",             # General HH relationship index
   "rel_disagree",   # Relational and employment conflict indicators
-  "rel_interest", "los3", "los1", "tens_house",  # Loss/tension/stress indicators
+  "rel_interest", "los3", 
+  "hh_vars_index",             # General HH relationship index
+  "los1", "tens_house",  # Loss/tension/stress indicators
   "stair_satis_today"
 )
 
@@ -363,7 +367,7 @@ violence_prcptn_index_components_vars <- c(
 ctrl_over_earn_index_components_vars <- c(
   "ctrl_earn_index",          # Index of control over earnings
   "dec_pow_earn", "dec_could_earn",      # Power/capacity to earn
-  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in productive sectors
+  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in Economic sectors
   "crop_ctrl_dum", "bus2_ben_dum", "ani_ben_dum", "ani_contr_ben_dum", "sleep_prod_dum"  # Decision control variables
 )
 
@@ -409,333 +413,44 @@ empowerment <- c(
   "sleep_prod_dum"	#"Benef. traveled\n for work\n \{0,1\}"
 )
 
-
-
-# Define the two treatment variables 
-treatment_vars=c("treatment_csh_trnsfr","treatment_pi","treatment_pi_pool")
-```
-
-<!---BLOCK_TOC--->
-
-
-<!---BLOCK_LANDSCAPE_START--->
-\newpage
-# Summary
-
-**Key Takeaways**:
-
-
-# Mechanism
-
-## Mechanism 1 : Economic Security & Emotional Well-being
-
-Cash reduces poverty stress and improve emotional well-being.
-Impact: generally reduces IPV.
-
-```{r}
-
-######################## Fist estimate ##########################################
-####################### Household level
-# Create a data frame of results examining heterogeneous treatment effects
-# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
-mainResults_mech_hh <- map_dfr(revenue_consum_vars_hh, function(depvar) {
-
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-####################### Ben
-# Create a data frame of results examining heterogeneous treatment effects
-# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
-mainResults_mech_ben <- map_dfr(revenue_consum_vars_ben, function(depvar) {
- 
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-
-
-```
-
-
-### Household level
-```{r}
-
-# Extract results for the outcome variable 
-
-tbl <- getTable1_het(revenue_consum_vars_hh, mainResults_mech_hh)
-tbl
-```
-
-### Ben level
-```{r}
-
-# Extract results for the outcome variable 
-tbl <- getTable2_het(revenue_consum_vars_ben, mainResults_mech_ben)
-tbl
-```
-
-## Mechanism 2 : Intra-household Conflict
-
-```{r}
-####################### Ben
-# Create a data frame of results examining heterogeneous treatment effects
-# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
-mainResults_mech_ben <- map_dfr(intra_hh_vars, function(depvar) {
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-
-```
-
-### Main variables
-```{r}
-
-# Extract results for the outcome variable 
-
-
-tbl <- getTable3_het(intra_hh_vars, mainResults_mech_ben)
-# Print the final table
-tbl
-
-```
-
-
-
-### Indexes components
-
-```{r}
-####################### Ben
-# Create a data frame of results examining heterogeneous treatment effects
-# across different dimention of intrahh index
-mainResults_mech_intrah <- map_dfr(intra_hh_index_components_vars, function(depvar) {
-
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-    })
-})
-
-# Violence perception index
-mainResults_mech_violence <- map_dfr(violence_prcptn_index_components_vars, function(depvar) {
- 
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-
-# Violence perception index
-mainResults_mech_gender <- map_dfr(gender_attitudes_index_components_vars, function(depvar) {
- 
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-# Social norm index
-mainResults_mech_socialnorm <- map_dfr(social_norm_index_components_vars, function(depvar) {
-
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-
-# Social norm index
-mainResults_mech_private <- map_dfr(priv_expenditures, function(depvar) {
-
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-
-# Generate tables
-tbl <- getTable3_het_intra(intra_hh_index_components_vars, mainResults_mech_intrah)
-tbl
-
-```
-
-
-
-#### Violence perception index components
-
-```{r}
-
-# Generate tables
-tbl <- getTable3_het_violence(violence_prcptn_index_components_vars, mainResults_mech_violence)
-tbl
-
-```
-
-
-
-
-#### Gender attitude index components
-
-```{r}
-
-# Generate tables
-tbl <- getTable3_het_gender(gender_attitudes_index_components_vars, mainResults_mech_gender)
-tbl
-
-```
-
-
-
-#### Social norm index components
-
-```{r}
-
-# Generate tables
-tbl <- getTable3_het_socialnorm(social_norm_index_components_vars, mainResults_mech_socialnorm)
-tbl
-
-```
-### Private good consumption:
-
-```{r}
-# Generate tables
-tbl <- getTable3_het_private(priv_expenditures, mainResults_mech_private)
-tbl
-
-
-```
-
-
-
-## Mechanism 3 : Women’s bargaining power
-### Decision making
-
-```{r}
-####################### Ben
-# Create a data frame of results examining heterogeneous treatment effects
-# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
-mainResults_mech_ben <- map_dfr(dec_making, function(depvar) {
-
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-    })
-})
-
-
-tbl <- getTable4_het(dec_making, mainResults_mech_hh)
-tbl
-```
-
-
-
-### Empowerment 
-
-```{r}
-
-####################### Ben
-# Create a data frame of results examining heterogeneous treatment effects
-# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
-mainResults_mech_ben <- map_dfr(empowerment, function(depvar) {
-
-  
-    # For each treatment variable...
-    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
-
-      bind_rows(
-        # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
-          # Add columns identifying which variables were used in this iteration
-          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
-        )
-  })
-})
-
-# Extract results for the outcome variable 
-
-tbl <- getTable7_het(empowerment, mainResults_mech_ben)
-tbl
-```
-
-
-
-
-## Mechanism 4 : Time use
-### Grouping time use variables
-
-```{r}
-
+#----------------------------------------
+# Time Use Variables (hours or dummies)
+#----------------------------------------
+time_use_int <- c(
+  # Weekly time use by activity
+  "time_wk_ben_nonag",        # Time in non-ag activities
+  "time_wk_ben_water",        # Time fetching water
+  "time_wk_ben_cook",         # Time cooking
+  "time_wk_ben_ag",           # Time in agricultural activities
+  "time_wk_ben_firewood",     # Time collecting firewood
+  "time_wk_ben_clean",        # Time cleaning
+  "time_wk_ben_study_coran",  # Time studying the Quran
+  "time_wk_ben_laundry",      # Time doing laundry
+  "time_wk_ben_liv",          # Time in livestock activities
+  "time_wk_ben_study_trad",   # Time in traditional study
+  "time_wk_ben_shop",         # Time shopping
+  "time_wk_ben_child",# Time with children and disabled relatives
+  "time_wk_ben_handicap",        # Time with disabled
+  "time_wk_ben_family",          # Time with friends
+  "time_wk_ben_radio",           # Time listening to radio
+  "time_wk_ben_rest",            # Time resting
+  "time_wk_ben_study_trad",   # Time studying traditional school
+  "time_wk_ben_shop",            # Time spent shopping
+  "time_wk_ben_pray"            # Time praying
+)
+
+
+
+time_use_ext <- c(
+
+  # Dummy variables indicating whether these activities were done
+  "time_ben_nonag_d", "time_ben_ag_d", "time_ben_study_coran_d", 
+  "time_ben_study_trad_d", "time_ben_water_d","time_ben_firewood_d", 
+  "time_ben_laundry_d", "time_ben_shop_d", "time_ben_cook_d", "time_ben_clean_d",
+  "time_ben_liv_d", "time_ben_child_d", "time_ben_handicap_d", "time_ben_family_d",
+  "time_ben_radio_d", "time_ben_rest_d", "time_ben_study_trad_d","time_ben_shop_d",
+  "time_ben_pray_d"
+)
 
 in_house_chores <- c(
   "time_wk_ben_water",     # fetching water
@@ -743,7 +458,7 @@ in_house_chores <- c(
   "time_wk_ben_clean",     # cleaning
   "time_wk_ben_laundry",   # laundry
   "time_wk_ben_shop",      # shopping
-  "time_wk_ben_child",        # childcare
+  "time_wk_ben_child",        # childcare and handicaped relatives
   "time_wk_ben_firewood",  # collecting firewood
   "time_wk_ben_handicap"      # helping disabled relatives
 )
@@ -766,17 +481,447 @@ leisure_time <- c(
 
 time_use_group <- c("tot_time_in_house_chores","tot_time_market_income","tot_time_leisure","tot_time_other")
 
-followup_MRT_hh <- followup_MRT_hh %>%
+followup_ipv_MRT_hh <- followup_ipv_MRT_hh %>% 
+  mutate(time_wk_ben_child_handicap = time_wk_ben_child + time_wk_ben_handicap) %>%
   mutate(tot_time_in_house_chores = apply(select(., in_house_chores), 1, sum, na.rm = TRUE)) %>% 
   mutate(tot_time_market_income = apply(select(., market_income), 1, sum, na.rm = TRUE)) %>% 
   mutate(tot_time_leisure = apply(select(., leisure_time), 1, sum, na.rm = TRUE))%>% 
-  mutate(tot_time_other = 10080 - (tot_time_in_house_chores + tot_time_market_income + tot_time_leisure))
+  mutate(tot_time_other = 10080 - (tot_time_in_house_chores + tot_time_market_income + tot_time_leisure)) 
 
-followup_MRT_hh_control <- followup_MRT_hh_control %>%
-  mutate(tot_time_in_house_chores = apply(select(., in_house_chores), 1, sum, na.rm = TRUE)) %>% 
-  mutate(tot_time_market_income = apply(select(., market_income), 1, sum, na.rm = TRUE)) %>% 
-  mutate(tot_time_leisure = apply(select(., leisure_time), 1, sum, na.rm = TRUE))%>% 
-  mutate(tot_time_other = 10080 - (tot_time_in_house_chores + tot_time_market_income + tot_time_leisure))
+# Control group in Main
+followup_ipv_MRT_hh_control_pi <- followup_ipv_MRT_hh %>% 
+  filter(treatment_pi=="Control") %>% 
+  filter(reg_hh_pi_mrt==1)
+
+followup_ipv_MRT_hh_control_csh_trnsfr <- followup_ipv_MRT_hh %>% filter(treatment_csh_trnsfr=="Control") %>% 
+      filter(reg_hh_csh_mrt==1)
+
+
+# Define the two treatment variables 
+treatment_vars=c("treatment_csh_trnsfr","treatment_pi","treatment_pi_pool")
+```
+
+<!---BLOCK_TOC--->
+
+
+<!---BLOCK_LANDSCAPE_START--->
+\newpage
+# Summary
+
+**Key Takeaways**:
+
+
+# Mechanism
+
+
+
+## Mechanism 2 : Intra-household Conflict
+
+```{r}
+####################### Ben
+# Create a data frame of results examining heterogeneous treatment effects
+# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
+mainResults_mech_ben <- map_dfr(intra_hh_vars, function(depvar) {
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+
+```
+
+### Main variables
+```{r}
+
+# Extract results for the outcome variable 
+
+  
+  outcome_labels <- c(
+    "Intra-household \n dynamics index",
+    "Violence \n perceptions index",
+    "Gender \n attitudes index"
+  )
+  
+table_title = "Effects of the programs on Intrahousehould dynamic"
+tbl <- getTable1_mech(intra_hh_vars, mainResults_mech_ben, outcome_labels, table_title)
+tbl
+
+# tbl <- getTable3_het(intra_hh_vars, mainResults_mech_ben)
+# # Print the final table
+# tbl
+
+```
+
+
+
+### Indexes components
+
+```{r}
+####################### Ben
+# Create a data frame of results examining heterogeneous treatment effects
+# across different dimention of intrahh index
+mainResults_mech_intrah <- map_dfr(intra_hh_index_components_vars, function(depvar) {
+
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+    })
+})
+
+# Violence perception index
+mainResults_mech_violence <- map_dfr(violence_prcptn_index_components_vars, function(depvar) {
+ 
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+
+# Violence perception index
+mainResults_mech_gender <- map_dfr(gender_attitudes_index_components_vars, function(depvar) {
+ 
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+# Social norm index
+mainResults_mech_socialnorm <- map_dfr(social_norm_index_components_vars, function(depvar) {
+
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+
+# Social norm index
+mainResults_mech_private <- map_dfr(priv_expenditures, function(depvar) {
+
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+
+```
+
+### Intra-household dynamics index and components
+```{r}
+# Extract results for the outcome variable 
+
+outcome_labels <- c(
+  "Intra-household \n dynamics \n index",
+  "Partner \n dynamics \n index",
+  "Comfortable \n disagreeing with \n partner (1-4)",
+  "Trusts\n partner\n (1-4)",
+  "Partner\n inclusiveness\n (1-4)",
+  "Household \n dynamics \n index",
+  "Household\n inclusiveness\n (1-4)",
+  "Household\n tensions\n frequent (1-4)",
+  "Relationship \n satisfaction \n (1-10)"
+  )
+
+
+  
+table_title = "Effects of the programs on Household tension"
+tbl <- getTable1_mech(intra_hh_index_components_vars, mainResults_mech_intrah, outcome_labels, table_title)
+tbl
+```
+
+
+#### Social norm index and components
+```{r}
+
+outcome_labels <- c(
+    "Social\n norms\n index",
+    "Descriptive\n norms\n index",
+    "Know women\n travel freely\n (0-10)",
+    "Know\n women\n with loans (0-10)",
+    "Know women\n who started\n activities (0-10)",
+    "Know women\n travel freely \n (0-10)",
+    "Prescriptive\n norms\n index",
+    "No. men who think\n women shd travel\n freely (0-10)",
+    "No. men who think\n women shd have\n own work (0-10)",
+    "No. women who think\n women shd travel\n freely (0-10)",
+    "No. women who think\n women shd have\n own work (0-10)"
+  )
+
+table_title = "Effects of the programs on Norms"
+
+tbl <- getTable1_mech(social_norm_index_components_vars, mainResults_mech_socialnorm, outcome_labels, table_title)
+tbl
+
+# # Generate tables
+# tbl <- getTable3_het_intra(intra_hh_index_components_vars, mainResults_mech_intrah)
+# tbl
+```
+
+
+#### Gender attitudes index 
+
+```{r}
+
+outcome_labels <- c(
+  "Gender\n attitudes\n index",
+  # Individual component variables:
+  "Food violence \n is OK (0,1)",
+  "Children violence \n is OK (0,1)",
+  "Should tolerate \n violence (1-4)",
+  "Only men should \n work (1-4)",
+  "Should school \n girls (1-4)"
+  )
+  
+table_title = "Effects of the programs on Gender attitudes and components"
+tbl <- getTable1_mech(gender_attitudes_index_components_vars, mainResults_mech_gender, outcome_labels, table_title)
+tbl
+
+# Generate tables
+# tbl <- getTable3_het_violence(violence_prcptn_index_components_vars, mainResults_mech_violence)
+# tbl
+
+```
+
+
+
+
+#### Violence perception index components
+
+```{r}
+
+outcome_labels <- c(
+  "Violence\n perceptions\n index",
+  "HH tension \n (out of 10 women)",
+  "Village: beating \n OK if burns \n  food (0,1)",
+  "Village: beating \n OK if neglects \n kids (0,1)"
+  )
+  
+table_title = "Effects of the programs on Violence perceptions and components"
+
+tbl <- getTable1_mech(violence_prcptn_index_components_vars, mainResults_mech_violence, outcome_labels, table_title)
+tbl
+
+# Generate tables
+# tbl <- getTable3_het_gender(gender_attitudes_index_components_vars, mainResults_mech_gender)
+# tbl
+
+```
+
+
+
+#### Social norm index components
+
+```{r}
+
+
+outcome_labels <- c(
+  "Social\n norms\n index",
+  "Descriptive\n norms\n index",
+  "Know women\n travel freely\n (0-10)",
+  "Know\n women\n with loans (0-10)",
+  "Know women\n who started\n activities (0-10)",
+  "Know women\n travel freely \n (0-10)",
+  "Prescriptive\n norms\n index",
+  "No. men who think\n women shd travel\n freely (0-10)",
+  "No. men who think\n women shd have\n own work (0-10)",
+  "No. women who think\n women shd travel\n freely (0-10)",
+  "No. women who think\n women shd have\n own work (0-10)"
+  )
+  
+table_title = "Effects of the programs on Social norms index and components"
+
+# Generate tables
+tbl <- getTable1_mech(social_norm_index_components_vars, mainResults_mech_socialnorm, outcome_labels, table_title)
+
+tbl
+# tbl <- getTable3_het_socialnorm(social_norm_index_components_vars, mainResults_mech_socialnorm)
+# tbl
+
+```
+### Private good consumption:
+
+```{r}
+
+outcome_labels <- c(
+  "Partner private goods \n consumption (USD, yearly)",
+  "Benef. private goods \n consumption (USD, yearly)",
+  "Other goods consumption \n (USD, yearly)"
+  )
+  
+table_title = "Effects of the programs on private goods consumption"
+
+# Generate tables
+tbl <- getTable1_mech(priv_expenditures, mainResults_mech_private, outcome_labels, table_title)
+tbl
+# Generate tables
+# tbl <- getTable3_het_private(priv_expenditures, mainResults_mech_private)
+# tbl
+
+
+```
+
+
+
+## Mechanism 3 : Women’s bargaining power
+### Decision making
+
+```{r}
+####################### Ben
+# Create a data frame of results examining heterogeneous treatment effects
+# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
+mainResults_mech_ben <- map_dfr(dec_making, function(depvar) {
+
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+    })
+})
+
+
+
+outcome_labels <- c(
+  "Control over \n household \n resources index",
+  "Control over \n earnings \n index",
+  "Own \n earnings \n influence (1-3)",
+  "Can Decide \n to Earn \n Alone (1-3)",
+  "Agriculture \n influence (1-3)",
+  "Livestock \n influence (1-3)",
+  "Off-farm \n business \n influence (1-3)",
+  "Daily \n spending \n influence (1-3)",
+  "Can Decide \n to Spend \n Alone (1-3)",
+  "Large \n purchases \n influence (1-3)",
+  "Can Decide to \n Spend Large \n Amounts Alone (1-3)",
+  "Family \n planning \n influence (1-3)",
+  "Can Make \n Fertility \n Choices Alone (1-3)",
+  "Own \n healthcare \n influence (1-3)",
+  "Can Decide \n about Self-Care \n Alone (1-3)",
+  "Partner's \n earnings \n influence (1-3)",
+  "Child \n education \n influence (1-3)"
+  )
+  
+table_title = "Effects of the programs on decision making"
+
+# Generate tables
+tbl <- getTable1_mech(dec_making, mainResults_mech_ben, outcome_labels, table_title)
+tbl
+
+# tbl <- getTable4_het(dec_making, mainResults_mech_hh)
+# tbl
+```
+
+### Empowerment 
+
+```{r}
+
+####################### Ben
+# Create a data frame of results examining heterogeneous treatment effects
+# across different economic IPV outcomes, treatment variables, and heterogeneity dimensions
+mainResults_mech_ben <- map_dfr(empowerment, function(depvar) {
+
+  
+    # For each treatment variable...
+    tempResults2 <- map_dfr(treatment_vars, function(treat_var) {
+
+      bind_rows(
+        # Get estimates for heterogeneous treatment effects using the specified model
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+          # Add columns identifying which variables were used in this iteration
+          mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
+        )
+  })
+})
+
+
+outcome_labels <- c(
+  "Can Decide to\n Earn Alone (1-4)",
+  "Wage\n earnings\n (yearly, USD)",
+  "Benef. controls\n crop\n revenue (0,1)",
+  "No. of\n beneficiary\n businesses",
+  "Beneficiary\n has a\n business (0,1)",
+  "No. of months benef worked last year",
+  "Entrepreneurial\n business types\n (yearly)",
+  "Beneficiary\n launched a\n business (0,1)",
+  "Beneficiary\n abandoned a\n business (0,1)",
+  "Personnal\n savings",
+  "Business\n revenues\n (yearly, USD)",
+  "Business\n profits\n (yearly, USD)",
+  "Business\n asset\n value (USD)",
+  "Beneficiary\n investments\n (yearly, USD)",
+  "Business revenue\n (beneficiary,\n monthly, USD)",
+  "Benef. owns\n livestock\n (0,1)",
+  "Benef. controls\n livestock\n revenue (0,1)",
+  "Benef. traveled\n for work\n (0,1)"
+  )
+  
+table_title = "Effects of the programs on women empowerment"
+
+# Generate tables
+tbl <- getTable1_mech(empowerment, mainResults_mech_ben, outcome_labels, table_title)
+tbl
+
+# Extract results for the outcome variable 
+# tbl <- getTable7_het(empowerment, mainResults_mech_ben)
+# tbl
+```
+
+## Mechanism 4 : Time use
+### Grouping time use variables
+
+```{r}
+
 
 ####################### Ben
 # Create a data frame of results examining heterogeneous treatment effects
@@ -788,7 +933,7 @@ mainResults_mech_ben <- map_dfr(time_use_group, function(depvar) {
 
       bind_rows(
         # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
           # Add columns identifying which variables were used in this iteration
           mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
         )
@@ -796,13 +941,30 @@ mainResults_mech_ben <- map_dfr(time_use_group, function(depvar) {
 })
 
 
-# Extract results for the outcome variable 
 
-tbl <- getTable5_het(time_use_group, mainResults_mech_ben)
-tbl
 
 ```
 
+```{r}
+
+outcome_labels <- c(
+  "Tot Mins in \n household \n chores (last 7 days)",
+  "Tot Mins in \n market income \n activities (last 7 days)",
+  "Tot Mins in \n leisure \n activities (last 7 days)",
+  "Tot Mins in \n other \n activities (last 7 days)"
+  )
+  
+table_title = "Effects of the programs on time use"
+
+# Generate tables
+tbl <- getTable1_mech(time_use_group, mainResults_mech_ben, outcome_labels, table_title)
+tbl
+
+# Extract results for the outcome variable 
+# 
+# tbl <- getTable5_het(time_use_group, mainResults_mech_ben)
+# tbl
+```
 
 
 ### All variables
@@ -817,7 +979,7 @@ mainResults_mech_ben <- map_dfr(time_use_int, function(depvar) {
 
       bind_rows(
         # Get estimates for heterogeneous treatment effects using the specified model
-        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_MRT_hh) %>%
+        getEstimate_mechanism(depvar, treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
           # Add columns identifying which variables were used in this iteration
           mutate(depvar = depvar, outcome = depvar, treat_var = treat_var)
         )
@@ -825,10 +987,37 @@ mainResults_mech_ben <- map_dfr(time_use_int, function(depvar) {
 })
 
 
-# Extract results for the outcome variable 
+outcome_labels <- c(
+  "Mins in \n off-farm \n business",
+  "Mins spent \n retrieving \n water",
+  "Mins spent \n cooking",
+  "Mins spent \n agriculture",
+  "Mins spent \n gathering \n firewood",
+  "Mins spent \n cleaning",
+  "Mins \n studying for \n Koranic school",
+  "Mins spent \n doing \n laundry",
+  "Mins in \n livestock",
+  "Mins \n studying for \n traditional school",
+  "Mins spent \n shopping",
+  "Mins spent \n on childcare",
+  "Mins spent \n taking care of \n disabled relatives",
+  "Mins spent \n with friends",
+  "Mins spent \n listening radio",
+  "Mins spent \n resting",
+  "Mins \n studying for \n traditional school",
+  "Mins spent \n shopping",
+  "Mins spent \n praying"
+  )
+  
+table_title = "Effects of the programs on time use"
 
-tbl <- getTable6_het(time_use_int, mainResults_mech_ben)
+tbl <- getTable1_mech(time_use_int, mainResults_mech_ben, outcome_labels, table_title)
 tbl
+
+# Extract results for the outcome variable 
+# 
+# tbl <- getTable6_het(time_use_int, mainResults_mech_ben)
+# tbl
 ```
 
 ```{r}

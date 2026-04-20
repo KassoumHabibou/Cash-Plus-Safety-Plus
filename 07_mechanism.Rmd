@@ -1,5 +1,5 @@
 ---
-title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Economic Inclusion in Mauritania"
 subtitle: "Mechanism"
 author: "IBRAHIM KASSOUM Habibou"
 date: '`r format (Sys.Date(), "%d %B %Y")`'
@@ -133,7 +133,7 @@ align(j = 1, part = "all", align = "left")
 ######################## Loading the datasets ##################################
 # Read the file containing the global dataframe into followup_MRT_hh
 
-followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_MRT_hh_and_ipv_MRT_hh.rds"))
+followup_MRT_hh <- readRDS(paste0(getwd(),"/output/data/followup_ipv_MRT_hh.rds"))
 
 # Creating some variables at partner level
 followup_MRT_hh <- followup_MRT_hh %>% 
@@ -272,7 +272,7 @@ dec_making <- c(
   "ctrl_hh_index",            # Index of control over household decisions
   "ctrl_earn_index",          # Index of control over earnings
   "dec_pow_earn", "dec_could_earn",      # Power/capacity to earn
-  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in productive sectors
+  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in Economic sectors
   "dec_pow_spend", "dec_could_spend", "dec_pow_large", "dec_could_large",
   "dec_pow_fert", "dec_could_fert", "dec_pow_care", "dec_could_care",
   "dec_pow_his_earn", "dec_pow_edu"
@@ -328,7 +328,7 @@ violence_prcptn_index_components_vars <- c(
 ctrl_over_earn_index_components_vars <- c(
   "ctrl_earn_index",          # Index of control over earnings
   "dec_pow_earn", "dec_could_earn",      # Power/capacity to earn
-  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in productive sectors
+  "dec_pow_ag", "dec_pow_liv", "dec_pow_bus",  # Power in Economic sectors
   "crop_ctrl_dum", "bus2_ben_dum", "ani_ben_dum", "ani_contr_ben_dum", "sleep_prod_dum"  # Decision control variables
 )
 

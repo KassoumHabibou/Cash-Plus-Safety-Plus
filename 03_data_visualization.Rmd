@@ -1,5 +1,5 @@
 ---
-title: "Cash Plus, Safety Plus? Intimate Partner Violence and Productive Inclusion in Mauritania"
+title: "Cash Plus, Safety Plus? Intimate Partner Violence and Economic Inclusion in Mauritania"
 subtitle: "Data visualization"
 author: "IBRAHIM KASSOUM Habibou"
 date: '`r format (Sys.Date(), "%d %B %Y")`'

@@ -2,4751 +2,3963 @@
 ######### Function for computing Mechanisms tables #########################
 ############################################################################
 
-
-
-getTable7_het <- function(curr_het_var_lab, curr_het_var, empowerment, mainResults_mech_hh){
-  
-  mainResults_mech_ben_curr <- mainResults_mech_ben %>% filter(het_var==curr_het_var)
-  
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_ben_curr_csh$results_base[[6]]  #  cash transfer model
-  m16 <- mainResults_mech_ben_curr_csh$results_base[[7]]  # Second cash transfer model
-  m17 <- mainResults_mech_ben_curr_csh$results_base[[8]]  #  cash transfer model
-  m18 <- mainResults_mech_ben_curr_csh$results_base[[9]]  #  cash transfer model
-  m19 <- mainResults_mech_ben_curr_csh$results_base[[10]]  #  cash transfer model
-  m110 <- mainResults_mech_ben_curr_csh$results_base[[11]]  #  cash transfer model
-  m111 <- mainResults_mech_ben_curr_csh$results_base[[12]]  #  cash transfer model
-  m112 <- mainResults_mech_ben_curr_csh$results_base[[13]]  #  cash transfer model
-  m113 <- mainResults_mech_ben_curr_csh$results_base[[14]]  #  cash transfer model
-  m114 <- mainResults_mech_ben_curr_csh$results_base[[15]]  #  cash transfer model
-  m115 <- mainResults_mech_ben_curr_csh$results_base[[16]]  #  cash transfer model
-  m116 <- mainResults_mech_ben_curr_csh$results_base[[17]]  #  cash transfer model
-  m117 <- mainResults_mech_ben_curr_csh$results_base[[18]]  #  cash transfer model
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_ben_curr_pi$results_base[[6]]  #  productive inclusion model
-  m26 <- mainResults_mech_ben_curr_pi$results_base[[7]]  #  productive inclusion model
-  m27 <- mainResults_mech_ben_curr_pi$results_base[[8]]  #  productive inclusion model
-  m28 <- mainResults_mech_ben_curr_pi$results_base[[9]]  #  productive inclusion model
-  m29 <- mainResults_mech_ben_curr_pi$results_base[[10]]  #  productive inclusion model
-  m210 <- mainResults_mech_ben_curr_pi$results_base[[11]]  #  productive inclusion model
-  m211 <- mainResults_mech_ben_curr_pi$results_base[[12]]  #  productive inclusion model
-  m212 <- mainResults_mech_ben_curr_pi$results_base[[13]]  #  productive inclusion model
-  m213 <- mainResults_mech_ben_curr_pi$results_base[[14]]  #  productive inclusion model
-  m214 <- mainResults_mech_ben_curr_pi$results_base[[15]]  #  productive inclusion model
-  m215 <- mainResults_mech_ben_curr_pi$results_base[[16]]  #  productive inclusion model
-  m216 <- mainResults_mech_ben_curr_pi$results_base[[17]]  #  productive inclusion model
-  m217 <- mainResults_mech_ben_curr_pi$results_base[[18]]  #  productive inclusion model
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_ben_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  m36 <- mainResults_mech_ben_curr_pool$results_base[[7]]  #  pool productive inclusion model
-  m37 <- mainResults_mech_ben_curr_pool$results_base[[8]]  #  pool productive inclusion model
-  m38 <- mainResults_mech_ben_curr_pool$results_base[[9]]  #  pool productive inclusion model
-  m39 <- mainResults_mech_ben_curr_pool$results_base[[10]]  #  pool productive inclusion model
-  m310 <- mainResults_mech_ben_curr_pool$results_base[[11]]  #  pool productive inclusion model
-  m311 <- mainResults_mech_ben_curr_pool$results_base[[12]]  #  pool productive inclusion model
-  m312 <- mainResults_mech_ben_curr_pool$results_base[[13]]  #  pool productive inclusion model
-  m313 <- mainResults_mech_ben_curr_pool$results_base[[14]]  #  pool productive inclusion model
-  m314 <- mainResults_mech_ben_curr_pool$results_base[[15]]  #  pool productive inclusion model
-  m315 <- mainResults_mech_ben_curr_pool$results_base[[16]]  #  pool productive inclusion model
-  m316 <- mainResults_mech_ben_curr_pool$results_base[[17]]  #  pool productive inclusion model
-  m317 <- mainResults_mech_ben_curr_pool$results_base[[18]]  #  pool productive inclusion model
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in empowerment) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-  }
-  
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m210, m211, m212, m213, m214, m215, m216, m217)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m310, m311, m312, m313, m314, m315, m316, m317)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m110, m111, m112, m113, m114, m115, m116, m117)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Can Decide to\n Earn Alone (1-4)")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Can Decide to\n Earn Alone (1-4)")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Can Decide to\n Earn Alone (1-4)")
-  
-  ### 
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Wage\n earnings\n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Wage\n earnings\n (yearly, USD)")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Wage\n earnings\n (yearly, USD)")
-  
-  ### partner
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Benef. controls\n crop\n revenue (0,1)")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Benef. controls\n crop\n revenue (0,1)")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Benef. controls\n crop\n revenue (0,1)")
-  
-  
-  ## Business rev
-  ### hh
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "No. of\n beneficiary\n businesses")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "No. of\n beneficiary\n businesses")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "No. of\n beneficiary\n businesses")
-  
-  ### ben
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "Beneficiary\n has a\n business (0,1)")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate =  "Beneficiary\n has a\n business (0,1)")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate =  "Beneficiary\n has a\n business (0,1)")
-  
-  ### partner
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "No. of months benef worked last year")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "No. of months benef worked last year")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "No. of months benef worked last year")
-  
-  ## Wage rev
-  ### hh
-  tbl_list_pi[[7]] <- tbl_list_pi[[7]] %>%
-    modify_header(estimate = "Entrepreneurial\n business types\n (yearly)")
-  
-  tbl_list_csh_trnsfr[[7]] <- tbl_list_csh_trnsfr[[7]] %>%
-    modify_header(estimate = "Entrepreneurial\n business types\n (yearly)")
-  
-  tbl_list_pi_pool[[7]] <- tbl_list_pi_pool[[7]] %>%
-    modify_header(estimate = "Entrepreneurial\n business types\n (yearly)")
-  
-  ### ben
-  tbl_list_pi[[8]] <- tbl_list_pi[[8]] %>%
-    modify_header(estimate = "Beneficiary\n launched a\n business (0,1)")
-  
-  tbl_list_csh_trnsfr[[8]] <- tbl_list_csh_trnsfr[[8]] %>%
-    modify_header(estimate = "Beneficiary\n launched a\n business (0,1)")
-  
-  tbl_list_pi_pool[[8]] <- tbl_list_pi_pool[[8]] %>%
-    modify_header(estimate = "Beneficiary\n launched a\n business (0,1)")
-  
-  ### part
-  tbl_list_pi[[9]] <- tbl_list_pi[[9]] %>%
-    modify_header(estimate = "Beneficiary\n abandoned a\n business (0,1)")
-  
-  tbl_list_csh_trnsfr[[9]] <- tbl_list_csh_trnsfr[[9]] %>%
-    modify_header(estimate = "Beneficiary\n abandoned a\n business (0,1)")
-  
-  tbl_list_pi_pool[[9]] <- tbl_list_pi_pool[[9]] %>%
-    modify_header(estimate = "Beneficiary\n abandoned a\n business (0,1)")
-  
-  ## Livestock
-  ### hh
-  tbl_list_pi[[10]] <- tbl_list_pi[[10]] %>%
-    modify_header(estimate = "Personnal\n savings")
-  
-  tbl_list_csh_trnsfr[[10]] <- tbl_list_csh_trnsfr[[10]] %>%
-    modify_header(estimate = "Personnal\n savings")
-  
-  tbl_list_pi_pool[[10]] <- tbl_list_pi_pool[[10]] %>%
-    modify_header(estimate = "Personnal\n savings")
-  
-  ### ben
-  tbl_list_pi[[11]] <- tbl_list_pi[[11]] %>%
-    modify_header(estimate = "Business\n revenues\n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[11]] <- tbl_list_csh_trnsfr[[11]] %>%
-    modify_header(estimate = "Business\n revenues\n (yearly, USD)")
-  
-  tbl_list_pi_pool[[11]] <- tbl_list_pi_pool[[11]] %>%
-    modify_header(estimate = "Business\n revenues\n (yearly, USD)")
-  
-  ### prt
-  tbl_list_pi[[12]] <- tbl_list_pi[[12]] %>%
-    modify_header(estimate = "Business\n profits\n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[12]] <- tbl_list_csh_trnsfr[[12]] %>%
-    modify_header(estimate = "Business\n profits\n (yearly, USD)")
-  
-  tbl_list_pi_pool[[12]] <- tbl_list_pi_pool[[12]] %>%
-    modify_header(estimate = "Business\n profits\n (yearly, USD)")
-  
-  tbl_list_pi[[13]] <- tbl_list_pi[[13]] %>%
-    modify_header(estimate = "Business\n asset\n value (USD)")
-  
-  tbl_list_csh_trnsfr[[13]] <- tbl_list_csh_trnsfr[[13]] %>%
-    modify_header(estimate = "Business\n asset\n value (USD)")
-  
-  tbl_list_pi_pool[[13]] <- tbl_list_pi_pool[[13]] %>%
-    modify_header(estimate = "Business\n asset\n value (USD)")
-  
-  tbl_list_pi[[14]] <- tbl_list_pi[[14]] %>%
-    modify_header(estimate = "Beneficiary\n investments\n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[14]] <- tbl_list_csh_trnsfr[[14]] %>%
-    modify_header(estimate = "Beneficiary\n investments\n (yearly, USD)")
-  
-  tbl_list_pi_pool[[14]] <- tbl_list_pi_pool[[14]] %>%
-    modify_header(estimate = "Beneficiary\n investments\n (yearly, USD)")
-  
-  tbl_list_pi[[15]] <- tbl_list_pi[[15]] %>%
-    modify_header(estimate = "Business revenue\n (beneficiary,\n monthly, USD)")
-  
-  tbl_list_csh_trnsfr[[15]] <- tbl_list_csh_trnsfr[[15]] %>%
-    modify_header(estimate = "Business revenue\n (beneficiary,\n monthly, USD)")
-  
-  tbl_list_pi_pool[[15]] <- tbl_list_pi_pool[[15]] %>%
-    modify_header(estimate = "Business revenue\n (beneficiary,\n monthly, USD)")
-  
-  tbl_list_pi[[16]] <- tbl_list_pi[[16]] %>%
-    modify_header(estimate = "Benef. owns\n livestock\n (0,1)")
-  
-  tbl_list_csh_trnsfr[[16]] <- tbl_list_csh_trnsfr[[16]] %>%
-    modify_header(estimate = "Benef. owns\n livestock\n (0,1)")
-  
-  tbl_list_pi_pool[[16]] <- tbl_list_pi_pool[[16]] %>%
-    modify_header(estimate = "Benef. owns\n livestock\n (0,1)")
-  
-  tbl_list_pi[[17]] <- tbl_list_pi[[17]] %>%
-    modify_header(estimate = "Benef. controls\n livestock\n revenue (0,1)")
-  
-  tbl_list_csh_trnsfr[[17]] <- tbl_list_csh_trnsfr[[17]] %>%
-    modify_header(estimate = "Benef. controls\n livestock\n revenue (0,1)")
-  
-  tbl_list_pi_pool[[17]] <- tbl_list_pi_pool[[17]] %>%
-    modify_header(estimate = "Benef. controls\n livestock\n revenue (0,1)")
-  
-  tbl_list_pi[[18]] <- tbl_list_pi[[18]] %>%
-    modify_header(estimate = "Benef. traveled\n for work\n (0,1)")
-  
-  tbl_list_csh_trnsfr[[18]] <- tbl_list_csh_trnsfr[[18]] %>%
-    modify_header(estimate = "Benef. traveled\n for work\n (0,1)")
-  
-  tbl_list_pi_pool[[18]] <- tbl_list_pi_pool[[18]] %>%
-    modify_header(estimate = "Benef. traveled\n for work\n (0,1)")
-  
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]], 
-                tbl_list_csh_trnsfr[[7]], 
-                tbl_list_csh_trnsfr[[8]],
-                tbl_list_csh_trnsfr[[9]],
-                tbl_list_csh_trnsfr[[10]],
-                tbl_list_csh_trnsfr[[11]],
-                tbl_list_csh_trnsfr[[12]],
-                tbl_list_csh_trnsfr[[13]],
-                tbl_list_csh_trnsfr[[14]],
-                tbl_list_csh_trnsfr[[15]],
-                tbl_list_csh_trnsfr[[16]],
-                tbl_list_csh_trnsfr[[17]],
-                tbl_list_csh_trnsfr[[18]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)","(18)")
-    #tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]], 
-                tbl_list_pi[[7]], 
-                tbl_list_pi[[8]],
-                tbl_list_pi[[9]],
-                tbl_list_pi[[10]],
-                tbl_list_pi[[11]],
-                tbl_list_pi[[12]], 
-                tbl_list_pi[[13]],
-                tbl_list_pi[[14]],
-                tbl_list_pi[[15]],
-                tbl_list_pi[[16]],
-                tbl_list_pi[[17]],
-                tbl_list_pi[[18]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)","(18)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]], 
-                tbl_list_pi_pool[[7]], 
-                tbl_list_pi_pool[[8]],
-                tbl_list_pi_pool[[9]],
-                tbl_list_pi_pool[[10]],
-                tbl_list_pi_pool[[11]],
-                tbl_list_pi_pool[[12]], 
-                tbl_list_pi_pool[[13]],
-                tbl_list_pi_pool[[14]],
-                tbl_list_pi_pool[[15]],
-                tbl_list_pi_pool[[16]],
-                tbl_list_pi_pool[[17]],
-                tbl_list_pi_pool[[18]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)","(18)")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, ~estimate_10,
-    ~estimate_11, ~estimate_12,~estimate_13, ~estimate_14,~estimate_15,
-    ~estimate_16, ~estimate_17,~estimate_18, 
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, ~stars_7, ~stars_8, ~stars_9, ~stars_10,~stars_11, ~stars_12,
-    ~stars_13,~stars_14, ~stars_15,~stars_16,~stars_17,~stars_18,
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], mean_values[7], mean_values[8], mean_values[9], mean_values[10], 
-    mean_values[11], mean_values[12],mean_values[13], mean_values[14],mean_values[15],
-    mean_values[16], mean_values[17], mean_values[18], 
-    "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "","", "","",
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], sd_values[7], sd_values[8], sd_values[9], sd_values[10],
-    sd_values[11], sd_values[12],sd_values[13], sd_values[14],
-    sd_values[15], sd_values[16],sd_values[17], sd_values[18],
-    "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "","", "","", 
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    as.numeric(cash$full[6]), as.numeric(cash$full[7]), as.numeric(cash$full[8]),
-    as.numeric(cash$full[9]), as.numeric(cash$full[10]), as.numeric(cash$full[11]), 
-    as.numeric(cash$full[12]), as.numeric(cash$full[13]), as.numeric(cash$full[14]), 
-    as.numeric(cash$full[15]), as.numeric(cash$full[16]), as.numeric(cash$full[17]),
-    as.numeric(cash$full[18]), 
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], cash$full_start[7], cash$full_start[8],
-    cash$full_start[9], cash$full_start[10], cash$full_start[11], cash$full_start[12],
-    cash$full_start[13], cash$full_start[14], cash$full_start[15], cash$full_start[16],
-    cash$full_start[17], cash$full_start[18],
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    as.numeric(pool$full[6]), as.numeric(pool$full[7]), as.numeric(pool$full[8]),
-    as.numeric(pool$full[9]), as.numeric(pool$full[10]),
-    as.numeric(pool$full[11]), as.numeric(pool$full[12]), as.numeric(pool$full[13]),
-    as.numeric(pool$full[14]), as.numeric(pool$full[15]), as.numeric(pool$full[16]),
-    as.numeric(pool$full[17]), as.numeric(pool$full[18]),
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6], pool$full_start[7], pool$full_start[8],
-    pool$full_start[9], pool$full_start[10],
-    pool$full_start[11], pool$full_start[12],
-    pool$full_start[13], pool$full_start[14],
-    pool$full_start[15], pool$full_start[16],
-    pool$full_start[17], pool$full_start[18]
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
+######################### Helper function #########################################
+# Define a function to recode and create new variables
+recode_and_generate <- function(df, columns_list) {
+  df <- df %>%
+    mutate(across(all_of(columns_list), ~ ifelse(. == 2, 0, .))) %>%   # Recode 2 -> 0
+    mutate(across(all_of(columns_list), ~ ifelse(. == 97, NA, .))) %>% # Recode 97 -> NA
+    mutate(across(all_of(columns_list), list(rec0 = ~ replace_na(., 0)))) %>%   # recode missing as 0
+    mutate(across(all_of(columns_list), list(rec1 = ~ replace_na(., 1)))) # recode missing as 1
+  return(df)
 }
 
 
-
-getTable3_het_socialnorm <- function(curr_het_var_lab, curr_het_var, socialnorm, reg_results){
-  
-  mainResults_mech_ben_curr <- reg_results %>% filter(het_var==curr_het_var)
-  
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_ben_curr_csh$results_base[[6]]  #  cash transfer model
-  m16 <- mainResults_mech_ben_curr_csh$results_base[[7]]  # Second cash transfer model
-  m17 <- mainResults_mech_ben_curr_csh$results_base[[8]]  #  cash transfer model
-  m18 <- mainResults_mech_ben_curr_csh$results_base[[9]]  #  cash transfer model
-  m19 <- mainResults_mech_ben_curr_csh$results_base[[10]]  #  cash transfer model
-  m110 <- mainResults_mech_ben_curr_csh$results_base[[11]]  #  cash transfer model
-
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_ben_curr_pi$results_base[[6]]  #  productive inclusion model
-  m26 <- mainResults_mech_ben_curr_pi$results_base[[7]]  #  productive inclusion model
-  m27 <- mainResults_mech_ben_curr_pi$results_base[[8]]  #  productive inclusion model
-  m28 <- mainResults_mech_ben_curr_pi$results_base[[9]]  #  productive inclusion model
-  m29 <- mainResults_mech_ben_curr_pi$results_base[[10]]  #  productive inclusion model
-  m210 <- mainResults_mech_ben_curr_pi$results_base[[11]]  #  productive inclusion model
-
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_ben_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  m36 <- mainResults_mech_ben_curr_pool$results_base[[7]]  #  pool productive inclusion model
-  m37 <- mainResults_mech_ben_curr_pool$results_base[[8]]  #  pool productive inclusion model
-  m38 <- mainResults_mech_ben_curr_pool$results_base[[9]]  #  pool productive inclusion model
-  m39 <- mainResults_mech_ben_curr_pool$results_base[[10]]  #  pool productive inclusion model
-  m310 <- mainResults_mech_ben_curr_pool$results_base[[11]]  #  pool productive inclusion model
-
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in socialnorm) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
+######################## HOLM-BONFERRONI CORRECTION FUNCTION ##########################################
+compute_holm_rows_PI <- function(mainResults,
+                                       depvar_binary,
+                                       depvar_index) {
+  # ---- internal helper: get p-value for a given coefficient in a felm model ----
+  get_p_for_coef <- function(mod, coef_name) {
+    if (is.null(mod)) return(NA_real_)
+    sm <- tryCatch(summary(mod), error = function(e) NULL)
+    if (is.null(sm) || is.null(sm$coefficients)) return(NA_real_)
     
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
+    cf <- sm$coefficients
+    if (!coef_name %in% rownames(cf)) return(NA_real_)
+    
+    p_col <- intersect(c("Pr(>|t|)", "Pr(>F)", "p.value"), colnames(cf))
+    if (length(p_col) == 0) return(NA_real_)
+    
+    as.numeric(cf[coef_name, p_col[1]])
   }
   
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m210)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m310)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m110)  # Cash transfer models
+  # ---- internal helper: format adjusted p with stars ----
+  format_adjusted_p <- function(p_value, add_stars = TRUE) {
+    if (is.na(p_value)) return("—")
+    
+    formatted <- sprintf("%.3f", p_value)
+    
+    if (add_stars) {
+      if (p_value < 0.01) {
+        formatted <- paste0(formatted, "***")
+      } else if (p_value < 0.05) {
+        formatted <- paste0(formatted, "**")
+      } else if (p_value < 0.10) {
+        formatted <- paste0(formatted, "*")
+      }
+    }
+    formatted
+  }
   
+  # ---------- restrict to EI Inclusion (3 arms) ----------
+  pi_3arms_bin <- mainResults %>%
+    dplyr::filter(curr_treat_var == "treatment_pi",
+                  depvar == depvar_binary) %>%
+    dplyr::slice(1)
   
+  pi_3arms_idx <- mainResults %>%
+    dplyr::filter(curr_treat_var == "treatment_pi",
+                  depvar == depvar_index) %>%
+    dplyr::slice(1)
   
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Social\n norms\n index")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Social\n norms\n index")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Social\n norms\n index")
-  
-  ### 
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Descriptive\n norms\n index")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Descriptive\n norms\n index")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Descriptive\n norms\n index")
-  
+  if (nrow(pi_3arms_bin) == 0 || nrow(pi_3arms_idx) == 0) {
+    warning("No PI 3-arms rows found in mainResults for the specified depvars.")
+    return(NULL)
+  }
 
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Know women\n travel freely\n (0-10)")
+  # Models for each column:
+  # (1) binary, no controls
+  m_bin_no   <- pi_3arms_bin$results_no_controls[[1]]
+  # (2) binary, with controls
+  m_bin_with <- pi_3arms_bin$results_with_controls[[1]]
+  # (3) index, no controls
+  m_idx_no   <- pi_3arms_idx$results_no_controls[[1]]
+  # (4) index, with controls
+  m_idx_with <- pi_3arms_idx$results_with_controls[[1]]
   
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Know women\n travel freely\n (0-10)")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Know women\n travel freely\n (0-10)")
-  
-  ### hh
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Know\n women\n with loans (0-10)")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Know\n women\n with loans (0-10)")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Know\n women\n with loans (0-10)")
-  
-  ### 
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "Know women\n who started\n activities (0-10)")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate = "Know women\n who started\n activities (0-10)")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate = "Know women\n who started\n activities (0-10)")
-  
-  ### 
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "Know women\n travel freely \n (0-10)")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "Know women\n travel freely \n (0-10)")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "Know women\n travel freely \n (0-10)")
-  
-  ### hh
-  tbl_list_pi[[7]] <- tbl_list_pi[[7]] %>%
-    modify_header(estimate = "Prescriptive\n norms\n index")
-  
-  tbl_list_csh_trnsfr[[7]] <- tbl_list_csh_trnsfr[[7]] %>%
-    modify_header(estimate = "Prescriptive\n norms\n index")
-  
-  tbl_list_pi_pool[[7]] <- tbl_list_pi_pool[[7]] %>%
-    modify_header(estimate = "Prescriptive\n norms\n index")
-  
-  ### ben
-  tbl_list_pi[[8]] <- tbl_list_pi[[8]] %>%
-    modify_header(estimate = "No. men who think\n women shd travel\n freely (0-10)")
-  
-  tbl_list_csh_trnsfr[[8]] <- tbl_list_csh_trnsfr[[8]] %>%
-    modify_header(estimate = "No. men who think\n women shd travel\n freely (0-10)")
-  
-  tbl_list_pi_pool[[8]] <- tbl_list_pi_pool[[8]] %>%
-    modify_header(estimate = "No. men who think\n women shd travel\n freely (0-10)")
-  
-  ### part
-  tbl_list_pi[[9]] <- tbl_list_pi[[9]] %>%
-    modify_header(estimate = "No. men who think\n women shd have\n own work (0-10)")
-  
-  tbl_list_csh_trnsfr[[9]] <- tbl_list_csh_trnsfr[[9]] %>%
-    modify_header(estimate = "No. men who think\n women shd have\n own work (0-10)")
-  
-  tbl_list_pi_pool[[9]] <- tbl_list_pi_pool[[9]] %>%
-    modify_header(estimate = "No. men who think\n women shd have\n own work (0-10)")
-  
-  ## Livestock
-  ### hh
-  tbl_list_pi[[10]] <- tbl_list_pi[[10]] %>%
-    modify_header(estimate = "No. women who think\n women shd travel\n freely (0-10)")
-  
-  tbl_list_csh_trnsfr[[10]] <- tbl_list_csh_trnsfr[[10]] %>%
-    modify_header(estimate = "No. women who think\n women shd travel\n freely (0-10)")
-  
-  tbl_list_pi_pool[[10]] <- tbl_list_pi_pool[[10]] %>%
-    modify_header(estimate = "No. women who think\n women shd travel\n freely (0-10)")
-  
-  ### ben
-  tbl_list_pi[[11]] <- tbl_list_pi[[11]] %>%
-    modify_header(estimate = "No. women who think\n women shd have\n own work (0-10)")
-  
-  tbl_list_csh_trnsfr[[11]] <- tbl_list_csh_trnsfr[[11]] %>%
-    modify_header(estimate = "No. women who think\n women shd have\n own work (0-10)")
-  
-  tbl_list_pi_pool[[11]] <- tbl_list_pi_pool[[11]] %>%
-    modify_header(estimate = "No. women who think\n women shd have\n own work (0-10)")
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]], 
-                tbl_list_csh_trnsfr[[7]], 
-                tbl_list_csh_trnsfr[[8]],
-                tbl_list_csh_trnsfr[[9]],
-                tbl_list_csh_trnsfr[[10]],
-                tbl_list_csh_trnsfr[[11]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]], 
-                tbl_list_pi[[7]], 
-                tbl_list_pi[[8]],
-                tbl_list_pi[[9]],
-                tbl_list_pi[[10]],
-                tbl_list_pi[[11]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)")
+  # ---------- p-values for Capital / Psychosocial / Full in each column ----------
+  p_col1 <- c(
+    Capital      = get_p_for_coef(m_bin_no,   "treatment_piCapital"),
+    Psychosocial = get_p_for_coef(m_bin_no,   "treatment_piPsychosocial"),
+    Full         = get_p_for_coef(m_bin_no,   "treatment_piFull")
   )
   
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]], 
-                tbl_list_pi_pool[[7]], 
-                tbl_list_pi_pool[[8]],
-                tbl_list_pi_pool[[9]],
-                tbl_list_pi_pool[[10]],
-                tbl_list_pi_pool[[11]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)")
+  p_col2 <- c(
+    Capital      = get_p_for_coef(m_bin_with, "treatment_piCapital"),
+    Psychosocial = get_p_for_coef(m_bin_with, "treatment_piPsychosocial"),
+    Full         = get_p_for_coef(m_bin_with, "treatment_piFull")
   )
   
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, ~estimate_10,
-    ~estimate_11, 
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, ~stars_7, ~stars_8, ~stars_9, ~stars_10,~stars_11, 
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], mean_values[7], mean_values[8], mean_values[9], mean_values[10], 
-    mean_values[11], 
-    "", "", "", "", "", "", "", "", "", "",
-    "", 
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], sd_values[7], sd_values[8], sd_values[9], sd_values[10],
-    sd_values[11], 
-    "", "", "", "", "", "", "", "", "", "",
-    "", 
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    as.numeric(cash$full[6]), as.numeric(cash$full[7]), as.numeric(cash$full[8]),
-    as.numeric(cash$full[9]), as.numeric(cash$full[10]), as.numeric(cash$full[11]), 
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], cash$full_start[7], cash$full_start[8],
-    cash$full_start[9], cash$full_start[10], cash$full_start[11], 
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    as.numeric(pool$full[6]), as.numeric(pool$full[7]), as.numeric(pool$full[8]),
-    as.numeric(pool$full[9]), as.numeric(pool$full[10]),
-    as.numeric(pool$full[11]), 
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6], pool$full_start[7], pool$full_start[8],
-    pool$full_start[9], pool$full_start[10],
-    pool$full_start[11]
+  p_col3 <- c(
+    Capital      = get_p_for_coef(m_idx_no,   "treatment_piCapital"),
+    Psychosocial = get_p_for_coef(m_idx_no,   "treatment_piPsychosocial"),
+    Full         = get_p_for_coef(m_idx_no,   "treatment_piFull")
   )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
   
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
+  p_col4 <- c(
+    Capital      = get_p_for_coef(m_idx_with, "treatment_piCapital"),
+    Psychosocial = get_p_for_coef(m_idx_with, "treatment_piPsychosocial"),
+    Full         = get_p_for_coef(m_idx_with, "treatment_piFull")
+  )
   
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
+  # ---------- Holm per column (3 tests per column) ----------
+  p_holm_col1 <- stats::p.adjust(p_col1, method = "holm")
+  p_holm_col2 <- stats::p.adjust(p_col2, method = "holm")
+  p_holm_col3 <- stats::p.adjust(p_col3, method = "holm")
+  p_holm_col4 <- stats::p.adjust(p_col4, method = "holm")
   
-  # Print the final table
-  tbl
-  
+  # ---------- Build rows for the big table ----------
+  tibble::tibble(
+    Panel   = "Multiple Testing Adjustment (Holm)",
+    Outcome = c(
+      "Holm p-value: Capital",
+      "Holm p-value: Psychosocial",
+      "Holm p-value: Full"
+    ),
+    `(1)` = c(
+      format_adjusted_p(p_holm_col1["Capital"]),
+      format_adjusted_p(p_holm_col1["Psychosocial"]),
+      format_adjusted_p(p_holm_col1["Full"])
+    ),
+    `(2)` = c(
+      format_adjusted_p(p_holm_col2["Capital"]),
+      format_adjusted_p(p_holm_col2["Psychosocial"]),
+      format_adjusted_p(p_holm_col2["Full"])
+    ),
+    `(3)` = c(
+      format_adjusted_p(p_holm_col3["Capital"]),
+      format_adjusted_p(p_holm_col3["Psychosocial"]),
+      format_adjusted_p(p_holm_col3["Full"])
+    ),
+    `(4)` = c(
+      format_adjusted_p(p_holm_col4["Capital"]),
+      format_adjusted_p(p_holm_col4["Psychosocial"]),
+      format_adjusted_p(p_holm_col4["Full"])
+    )
+  )
 }
 
-
-
-getTable3_het_gender <- function(curr_het_var_lab, curr_het_var, gender_var, reg_results){
+# Format a coefficient from a fixest::feglm model (e.g., logit), matched by regex.
+# - term_patterns: character vector of regex patterns to match the row name.
+# - digits: rounding digits.
+# - transform: "none" (default) or "exp" (e.g., to show Odds Ratios for logit).
+#              When "exp", SE is transformed by delta method: se_exp = exp(beta) * se_beta
+fmt_est_feglm_regex <- function(mod, term_patterns, digits = 3, transform = c("none", "exp")) {
+  transform <- match.arg(transform)
   
-  mainResults_mech_ben_curr <- reg_results %>% filter(het_var==curr_het_var)
+  if (is.null(mod)) return("")
+  # coeftable() respects the SE/cluster used when fitting or in summary()
+  ct <- tryCatch(fixest::coeftable(mod), error = function(e) NULL)
+  if (is.null(ct) || NROW(ct) == 0) return("")
   
+  rn <- rownames(ct)
+  hit <- which(Reduce(`|`, lapply(term_patterns, function(p) grepl(p, rn))))
+  if (length(hit) == 0) return("")
+  i <- hit[1]
   
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
+  # Pull estimate, SE, p-value (column names vary slightly across fixest versions)
+  est <- as.numeric(ct[i, "Estimate"])
   
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_ben_curr_csh$results_base[[6]]  #  cash transfer model
+  se_name <- intersect(colnames(ct), c("Std. Error", "Std. error", "Std.Error"))
+  if (length(se_name) == 0) {
+    # fallback: any column containing "Std" and "Error"
+    se_candidates <- grep("Std\\.?\\s*Error", colnames(ct), ignore.case = TRUE, value = TRUE)
+    se_name <- if (length(se_candidates) > 0) se_candidates[1] else NA_character_
+  }
+  se <- if (!is.na(se_name)) as.numeric(ct[i, se_name]) else NA_real_
   
+  p_name <- grep("^Pr\\s*\\(>|[tzf]\\|\\)$|^Pr\\.", colnames(ct), ignore.case = TRUE, value = TRUE)
+  if (length(p_name) == 0) p_name <- grep("p\\.value|pvalue", colnames(ct), ignore.case = TRUE, value = TRUE)
+  p <- if (length(p_name) > 0) as.numeric(ct[i, p_name[1]]) else NA_real_
   
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_ben_curr_pi$results_base[[6]]  #  productive inclusion model
-  
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_ben_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in gender_var) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
+  # Stars
+  stars <- ""
+  if (!is.na(p)) {
+    stars <- if (p < 0.01) "***" else if (p < 0.05) "**" else if (p < 0.10) "*" else ""
   }
   
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15)  # Cash transfer models
+  # Optional transform (e.g., OR for logit)
+  if (transform == "exp") {
+    est <- exp(est)
+    # Delta method for SE of exp(beta): se_exp = |exp(beta)| * se_beta
+    if (!is.na(se)) se <- abs(est) * se
+  }
   
+  est_out <- round(est, digits)
+  se_out  <- if (!is.na(se)) round(se, digits) else NA
   
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Violence\n perceptions\n index")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Violence\n perceptions\n index")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Violence\n perceptions\n index")
-  
-  ### 
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Food violence\n is OK\n (0,1)")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Food violence\n is OK\n (0,1)")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Food violence\n is OK\n (0,1)")
-  
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Children violence\n is OK\n (0,1)")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Children violence\n is OK\n (0,1)")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Children violence\n is OK\n (0,1)")
-  
-  
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Should \n tolerate\n violence (1-4)")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Should \n tolerate\n violence (1-4)")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Should \n tolerate\n violence (1-4)")
-  
-  
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "Only\n men should\n work (1-4)")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate = "Only\n men should\n work (1-4)")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate = "Only\n men should\n work (1-4)")
-  
-
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "Should\n school\n girls (1-4)")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "Should\n school\n girls (1-4)")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "Should\n school\n girls (1-4)")
-  
-
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6,  
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, 
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], 
-    "", "", "", "", "", "", 
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], 
-    "", "", "", "", "", "",
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    as.numeric(cash$full[6]), 
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], 
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    as.numeric(pool$full[6]), 
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6]
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
+  if (is.na(se_out)) {
+    paste0(est_out, stars)
+  } else {
+    paste0(est_out, stars, "\n(", se_out, ")")
+  }
 }
 
-
-getTable3_het_violence <- function(curr_het_var_lab, curr_het_var, violence_var, reg_results){
+# -------- Helper to pull estimate, stars, and SE from felm (robust term matching) --------
+fmt_est_felm_regex <- function(mod, term_patterns, digits = 2) {
+  if (is.null(mod)) return("")
+  sm <- tryCatch(summary(mod), error = function(e) NULL)
+  if (is.null(sm)) return("")
+  cf <- sm$coefficients
+  if (is.null(cf) || nrow(cf) == 0) return("")
   
-  mainResults_mech_ben_curr <- reg_results %>% filter(het_var==curr_het_var)
+  rn <- rownames(cf)
+  hit <- which(Reduce(`|`, lapply(term_patterns, function(p) grepl(p, rn))))
+  if (length(hit) == 0) return("")
+  i <- hit[1]
   
+  est <- round(cf[i, "Estimate"], digits)
   
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
+  # Prefer clustered SE if present; else robust; else standard
+  se_col <- intersect(c("Cluster s.e.", "Robust s.e.", "Std. Error", "Std. error"), colnames(cf))
+  if (length(se_col) == 0) se_col <- grep("s\\.e\\.", colnames(cf), value = TRUE)
+  se <- if (length(se_col) > 0) round(cf[i, se_col[1]], digits) else NA_real_
   
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in violence_var) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
+  # p-value (if available)
+  p_col <- intersect(c("Pr(>|t|)", "Pr(>F)", "p.value"), colnames(cf))
+  stars <- ""
+  if (length(p_col) > 0) {
+    p <- cf[i, p_col[1]]
+    if (!is.na(p)) stars <- if (p < 0.01) "***" else if (p < 0.05) "**" else if (p < 0.10) "*" else ""
   }
   
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Gender\n attitudes\n index")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Gender\n attitudes\n index")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Gender\n attitudes\n index")
-  
-  ### 
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Know women\n with HH-tension\n (0-10)")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Know women\n with HH-tension\n (0-10)")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Know women\n with HH-tension\n (0-10)")
-  
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Women beaten\n for burning\n food (1-4)")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Women beaten\n for burning\n food (1-4)")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Women beaten\n for burning\n food (1-4)")
-  
-  
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Women beaten\n for neglecting\n children (1-4)")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Women beaten\n for neglecting\n children (1-4)")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Women beaten\n for neglecting\n children (1-4)")
-  
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)")
-  )
-
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4,  
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, 
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4],
-    "", "", "", "",
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], 
-    "", "", "", "", 
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), 
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), 
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4]
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
+  if (is.na(se)) paste0(est, stars) else paste0(est, stars, "\n(", se, ")")
 }
 
-
-
-getTable3_het_intra <- function(curr_het_var_lab, curr_het_var, intra_var, reg_results){
+# -------- Convenience: n and R2 from felm --------
+get_n  <- function(mod) if (is.null(mod)) NA_integer_ else tryCatch(stats::nobs(mod), error = function(e) NA_integer_)
+get_r2 <- function(mod, digits = 3) {
+  if (is.null(mod)) return(NA_real_)
+  out <- tryCatch(summary(mod)$r.squared, 
+                  error = function(e) NA_real_)
+  round(out, digits)
+}
+get_pseudo_r2 <- function(mod, digits = 3) {
+  if (is.null(mod)) return(NA_real_)
+  out <- tryCatch(summary(mod)$pseudo_r2, # Pseudo-R²
+                 error = function(e) NA_real_)
+  round(out, digits)
+}
+# -------- Fit the table --------
+FitFlextableToPage <- function(ft, pgwidth = 8){
   
-  mainResults_mech_ben_curr <- reg_results %>% filter(het_var==curr_het_var)
+  ft_out <- ft %>% autofit()
   
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_ben_curr_csh$results_base[[6]]  #  cash transfer model
-  m16 <- mainResults_mech_ben_curr_csh$results_base[[7]]  # Second cash transfer model
-  m17 <- mainResults_mech_ben_curr_csh$results_base[[8]]  #  cash transfer model
-  m18 <- mainResults_mech_ben_curr_csh$results_base[[9]]  #  cash transfer model
-
-
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_ben_curr_pi$results_base[[6]]  #  productive inclusion model
-  m26 <- mainResults_mech_ben_curr_pi$results_base[[7]]  #  productive inclusion model
-  m27 <- mainResults_mech_ben_curr_pi$results_base[[8]]  #  productive inclusion model
-  m28 <- mainResults_mech_ben_curr_pi$results_base[[9]]  #  productive inclusion model
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_ben_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  m36 <- mainResults_mech_ben_curr_pool$results_base[[7]]  #  pool productive inclusion model
-  m37 <- mainResults_mech_ben_curr_pool$results_base[[8]]  #  pool productive inclusion model
-  m38 <- mainResults_mech_ben_curr_pool$results_base[[9]]  #  pool productive inclusion model
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in intra_var) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-  }
-  
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25, m26, m27, m28)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35, m36, m37, m38)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15, m16, m17, m18)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Intra-household \n dynamics \n index")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Intra-household \n dynamics \n index")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Intra-household \n dynamics \n index")
-  
-  ### 
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Partner \n dynamics \n index")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Partner \n dynamics \n index")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Partner \n dynamics \n index")
-  
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Household \n dynamics \n index")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Household \n dynamics \n index")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Household \n dynamics \n index")
-  
-
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Comfortable \n disagreeing with \n partner (1-4)")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Comfortable \n disagreeing with \n partner (1-4)")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Comfortable \n disagreeing with \n partner (1-4)")
-  
-  
-  ### partner
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "Trusts\n partner\n (1-4)")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate = "Trusts\n partner\n (1-4)")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate = "Trusts\n partner\n (1-4)")
-  
-
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "Partner\n inclusiveness\n (1-4)")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "Partner\n inclusiveness\n (1-4)")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "Partner\n inclusiveness\n (1-4)")
-  
-
-  tbl_list_pi[[7]] <- tbl_list_pi[[7]] %>%
-    modify_header(estimate = "Household\n inclusiveness\n (1-4)")
-  
-  tbl_list_csh_trnsfr[[7]] <- tbl_list_csh_trnsfr[[7]] %>%
-    modify_header(estimate = "Household\n inclusiveness\n (1-4)")
-  
-  tbl_list_pi_pool[[7]] <- tbl_list_pi_pool[[7]] %>%
-    modify_header(estimate = "Household\n inclusiveness\n (1-4)")
-  
-
-  tbl_list_pi[[8]] <- tbl_list_pi[[8]] %>%
-    modify_header(estimate = "Household\n tensions\n frequent (1-4)")
-  
-  tbl_list_csh_trnsfr[[8]] <- tbl_list_csh_trnsfr[[8]] %>%
-    modify_header(estimate = "Household\n tensions\n frequent (1-4)")
-  
-  tbl_list_pi_pool[[8]] <- tbl_list_pi_pool[[8]] %>%
-    modify_header(estimate = "Household\n tensions\n frequent (1-4)")
-  
-  
-  tbl_list_pi[[9]] <- tbl_list_pi[[9]] %>%
-    modify_header(estimate = "Relationship \n satisfaction \n (1-10)")
-  
-  tbl_list_csh_trnsfr[[9]] <- tbl_list_csh_trnsfr[[9]] %>%
-    modify_header(estimate =  "Relationship \n satisfaction \n (1-10)")
-  
-  tbl_list_pi_pool[[9]] <- tbl_list_pi_pool[[9]] %>%
-    modify_header(estimate = "Relationship \n satisfaction \n (1-10)")
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]], 
-                tbl_list_csh_trnsfr[[7]], 
-                tbl_list_csh_trnsfr[[8]],
-                tbl_list_csh_trnsfr[[9]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]], 
-                tbl_list_pi[[7]], 
-                tbl_list_pi[[8]],
-                tbl_list_pi[[9]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]], 
-                tbl_list_pi_pool[[7]], 
-                tbl_list_pi_pool[[8]],
-                tbl_list_pi_pool[[9]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, 
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, ~stars_7, ~stars_8, ~stars_9, 
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], mean_values[7], mean_values[8], mean_values[9], 
-    "", "", "", "", "", "", "", "", "", 
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], sd_values[7], sd_values[8], sd_values[9],
-    "", "", "", "", "", "", "", "", "", 
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    as.numeric(cash$full[6]), as.numeric(cash$full[7]), as.numeric(cash$full[8]),
-    as.numeric(cash$full[9]), cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], cash$full_start[7], cash$full_start[8], cash$full_start[9],
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    as.numeric(pool$full[6]), as.numeric(pool$full[7]), as.numeric(pool$full[8]), as.numeric(pool$full[9]),
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6], pool$full_start[7], pool$full_start[8], pool$full_start[9]
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
 }
 
+# -------- Regex patterns for terms (robust to suffixes like TRUE, factor levels, etc.) --------
+## Main
+pat_csh   <- c("^treatment_csh_trnsfrCash Assignment(\\b|$)")
+pat_cap   <- c("^treatment_piCapital(\\b|$)")
+pat_psy   <- c("^treatment_piPsychosocial(\\b|$)")
+pat_full  <- c("^treatment_piFull(\\b|$)")
+pat_pool  <- c("^treatment_pi_pool(\\b|$)", "^treatment_pi_poolPool(\\b|$)")
 
-getTable5_het <- function(curr_het_var_lab, curr_het_var, time_use_vars, mainResults_mech_hh){
+## Spill
+patspill_cap   <- c("^treatment_pi_spillCapital(\\b|$)")
+patspill_psy   <- c("^treatment_pi_spillPsychosocial(\\b|$)")
+patspill_full  <- c("^treatment_pi_spillFull(\\b|$)")
+patspill_pool  <- c("^treatment_pi_spillpool(\\b|$)", "^treatment_pi_pool_spillPool(\\b|$)")
+
+######################## Modified Function for With/Without Controls Comparison ##########################################
+
+
+
+plot_het_ipv <- function(depvar_group,
+                         curr_het_var,
+                         mainResults_het,
+                         median_val,
+                         out_dir   = "output/heterogeneity",
+                         binary_het = FALSE) {
+  # Filter to relevant outcomes and heterogeneity variable
+  mainResults_reg_group <- mainResults_het %>%
+    dplyr::filter(outcome %in% depvar_group,
+                  het_var == curr_het_var) %>%
+    dplyr::arrange(name, typeTreat) %>%
+    dplyr::arrange(factor(typeTreat,
+                          levels = c("Cash Assignment", "Capital", "Psychosocial", "Full", "Pool")))
   
-  mainResults_mech_ben_curr <- mainResults_mech_ben %>% filter(het_var==curr_het_var)
+  if (nrow(mainResults_reg_group) == 0) {
+    warning("No rows for het_var = ", curr_het_var, " and these outcomes.")
+    return(invisible(NULL))
+  }
+  
+  # Order factors
+  mainResults_reg_group$typeTreat <- forcats::fct_inorder(mainResults_reg_group$typeTreat)
+  mainResults_reg_group$depvar    <- forcats::fct_inorder(mainResults_reg_group$depvar)
+  
+  # Remove prefixes "N high treat (pct):" and "N low treat (pct):" from lab
+  if (nrow(mainResults_reg_group) > 4) {
+    mainResults_reg_group$lab[-c(1:2)] <- gsub(
+      "N high treat (pct): ", "", mainResults_reg_group$lab[-c(1:2)], fixed = TRUE
+    )
+    mainResults_reg_group$lab[-c(1:2)] <- gsub(
+      "N low treat (pct): ",  "", mainResults_reg_group$lab[-c(1:2)], fixed = TRUE
+    )
+  } else {
+    mainResults_reg_group$lab <- gsub("N high treat (pct): ", "", mainResults_reg_group$lab, fixed = TRUE)
+    mainResults_reg_group$lab <- gsub("N low treat (pct): ",  "", mainResults_reg_group$lab, fixed = TRUE)
+  }
+  
+  # Binary het: show "yes"/"no" in legend & labels
+  if (binary_het) {
+    mainResults_reg_group <- mainResults_reg_group %>%
+      dplyr::mutate(
+        estimate = dplyr::recode(estimate, low = "no", high = "yes"),
+        lab      = gsub("high", "yes", lab, fixed = TRUE),
+        lab      = gsub("low",  "no",  lab, fixed = TRUE)
+      )
+  }
+  
+  # Keep order of lab as in dataframe
+  mainResults_reg_group$lab <- factor(mainResults_reg_group$lab,
+                                      levels = unique(mainResults_reg_group$lab))
+  
+  # Caption & colors
+  if (binary_het) {
+    caption_txt <- sprintf(
+      "N = %s Tekavoul, %s EI inclusion.",
+      dplyr::first(mainResults_reg_group$N),
+      dplyr::last(mainResults_reg_group$N)
+    )
+    color_values <- c("yes" = "grey69", "no" = "black")
+  } else {
+    median_het <- median_val %>%
+      dplyr::filter(het_var == curr_het_var) %>%
+      dplyr::pull(median_value) %>%
+      as.numeric()
+    
+    caption_txt <- sprintf(
+      paste0(
+        "N = %s for Tekavoul and %s for EI inclusion. ",
+        "Beneficiaries were divided into two groups based on the median value of %s ",
+        "(low \u2264 %s and high > %s). "
+      ),
+      dplyr::first(mainResults_reg_group$N),
+      dplyr::last(mainResults_reg_group$N),
+      median_het, median_het, median_het
+    )
+    
+    color_values <- c("high" = "grey69", "low" = "black")
+  }
+
+  p <- mainResults_reg_group %>%
+    ggplot2::ggplot(
+      ggplot2::aes(
+        x    = lab,
+        y    = pe,
+        color = estimate,
+        ymin = `CI2.5`,
+        ymax = `CI97.5`
+      )
+    ) +
+    ggplot2::geom_point(position = ggplot2::position_dodge(.5)) +
+    ggplot2::geom_linerange(position = ggplot2::position_dodge(.5)) +
+    ggplot2::geom_linerange(
+      ggplot2::aes(ymin = CI5, ymax = CI95),
+      lwd = 1,
+      position = ggplot2::position_dodge(.5)
+    ) +
+    ggplot2::geom_hline(yintercept = 0, lty = "dotted") +
+    ggplot2::facet_grid(depvar ~ name,
+                        scales = "free",
+                        space  = "free",
+                        shrink = TRUE,
+                        drop   = TRUE) +
+    ggplot2::scale_color_manual(values = color_values) +
+    ggplot2::labs(
+      x       = "",
+      y       = "Effect",
+      color   = dplyr::first(mainResults_reg_group$het_var),
+      caption = caption_txt
+    ) +
+    ggplot2::guides(
+      colour = ggplot2::guide_legend(order = 1),
+      shape  = ggplot2::guide_legend(order = 2)
+    ) +
+    ggplot2::theme_light(base_size = 8) +
+    ggplot2::theme(
+      legend.position  = "bottom",
+      legend.direction = "horizontal",
+      text             = ggplot2::element_text(size = 8)
+    )
+  
+  # Ensure directory exists
+  if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
+  
+  # Save figure
+  out_file <- file.path(
+    out_dir,
+    paste0(dplyr::first(mainResults_reg_group$het_var), "_",
+           dplyr::first(mainResults_reg_group$depvar), ".jpeg")
+  )
+  
+  ggplot2::ggsave(out_file, plot = p, width = 12, height = 14, units = "cm")
+  
+  p
+}
+getTable_IPV <- function(ipv_vars,
+                         treatment_vars,
+                         control_vars,
+                         strata_vars,
+                         cluster_vars,
+                         followup_ipv_MRT_hh,
+                         followup_ipv_MRT_hh_control_pi,
+                         followup_ipv_MRT_hh_control_csh_trnsfr,
+                         col_group_labels,
+                         table_title,
+                         footnote_text = NULL) {
+  
+  # Default footnote if not provided
+  if (is.null(footnote_text)) {
+    footnote_text <- "Notes: Results presented are OLS estimates. Columns (1) and (3) show estimates without controls (treatment + strata only for cash transfer, treatment only for PI). Columns (2) and (4) include controls for randomization strata (commune) and baseline covariates. We control for social promotion intervention. Enumerator fixed effects are included in all regressions. We estimate the regressions for the EI beneficiaries aged 18\u201349 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1."
+  }
+  
+  # ---------------------------------------------------------------------------
+  # 1. Run main analysis and extract models
+  # ---------------------------------------------------------------------------
+  mainResults <- map_dfr(treatment_vars, function(curr_treat_var) {
+    map_dfr(ipv_vars, function(depvar) {
+      getEstimateGlobalComparison(
+        depvar, curr_treat_var, control_vars,
+        strata_vars, cluster_vars, followup_ipv_MRT_hh
+      ) %>%
+        mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+    })
+  })
+  
+  # Filter by treatment arm
+  res_csh  <- mainResults %>% filter(curr_treat_var == "treatment_csh_trnsfr")
+  res_pi   <- mainResults %>% filter(curr_treat_var == "treatment_pi")
+  res_pool <- mainResults %>% filter(curr_treat_var == "treatment_pi_pool")
+  
+  # Model lists: one entry per outcome variable, no-controls and with-controls
+  models_csh_no    <- res_csh$results_no_controls
+  models_csh_with  <- res_csh$results_with_controls
+  models_pi_no     <- res_pi$results_no_controls
+  models_pi_with   <- res_pi$results_with_controls
+  models_pool_no   <- res_pool$results_no_controls
+  models_pool_with <- res_pool$results_with_controls
+  
+  # ---------------------------------------------------------------------------
+  # 2. Extract PI interaction-term comparisons (no controls / with controls)
+  # ---------------------------------------------------------------------------
+  full_Psychosocial_no   <- res_pi %>% pull(full_Psychosocial_no)
+  full_Capital_no        <- res_pi %>% pull(full_Capital_no)
+  psychosocial_Capital_no <- res_pi %>% pull(psychosocial_Capital_no)
+  
+  full_Psychosocial_with   <- res_pi %>% pull(full_Psychosocial_with)
+  full_Capital_with        <- res_pi %>% pull(full_Capital_with)
+  psychosocial_Capital_with <- res_pi %>% pull(psychosocial_Capital_with)
+  
+  # ---------------------------------------------------------------------------
+  # 3. Descriptive statistics (control group means and SDs)
+  # ---------------------------------------------------------------------------
+  mean_values_pi        <- sapply(ipv_vars, function(v) round(mean(followup_ipv_MRT_hh_control_pi[[v]],        na.rm = TRUE), 3))
+  sd_values_pi          <- sapply(ipv_vars, function(v) round(sd(followup_ipv_MRT_hh_control_pi[[v]],          na.rm = TRUE), 3))
+  mean_values_csh_trnsfr <- sapply(ipv_vars, function(v) round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[v]], na.rm = TRUE), 3))
+  sd_values_csh_trnsfr   <- sapply(ipv_vars, function(v) round(sd(followup_ipv_MRT_hh_control_csh_trnsfr[[v]],   na.rm = TRUE), 3))
+  
+  # Column names driven by number of outcomes  x  2 (no controls / with controls)
+  # Interleaved layout: (1)=no-ctrl outcome1, (2)=with-ctrl outcome1,
+  #                     (3)=no-ctrl outcome2, (4)=with-ctrl outcome2, ...
+  n_outcomes  <- length(ipv_vars)
+  n_cols      <- n_outcomes * 2
+  col_names   <- paste0("(", seq_len(n_cols), ")")
+  
+  # Helper: for outcome j, "no" column index = 2j-1, "with" column index = 2j
+  idx_no   <- function(j) 2 * j - 1
+  idx_with <- function(j) 2 * j
+  
+  # ---------------------------------------------------------------------------
+  # 4. Panel 1: Tekavoul (cash transfer)
+  # ---------------------------------------------------------------------------
+  row_tek <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_felm_regex(models_csh_no[[j]],   pat_csh),
+               as.character(get_n(models_csh_no[[j]])),
+               as.character(get_r2(models_csh_no[[j]]))),
+      with = c("—", fmt_est_felm_regex(models_csh_with[[j]], pat_csh),
+               as.character(get_n(models_csh_with[[j]])),
+               as.character(get_r2(models_csh_with[[j]])))
+    )
+  })
+  
+  tek_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    tek_mat[, idx_no(j)]   <- row_tek[[j]]$no
+    tek_mat[, idx_with(j)] <- row_tek[[j]]$with
+  }
+  
+  tek_rows <- data.frame(
+    Outcome = c("Control", "Cash Assignment", "No. Obs.", "R\u00B2"),
+    as.data.frame(tek_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(tek_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 5. Panel 2: EI Inclusion (PI arms)
+  # ---------------------------------------------------------------------------
+  row_pi <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—",
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_cap),
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_psy),
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_full),
+               as.character(get_n(models_pi_no[[j]])),
+               as.character(get_r2(models_pi_no[[j]]))),
+      with = c("—",
+               fmt_est_felm_regex(models_pi_with[[j]], pat_cap),
+               fmt_est_felm_regex(models_pi_with[[j]], pat_psy),
+               fmt_est_felm_regex(models_pi_with[[j]], pat_full),
+               as.character(get_n(models_pi_with[[j]])),
+               as.character(get_r2(models_pi_with[[j]])))
+    )
+  })
+  
+  pi_mat <- matrix(NA_character_, nrow = 6, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pi_mat[, idx_no(j)]   <- row_pi[[j]]$no
+    pi_mat[, idx_with(j)] <- row_pi[[j]]$with
+  }
+  
+  pi_rows <- data.frame(
+    Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+    as.data.frame(pi_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pi_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 6. Panel 3: EI Inclusion (Pool)
+  # ---------------------------------------------------------------------------
+  row_pool <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_felm_regex(models_pool_no[[j]],   pat_pool),
+               as.character(get_n(models_pool_no[[j]])),
+               as.character(get_r2(models_pool_no[[j]]))),
+      with = c("—", fmt_est_felm_regex(models_pool_with[[j]], pat_pool),
+               as.character(get_n(models_pool_with[[j]])),
+               as.character(get_r2(models_pool_with[[j]])))
+    )
+  })
+  
+  pool_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pool_mat[, idx_no(j)]   <- row_pool[[j]]$no
+    pool_mat[, idx_with(j)] <- row_pool[[j]]$with
+  }
+  
+  pool_rows <- data.frame(
+    Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+    as.data.frame(pool_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pool_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 7. Panel 4: Additional statistics
+  # ---------------------------------------------------------------------------
+  # Build a matrix: rows = stats, cols = interleaved (no/with per outcome)
+  ctrl_vars_row <- rep(c("No", "Yes"), times = n_outcomes)
+  
+  extra_mat <- matrix(NA_character_, nrow = 8, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    extra_mat[1, idx_no(j)]   <- "No"
+    extra_mat[1, idx_with(j)] <- "Yes"
+    extra_mat[2, idx_no(j)]   <- extra_mat[2, idx_with(j)] <- as.character(mean_values_csh_trnsfr[j])
+    extra_mat[3, idx_no(j)]   <- extra_mat[3, idx_with(j)] <- as.character(sd_values_csh_trnsfr[j])
+    extra_mat[4, idx_no(j)]   <- extra_mat[4, idx_with(j)] <- as.character(mean_values_pi[j])
+    extra_mat[5, idx_no(j)]   <- extra_mat[5, idx_with(j)] <- as.character(sd_values_pi[j])
+    extra_mat[6, idx_no(j)]   <- as.character(full_Psychosocial_no[j])
+    extra_mat[6, idx_with(j)] <- as.character(full_Psychosocial_with[j])
+    extra_mat[7, idx_no(j)]   <- as.character(full_Capital_no[j])
+    extra_mat[7, idx_with(j)] <- as.character(full_Capital_with[j])
+    extra_mat[8, idx_no(j)]   <- as.character(psychosocial_Capital_no[j])
+    extra_mat[8, idx_with(j)] <- as.character(psychosocial_Capital_with[j])
+  }
+  
+  extra_rows <- data.frame(
+    Outcome = c(
+      "Control Variables",
+      "Control mean @ follow up Tekavoul",
+      "Control SD @ follow up Tekavoul",
+      "Control mean @ follow up PI",
+      "Control SD @ follow up PI",
+      "Full - Psychosocial",
+      "Full - Capital",
+      "Psychosocial - Capital"
+    ),
+    as.data.frame(extra_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(extra_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 8. Bind all panels and add Panel label column
+  # ---------------------------------------------------------------------------
+  final_tbl <- dplyr::bind_rows(tek_rows, pi_rows, pool_rows, extra_rows)
+  
+  n_tek   <- nrow(tek_rows)
+  n_pi    <- nrow(pi_rows)
+  n_pool  <- nrow(pool_rows)
+  n_extra <- nrow(extra_rows)
+  
+  i_tek_start   <- 1
+  i_tek_end     <- n_tek
+  i_pi_start    <- i_tek_end + 1
+  i_pi_end      <- i_pi_start + n_pi - 1
+  i_pool_start  <- i_pi_end + 1
+  i_pool_end    <- i_pool_start + n_pool - 1
+  i_extra_start <- i_pool_end + 1
+  i_extra_end   <- i_extra_start + n_extra - 1
+  
+  panel_titles <- c(
+    rep("Tekavoul",                n_tek),
+    rep("EI Inclusion",            n_pi),
+    rep("EI Inclusion (Pool)",     n_pool),
+    rep("Additional statistics",   n_extra)
+  )
+  
+  final_tbl <- final_tbl %>%
+    dplyr::mutate(Panel = panel_titles, .before = 1)
+  
+  # ---------------------------------------------------------------------------
+  # 9. Build flextable
+  # ---------------------------------------------------------------------------
+  if (exists("customtab_defaults")) customtab_defaults()
+  
+  ft <- flextable::flextable(final_tbl)
+  
+  # Base header labels
+  ft <- flextable::set_header_labels(
+    ft,
+    values = c(
+      Panel   = " ",
+      Outcome = "Outcome\u2020",
+      stats::setNames(col_names, col_names)
+    )
+  )
+  
+  # Top header row: outcome group labels, each spanning 2 columns (no/with ctrl)
+  ft <- flextable::add_header_row(
+    ft,
+    values    = c(" ", " ", col_group_labels),
+    colwidths = c(1, 1, rep(2, length(col_group_labels)))
+  )
+  
+  # Alignment
+  ft <- flextable::align(ft, j = 1:2,             align = "left",   part = "all")
+  ft <- flextable::align(ft, j = 3:(n_cols + 2),  align = "center", part = "all")
+  
+  # Borders
+  border_thick <- officer::fp_border(color = "black", width = 2)
+  border_thin  <- officer::fp_border(color = "black", width = 0.5)
+  
+  ft <- flextable::border_inner_h(ft, border = border_thin,  part = "body")
+  ft <- flextable::hline(ft, i = i_pi_start   - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_pool_start - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_extra_start - 1, border = border_thick, part = "body")
+  
+  # Merge and bold the Panel column
+  ft <- flextable::merge_v(ft, j = "Panel", part = "body")
+  ft <- flextable::bold(ft,   j = "Panel", part = "body")
+  
+  # Caption and footnote
+  ft <- flextable::set_caption(ft, caption = table_title)
+  ft <- flextable::add_footer_lines(ft, values = footnote_text)
+  
+  # Fit to page width
+  if (exists("FitFlextableToPage")) {
+    ft <- FitFlextableToPage(ft)
+  } else {
+    ft <- flextable::autofit(ft)
+  }
+  
+  return(ft)
+}
+# 
+# getTable_IPV <- function(ipv_vars, 
+#                          treatment_vars,
+#                          control_vars,
+#                          strata_vars,
+#                          cluster_vars,
+#                          followup_ipv_MRT_hh,
+#                          followup_ipv_MRT_hh_control_pi,
+#                          followup_ipv_MRT_hh_control_csh_trnsfr,
+#                          col_group_labels,
+#                          table_title,
+#                          footnote_text = NULL) {
+#   
+#   # Default footnote if not provided
+#   if (is.null(footnote_text)) {
+#     footnote_text <- "Notes: Results presented are OLS estimates. Columns (1) and (3) show estimates without controls (treatment + strata only for cash transfer, treatment only for PI). Columns (2) and (4) include controls for randomization strata (commune) and baseline covariates. We control for social promotion intervention. Enumerator fixed effects are included in all regressions. We estimate the regressions for the EI beneficiaries aged 18–49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1."
+#   }
+#   
+#   # Run main analysis with comparison
+#   mainResults <- map_dfr(treatment_vars, function(curr_treat_var) {
+#     tempResults <- map_dfr(ipv_vars, function(depvar) {    
+#       bind_rows(
+#         getEstimateGlobalComparison(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup_ipv_MRT_hh) %>%
+#           mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+#       )
+#     })
+#   })
+#   
+#   # Extract models WITHOUT controls
+#   m11_no <- mainResults$results_no_controls[[1]]
+#   m12_no <- mainResults$results_no_controls[[2]]
+#   m21_no <- mainResults$results_no_controls[[3]]
+#   m22_no <- mainResults$results_no_controls[[4]]
+#   m31_no <- mainResults$results_no_controls[[5]]
+#   m32_no <- mainResults$results_no_controls[[6]]
+#   
+#   # Extract models WITH controls
+#   m11_with <- mainResults$results_with_controls[[1]]
+#   m12_with <- mainResults$results_with_controls[[2]]
+#   m21_with <- mainResults$results_with_controls[[3]]
+#   m22_with <- mainResults$results_with_controls[[4]]
+#   m31_with <- mainResults$results_with_controls[[5]]
+#   m32_with <- mainResults$results_with_controls[[6]]
+#   
+#   # Extract interaction terms for PI (no controls)
+#   full_Psychosocial_no <- mainResults %>% 
+#     filter(curr_treat_var == "treatment_pi") %>% 
+#     select(full_Psychosocial_no) %>% 
+#     pull() 
+#   
+#   full_Capital_no <- mainResults %>% 
+#     filter(curr_treat_var == "treatment_pi") %>% 
+#     select(full_Capital_no) %>% 
+#     pull() 
+#   
+#   psychosocial_Capital_no <- mainResults %>% 
+#     filter(curr_treat_var == "treatment_pi") %>% 
+#     select(psychosocial_Capital_no) %>% 
+#     pull() 
+#   
+#   # Extract interaction terms for PI (with controls)
+#   full_Psychosocial_with <- mainResults %>% 
+#     filter(curr_treat_var == "treatment_pi") %>% 
+#     select(full_Psychosocial_with) %>% 
+#     pull() 
+#   
+#   full_Capital_with <- mainResults %>% 
+#     filter(curr_treat_var == "treatment_pi") %>% 
+#     select(full_Capital_with) %>% 
+#     pull() 
+#   
+#   psychosocial_Capital_with <- mainResults %>% 
+#     filter(curr_treat_var == "treatment_pi") %>% 
+#     select(psychosocial_Capital_with) %>% 
+#     pull() 
+#   
+#   # Calculate descriptive statistics
+#   mean_values_pi <- c()
+#   sd_values_pi <- c()
+#   mean_values_csh_trnsfr <- c()
+#   sd_values_csh_trnsfr <- c()
+#   
+#   for (depvar in ipv_vars) {
+#     mean_values_pi <- c(mean_values_pi, round(mean(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3))
+#     mean_values_csh_trnsfr <- c(mean_values_csh_trnsfr, round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3))
+#     sd_values_pi <- c(sd_values_pi, round(sd(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3))
+#     sd_values_csh_trnsfr <- c(sd_values_csh_trnsfr, round(sd(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3))
+#   }
+#   
+#   # =========================
+#   # Panel 1: Tekavoul
+#   # =========================
+#   tek_rows <- data.frame(
+#     Outcome = c("Control", "Cash Assignment", "No. Obs.", "R²"),
+#     `(1)` = c("—",
+#               fmt_est_felm_regex(m11_no, pat_csh),
+#               as.character(get_n(m11_no)),
+#               as.character(get_r2(m11_no))),
+#     `(2)` = c("—",
+#               fmt_est_felm_regex(m11_with, pat_csh),
+#               as.character(get_n(m11_with)),
+#               as.character(get_r2(m11_with))),
+#     `(3)` = c("—",
+#               fmt_est_felm_regex(m12_no, pat_csh),
+#               as.character(get_n(m12_no)),
+#               as.character(get_r2(m12_no))),
+#     `(4)` = c("—",
+#               fmt_est_felm_regex(m12_with, pat_csh),
+#               as.character(get_n(m12_with)),
+#               as.character(get_r2(m12_with))),
+#     stringsAsFactors = FALSE,
+#     check.names = FALSE
+#   )
+#   
+#   # =========================
+#   # Panel 2: EI Inclusion
+#   # =========================
+#   pi_rows <- data.frame(
+#     Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R²"),
+#     `(1)` = c("—",
+#               fmt_est_felm_regex(m21_no, pat_cap),
+#               fmt_est_felm_regex(m21_no, pat_psy),
+#               fmt_est_felm_regex(m21_no, pat_full),
+#               as.character(get_n(m21_no)),
+#               as.character(get_r2(m21_no))),
+#     `(2)` = c("—",
+#               fmt_est_felm_regex(m21_with, pat_cap),
+#               fmt_est_felm_regex(m21_with, pat_psy),
+#               fmt_est_felm_regex(m21_with, pat_full),
+#               as.character(get_n(m21_with)),
+#               as.character(get_r2(m21_with))),
+#     `(3)` = c("—",
+#               fmt_est_felm_regex(m22_no, pat_cap),
+#               fmt_est_felm_regex(m22_no, pat_psy),
+#               fmt_est_felm_regex(m22_no, pat_full),
+#               as.character(get_n(m22_no)),
+#               as.character(get_r2(m22_no))),
+#     `(4)` = c("—",
+#               fmt_est_felm_regex(m22_with, pat_cap),
+#               fmt_est_felm_regex(m22_with, pat_psy),
+#               fmt_est_felm_regex(m22_with, pat_full),
+#               as.character(get_n(m22_with)),
+#               as.character(get_r2(m22_with))),
+#     stringsAsFactors = FALSE,
+#     check.names = FALSE
+#   )
+#   
+#   # =========================
+#   # Panel 3: EI Inclusion (Pool)
+#   # =========================
+#   pi_pool_rows <- data.frame(
+#     Outcome = c("Control", "Pool", "No. Obs.", "R²"),
+#     `(1)` = c("—",
+#               fmt_est_felm_regex(m31_no, pat_pool),
+#               as.character(get_n(m31_no)),
+#               as.character(get_r2(m31_no))),
+#     `(2)` = c("—",
+#               fmt_est_felm_regex(m31_with, pat_pool),
+#               as.character(get_n(m31_with)),
+#               as.character(get_r2(m31_with))),
+#     `(3)` = c("—",
+#               fmt_est_felm_regex(m32_no, pat_pool),
+#               as.character(get_n(m32_no)),
+#               as.character(get_r2(m32_no))),
+#     `(4)` = c("—",
+#               fmt_est_felm_regex(m32_with, pat_pool),
+#               as.character(get_n(m32_with)),
+#               as.character(get_r2(m32_with))),
+#     stringsAsFactors = FALSE,
+#     check.names = FALSE
+#   )
+#   
+#   # =========================
+#   # Panel 4: Additional statistics
+#   # =========================
+#   final_panel <- data.frame(
+#     Outcome = c(
+#       "Control Variables",
+#       "Control mean @ follow up Tekavoul",
+#       "Control SD @ follow up Tekavoul",
+#       "Control mean @ follow up PI",
+#       "Control SD @ follow up PI",
+#       "Full - Psychosocial",
+#       "Full - Capital",
+#       "Psychosocial - Capital"
+#     ),
+#     `(1)` = c(
+#       "No",
+#       as.character(mean_values_csh_trnsfr[1]),
+#       as.character(sd_values_csh_trnsfr[1]),
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_no[1]),
+#       as.character(full_Capital_no[1]),
+#       as.character(psychosocial_Capital_no[1])
+#     ),
+#     `(2)` = c(
+#       "Yes",
+#       as.character(mean_values_csh_trnsfr[1]),
+#       as.character(sd_values_csh_trnsfr[1]),
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_with[1]),
+#       as.character(full_Capital_with[1]),
+#       as.character(psychosocial_Capital_with[1])
+#     ),
+#     `(3)` = c(
+#       "No",
+#       as.character(mean_values_csh_trnsfr[2]),
+#       as.character(sd_values_csh_trnsfr[2]),
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_no[2]),
+#       as.character(full_Capital_no[2]),
+#       as.character(psychosocial_Capital_no[2])
+#     ),
+#     `(4)` = c(
+#       "Yes",
+#       as.character(mean_values_csh_trnsfr[2]),
+#       as.character(sd_values_csh_trnsfr[2]),
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_with[2]),
+#       as.character(full_Capital_with[2]),
+#       as.character(psychosocial_Capital_with[2])
+#     ),
+#     stringsAsFactors = FALSE,
+#     check.names = FALSE
+#   )
+#   
+#   # =========================
+#   # Bind everything
+#   # =========================
+#   final_tbl <- dplyr::bind_rows(
+#     tek_rows,
+#     pi_rows,
+#     pi_pool_rows,
+#     final_panel
+#   )
+#   
+#   # Compute row ranges for each panel
+#   n_tek   <- nrow(tek_rows)
+#   n_pi    <- nrow(pi_rows)
+#   n_pool  <- nrow(pi_pool_rows)
+#   n_extra <- nrow(final_panel)
+#   
+#   i_tek_start   <- 1
+#   i_tek_end     <- n_tek
+#   i_pi_start    <- i_tek_end + 1
+#   i_pi_end      <- i_pi_start + n_pi - 1
+#   i_pool_start  <- i_pi_end + 1
+#   i_pool_end    <- i_pool_start + n_pool - 1
+#   i_extra_start <- i_pool_end + 1
+#   i_extra_end   <- i_extra_start + n_extra - 1
+#   
+#   # Panel titles
+#   panel_titles <- c(
+#     rep("Tekavoul",                    n_tek),
+#     rep("EI Inclusion",        n_pi),
+#     rep("EI Inclusion (Pool)", n_pool),
+#     rep("Additional statistics",       n_extra)
+#   )
+#   
+#   # Add Panel column
+#   final_tbl <- final_tbl %>%
+#     dplyr::mutate(Panel = panel_titles, .before = 1)
+#   
+#   #------------------------------------------------------------
+#   # Build flextable for Word (officedown)
+#   #------------------------------------------------------------
+#   if (exists("customtab_defaults")) {
+#     customtab_defaults()
+#   }
+#   
+#   ft <- flextable::flextable(final_tbl)
+# 
+#   # Set header labels
+#   ft <- flextable::set_header_labels(
+#     ft,
+#     values = c(
+#       Panel   = " ",
+#       Outcome = "Outcome†",
+#       `(1)` = "(1)",
+#       `(2)` = "(2)",
+#       `(3)` = "(3)",
+#       `(4)` = "(4)"
+#     )
+#   )
+#   
+#   # Add header row for column grouping
+#   ft <- flextable::add_header_row(
+#     ft,
+#     values = c(" ", " ", col_group_labels),
+#     colwidths = c(1, 1, 2, 2)
+#   )
+#   
+#   # Alignment
+#   ft <- flextable::align(ft, j = 1:2, align = "left", part = "all")
+#   ft <- flextable::align(ft, j = 3:6, align = "center", part = "all")
+#   
+#   # Borders
+#   border_thick <- officer::fp_border(color = "black", width = 2)
+#   border_thin  <- officer::fp_border(color = "black", width = 0.5)
+#   
+#   ft <- flextable::border_inner_h(ft, border = border_thin, part = "body")
+#   ft <- flextable::hline(ft, i = i_pi_start - 1, border = border_thick, part = "body")
+#   ft <- flextable::hline(ft, i = i_pool_start - 1, border = border_thick, part = "body")
+#   ft <- flextable::hline(ft, i = i_extra_start - 1, border = border_thick, part = "body")
+#   
+#   # Make Panel titles merged and bold
+#   ft <- flextable::merge_v(ft, j = "Panel", part = "body")
+#   ft <- flextable::bold(ft, j = "Panel", part = "body")
+#   
+#   # Caption
+#   ft <- flextable::set_caption(ft, caption = table_title)
+#   
+#   # Footnote
+#   ft <- flextable::add_footer_lines(ft, values = footnote_text)
+#   
+#   # Fit to page width
+#   if (exists("FitFlextableToPage")) {
+#     ft <- FitFlextableToPage(ft)
+#   } else {
+#     ft <- flextable::autofit(ft)
+#   }
+#   
+#   return(ft)
+# }
+
+# Modified function to estimate models with and without controls
+getEstimateGlobalComparison <- function(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup_df){
+  
+  if(curr_treat_var=="treatment_csh_trnsfr"){
+    
+    # MODEL WITHOUT CONTROLS (only treatment + strata)
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, "| 0 | 0 |", "hhid")
+    reg_df <- followup_df %>% filter(reg_hh_csh_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+    
+    # MODEL WITH CONTROLS (treatment + strata + controls)
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                   paste0(control_vars, collapse = " + "), "| 0 | 0 |", "hhid")
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    coef_ftest_1_no = ""
+    coef_ftest_2_no = ""
+    coef_ftest_3_no = ""
+    coef_ftest_1_with = ""
+    coef_ftest_2_with = ""
+    coef_ftest_3_with = ""
+    
+  } else if(curr_treat_var=="treatment_pi"){
+    
+    # MODEL WITHOUT CONTROLS (only treatment)
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, "| 0 | 0 |", "cluster")
+    reg_df <- followup_df %>% filter(reg_hh_pi_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+    
+    # MODEL WITH CONTROLS (treatment + controls)
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                   paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    # F-tests for model WITHOUT controls
+    coef_values_no <- coef(regmodbase_no_cntrls)
+    
+    joint_f_test_1_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_piFull=treatment_piPsychosocial"),
+                                          test = "F", singular.ok = TRUE)
+    joint_f_test_2_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_piFull=treatment_piCapital"),
+                                          test = "F", singular.ok = TRUE)
+    joint_f_test_3_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_piPsychosocial = treatment_piCapital"),
+                                          test = "F", singular.ok = TRUE)
+    
+    coef_ftest_1_no <- round(coef_values_no["treatment_piFull"] - coef_values_no["treatment_piPsychosocial"], 3)
+    pval_ftest_1_no <- round(joint_f_test_1_no$`Pr(>F)`[2], 3)
+    
+    coef_ftest_2_no <- round(coef_values_no["treatment_piFull"] - coef_values_no["treatment_piCapital"], 3)
+    pval_ftest_2_no <- round(joint_f_test_2_no$`Pr(>F)`[2], 3)
+    
+    coef_ftest_3_no <- round(coef_values_no["treatment_piPsychosocial"] - coef_values_no["treatment_piCapital"], 3)
+    pval_ftest_3_no <- round(joint_f_test_3_no$`Pr(>F)`[2], 3)
+    
+    # F-tests for model WITH controls
+    coef_values_with <- coef(regmodbase_with_cntrls)
+    
+    joint_f_test_1_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piFull=treatment_piPsychosocial"),
+                                            test = "F", singular.ok = TRUE)
+    joint_f_test_2_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piFull=treatment_piCapital"),
+                                            test = "F", singular.ok = TRUE)
+    joint_f_test_3_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piPsychosocial = treatment_piCapital"),
+                                            test = "F", singular.ok = TRUE)
+    
+    coef_ftest_1_with <- round(coef_values_with["treatment_piFull"] - coef_values_with["treatment_piPsychosocial"], 3)
+    pval_ftest_1_with <- round(joint_f_test_1_with$`Pr(>F)`[2], 3)
+    
+    coef_ftest_2_with <- round(coef_values_with["treatment_piFull"] - coef_values_with["treatment_piCapital"], 3)
+    pval_ftest_2_with <- round(joint_f_test_2_with$`Pr(>F)`[2], 3)
+    
+    coef_ftest_3_with <- round(coef_values_with["treatment_piPsychosocial"] - coef_values_with["treatment_piCapital"], 3)
+    pval_ftest_3_with <- round(joint_f_test_3_with$`Pr(>F)`[2], 3)
+    
+    # Add significance stars for NO controls
+    for (index in 1:3) {
+      pval_ftest <- get(paste0("pval_ftest_", index, "_no"))
+      coef_ftest <- get(paste0("coef_ftest_", index, "_no"))
+      
+      if (pval_ftest <= 0.01) {
+        coef_ftest <- paste0(coef_ftest, "***")
+      } else if (pval_ftest <= 0.05) {
+        coef_ftest <- paste0(coef_ftest, "**")
+      } else if (pval_ftest <= 0.10) {
+        coef_ftest <- paste0(coef_ftest, "*")
+      } else {
+        coef_ftest <- as.character(coef_ftest)
+      }
+      assign(paste0("coef_ftest_", index, "_no"), coef_ftest)
+    }
+    
+    # Add significance stars for WITH controls
+    for (index in 1:3) {
+      pval_ftest <- get(paste0("pval_ftest_", index, "_with"))
+      coef_ftest <- get(paste0("coef_ftest_", index, "_with"))
+      
+      if (pval_ftest <= 0.01) {
+        coef_ftest <- paste0(coef_ftest, "***")
+      } else if (pval_ftest <= 0.05) {
+        coef_ftest <- paste0(coef_ftest, "**")
+      } else if (pval_ftest <= 0.10) {
+        coef_ftest <- paste0(coef_ftest, "*")
+      } else {
+        coef_ftest <- as.character(coef_ftest)
+      }
+      assign(paste0("coef_ftest_", index, "_with"), coef_ftest)
+    }
+    
+  } else {
+    # For pooled treatment
+    
+    # MODEL WITHOUT CONTROLS 
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, "| 0 | 0 |", "cluster")
+    reg_df <- followup_df %>% filter(reg_hh_pi_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+    
+    # MODEL WITH CONTROLS
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                   paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    coef_ftest_1_no = ""
+    coef_ftest_2_no = ""
+    coef_ftest_3_no = ""
+    coef_ftest_1_with = ""
+    coef_ftest_2_with = ""
+    coef_ftest_3_with = ""
+  }
+  
+  # Return results in tibble format
+  out <- tibble(
+    results_no_controls = list(regmodbase_no_cntrls),
+    results_with_controls = list(regmodbase_with_cntrls),
+    full_Psychosocial_no = coef_ftest_1_no,
+    full_Capital_no = coef_ftest_2_no,
+    psychosocial_Capital_no = coef_ftest_3_no,
+    full_Psychosocial_with = coef_ftest_1_with,
+    full_Capital_with = coef_ftest_2_with,
+    psychosocial_Capital_with = coef_ftest_3_with
+  )
+  
+  out
+}
+
+# Modified function to estimate models with and without controls
+getEstimateGlobalComparison_rob <- function(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup_df, fe_var){
+  
+  if(curr_treat_var=="treatment_csh_trnsfr"){
+    
+    # MODEL WITHOUT CONTROLS (only treatment + strata)
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, paste0("| ",fe_var," | 0 |", "hhid"))
+    reg_df <- followup_df %>% filter(reg_hh_csh_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+    
+    # MODEL WITH CONTROLS (treatment + strata + controls)
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), paste0("| ",fe_var," | 0 |", "hhid"))
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    coef_ftest_1_no = ""
+    coef_ftest_2_no = ""
+    coef_ftest_3_no = ""
+    coef_ftest_1_with = ""
+    coef_ftest_2_with = ""
+    coef_ftest_3_with = ""
+    
+  } else if(curr_treat_var=="treatment_pi"){
+    
+    # MODEL WITHOUT CONTROLS (only treatment)
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, paste0("| ",fe_var," | 0 |", "cluster"))
+    reg_df <- followup_df %>% filter(reg_hh_pi_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+    
+    # MODEL WITH CONTROLS (treatment + controls)
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                   paste0(control_vars, collapse = " + "), paste0("| ",fe_var," | 0 |", "cluster"))
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    # F-tests for model WITHOUT controls
+    coef_values_no <- coef(regmodbase_no_cntrls)
+    
+    joint_f_test_1_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_piFull=treatment_piPsychosocial"),
+                                          test = "F", singular.ok = TRUE)
+    joint_f_test_2_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_piFull=treatment_piCapital"),
+                                          test = "F", singular.ok = TRUE)
+    joint_f_test_3_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_piPsychosocial = treatment_piCapital"),
+                                          test = "F", singular.ok = TRUE)
+    
+    coef_ftest_1_no <- round(coef_values_no["treatment_piFull"] - coef_values_no["treatment_piPsychosocial"], 3)
+    pval_ftest_1_no <- round(joint_f_test_1_no$`Pr(>F)`[2], 3)
+    
+    coef_ftest_2_no <- round(coef_values_no["treatment_piFull"] - coef_values_no["treatment_piCapital"], 3)
+    pval_ftest_2_no <- round(joint_f_test_2_no$`Pr(>F)`[2], 3)
+    
+    coef_ftest_3_no <- round(coef_values_no["treatment_piPsychosocial"] - coef_values_no["treatment_piCapital"], 3)
+    pval_ftest_3_no <- round(joint_f_test_3_no$`Pr(>F)`[2], 3)
+    
+    # F-tests for model WITH controls
+    coef_values_with <- coef(regmodbase_with_cntrls)
+    
+    joint_f_test_1_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piFull=treatment_piPsychosocial"),
+                                            test = "F", singular.ok = TRUE)
+    joint_f_test_2_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piFull=treatment_piCapital"),
+                                            test = "F", singular.ok = TRUE)
+    joint_f_test_3_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piPsychosocial = treatment_piCapital"),
+                                            test = "F", singular.ok = TRUE)
+    
+    coef_ftest_1_with <- round(coef_values_with["treatment_piFull"] - coef_values_with["treatment_piPsychosocial"], 3)
+    pval_ftest_1_with <- round(joint_f_test_1_with$`Pr(>F)`[2], 3)
+    
+    coef_ftest_2_with <- round(coef_values_with["treatment_piFull"] - coef_values_with["treatment_piCapital"], 3)
+    pval_ftest_2_with <- round(joint_f_test_2_with$`Pr(>F)`[2], 3)
+    
+    coef_ftest_3_with <- round(coef_values_with["treatment_piPsychosocial"] - coef_values_with["treatment_piCapital"], 3)
+    pval_ftest_3_with <- round(joint_f_test_3_with$`Pr(>F)`[2], 3)
+    
+    # Add significance stars for NO controls
+    for (index in 1:3) {
+      pval_ftest <- get(paste0("pval_ftest_", index, "_no"))
+      coef_ftest <- get(paste0("coef_ftest_", index, "_no"))
+      
+      if (pval_ftest <= 0.01) {
+        coef_ftest <- paste0(coef_ftest, "***")
+      } else if (pval_ftest <= 0.05) {
+        coef_ftest <- paste0(coef_ftest, "**")
+      } else if (pval_ftest <= 0.10) {
+        coef_ftest <- paste0(coef_ftest, "*")
+      } else {
+        coef_ftest <- as.character(coef_ftest)
+      }
+      assign(paste0("coef_ftest_", index, "_no"), coef_ftest)
+    }
+    
+    # Add significance stars for WITH controls
+    for (index in 1:3) {
+      pval_ftest <- get(paste0("pval_ftest_", index, "_with"))
+      coef_ftest <- get(paste0("coef_ftest_", index, "_with"))
+      
+      if (pval_ftest <= 0.01) {
+        coef_ftest <- paste0(coef_ftest, "***")
+      } else if (pval_ftest <= 0.05) {
+        coef_ftest <- paste0(coef_ftest, "**")
+      } else if (pval_ftest <= 0.10) {
+        coef_ftest <- paste0(coef_ftest, "*")
+      } else {
+        coef_ftest <- as.character(coef_ftest)
+      }
+      assign(paste0("coef_ftest_", index, "_with"), coef_ftest)
+    }
+    
+  } else {
+    # For pooled treatment
+    
+    # MODEL WITHOUT CONTROLS 
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, "| 0 | 0 |", "cluster")
+    reg_df <- followup_df %>% filter(reg_hh_pi_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+    
+    # MODEL WITH CONTROLS
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                   paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    coef_ftest_1_no = ""
+    coef_ftest_2_no = ""
+    coef_ftest_3_no = ""
+    coef_ftest_1_with = ""
+    coef_ftest_2_with = ""
+    coef_ftest_3_with = ""
+  }
+  
+  # Return results in tibble format
+  out <- tibble(
+    results_no_controls = list(regmodbase_no_cntrls),
+    results_with_controls = list(regmodbase_with_cntrls),
+    full_Psychosocial_no = coef_ftest_1_no,
+    full_Capital_no = coef_ftest_2_no,
+    psychosocial_Capital_no = coef_ftest_3_no,
+    full_Psychosocial_with = coef_ftest_1_with,
+    full_Capital_with = coef_ftest_2_with,
+    psychosocial_Capital_with = coef_ftest_3_with
+  )
+  
+  out
+}
+
+getTable1_mech<- function(outcome_vars, mainResults_mech_hh, outcome_labels, table_title){
+
+  followup_ipv_MRT_hh_reg <- mainResults_mech_hh %>% filter(outcome %in% outcome_vars)
   
   
   ## Cash transfer regression models
   ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
+  followup_ipv_MRT_hh_control_pi_csh <- followup_ipv_MRT_hh_reg %>% filter(treat_var=="treatment_csh_trnsfr")
   
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
+  ## EI inclusion regression models
+  ### Extract specific models for EI inclusion from the main results
+  followup_ipv_MRT_hh_control_pi_pi <- followup_ipv_MRT_hh_reg %>% filter(treat_var=="treatment_pi")
   
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
+  ### Extract specific models for EI inclusion (pool) from the main results
+  followup_ipv_MRT_hh_control_pi_pool <- followup_ipv_MRT_hh_reg %>% filter(treat_var=="treatment_pi_pool")
   
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
+  # list of models per outcome
+  models_csh  <- followup_ipv_MRT_hh_control_pi_csh$results_base
+  models_pi  <- followup_ipv_MRT_hh_control_pi_pi$results_base
+  models_pool <- followup_ipv_MRT_hh_control_pi_pool$results_base
   
   # Initialize empty vectors to store descriptive statistics
   # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
+  mean_values_pi <- c()  # Vector to store mean values
+  sd_values_pi <- c()   # Vector to store standard deviation values
+  mean_values_csh_trnsfr <- c()  
+  sd_values_csh_trnsfr <- c()   
   # Calculate descriptive statistics for each outcome variable
   # Loop through the list of outcome variables
-  for (depvar in time_use_vars) {
+  for (depvar in outcome_vars) {
     # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
+    mean_values_pi <- c(mean_values_pi,  round(mean(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3))
+    mean_values_csh_trnsfr <- c(mean_values_csh_trnsfr,  round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3))
     # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
+    sd_values_pi <- c(sd_values_pi,  round(sd(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3))
+    sd_values_csh_trnsfr <- c(sd_values_csh_trnsfr,  round(sd(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3))
+  }
+
+  # Extract interaction terms for PI (no controls)
+  full_Psychosocial <- followup_ipv_MRT_hh_control_pi_pi %>% 
+    select(full_Psychosocial) %>% 
+    pull() 
+  
+  full_Capital <- followup_ipv_MRT_hh_control_pi_pi %>% 
+    select(full_Capital) %>% 
+    pull() 
+  
+  psychosocial_Capital <- followup_ipv_MRT_hh_control_pi_pi %>% 
+    select(psychosocial_Capital) %>% 
+    pull() 
+  
+  #------------------------------------------------------------
+  # 1. Tekavoul panel: ONLY main treatment coefficient
+  #------------------------------------------------------------
+
+  row_tek <- sapply(seq_along(outcome_vars), function(j) {
+    c("—",
+      fmt_est_felm_regex(models_csh[[j]], pat_csh),
+      as.character(get_n(models_csh[[j]])),
+      as.character(get_r2(models_csh[[j]])))
+  })
+  
+  tek_rows <- data.frame(
+    Outcome = c("Control", "Cash Assignment", "No. Obs.", "R\u00B2"),
+    row_tek,
+    stringsAsFactors = FALSE
+  )
+  
+  colnames(tek_rows) <- c("Outcome", paste0("(", seq_along(outcome_vars), ")"))
+  
+  #------------------------------------------------------------
+  # 2. PI panel: ONLY main treatment coefficient
+  #------------------------------------------------------------
+  row_pi <- sapply(seq_along(outcome_vars), function(j) {
+    c("—",
+      fmt_est_felm_regex(models_pi[[j]],   pat_cap),
+      fmt_est_felm_regex(models_pi[[j]],   pat_psy),
+      fmt_est_felm_regex(models_pi[[j]],   pat_full),
+      as.character(get_n(models_pi[[j]])),
+      as.character(get_r2(models_pi[[j]])))
+  })
+  
+  pi_rows <- data.frame(
+    Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+    row_pi,
+    stringsAsFactors = FALSE
+  )
+  
+  colnames(pi_rows) <- c("Outcome", paste0("(", seq_along(outcome_vars), ")"))
+  
+  #------------------------------------------------------------
+  # 3. PI Pool panel: ONLY main treatment coefficient
+  #------------------------------------------------------------
+  row_pool <- sapply(seq_along(outcome_vars), function(j) {
+    c("—",
+      fmt_est_felm_regex(models_pool[[j]], pat_pool),
+      as.character(get_n(models_pool[[j]])),
+      as.character(get_r2(models_pool[[j]])))
+  })
+  
+  pool_rows <- data.frame(
+    Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+    row_pool,
+    stringsAsFactors = FALSE
+  )
+  colnames(pool_rows) <- c("Outcome", paste0("(", seq_along(outcome_vars), ")"))
+
+  #------------------------------------------------------------
+  # 4. Additional statistics: control mean & SD
+  #------------------------------------------------------------
+  extra_rows <- data.frame(
+    Outcome = c(
+      "Control Variables",
+      "Control mean @ follow up Tekavoul",
+      "Control SD @ follow up Tekavoul",
+      "Control mean @ follow up PI",
+      "Control SD @ follow up PI",
+      "Full - Psychosocial",
+      "Full - Capital",
+      "Psychosocial - Capital"
+    ),
+    rbind(
+      rep("Yes",length(outcome_vars)),
+      as.character(mean_values_csh_trnsfr),
+      as.character(sd_values_csh_trnsfr),
+      as.character(mean_values_pi),
+      as.character(sd_values_pi),
+      as.character(full_Psychosocial),
+      as.character(full_Capital),
+      as.character(psychosocial_Capital)
+    ),
+    stringsAsFactors = FALSE
+  )
+  
+  colnames(extra_rows) <- c("Outcome", paste0("(", seq_along(outcome_vars), ")"))
+
+  # =========================
+  # Bind everything
+  # =========================
+  final_tbl <- dplyr::bind_rows(
+    tek_rows,
+    pi_rows,
+    pool_rows,
+    extra_rows
+  )
+
+  # ----- compute row ranges for each panel -----
+  n_tek   <- nrow(tek_rows)
+  n_pi    <- nrow(pi_rows)
+  n_pool  <- nrow(pool_rows)
+  n_extra <- nrow(extra_rows)  # now 8 rows with the new first line
+  
+  i_tek_start   <- 1
+  i_tek_end     <- n_tek
+  i_pi_start    <- i_tek_end + 1
+  i_pi_end      <- i_pi_start + n_pi   - 1
+  i_pool_start  <- i_pi_end  + 1
+  i_pool_end    <- i_pool_start + n_pool - 1
+  i_extra_start <- i_pool_end + 1
+  i_extra_end   <- i_extra_start + n_extra - 1
+  
+  
+  #------------------------------------------------------------
+  # 5. Header-above with outcome labels
+  #------------------------------------------------------------
+  header_above <- c(
+    " " = 1,
+    setNames(rep(1, length(outcome_labels)), outcome_labels)
+  )
+  
+  # Panel/block titles (Tekavoul, EI Inclusion, Pool, Additional stats)
+  panel_titles <- c(
+    rep("Tekavoul",                    n_tek),
+    rep("EI Inclusion",        n_pi),
+    rep("EI Inclusion (Pool)", n_pool),
+    rep("Additional statistics",       n_extra)
+  )
+  
+  # Add Panel column as first column (like pack_rows labels)
+  final_tbl <- final_tbl %>%
+    dplyr::mutate(Panel = panel_titles, .before = 1)
+  
+  #------------------------------------------------------------
+  # 5. Build flextable for Word (officedown)
+  #------------------------------------------------------------
+  # Optional: apply your global flextable defaults
+  customtab_defaults()
+  
+  ft <- flextable::flextable(final_tbl)
+  
+  # Header labels
+  col_keys_num <- paste0("(", seq_along(outcome_vars), ")")
+  names_num    <- stats::setNames(col_keys_num, col_keys_num)
+  
+  ft <- flextable::set_header_labels(
+    ft,
+    values = c(
+      Panel   = " ",        # leftmost column for block titles
+      Outcome = "Treatment",
+      names_num
+    )
+  )
+  
+  # Add a header row with the outcome labels (like add_header_above)
+  ft <- flextable::add_header_row(
+    ft,
+    values    = c(" ", " ", outcome_labels),
+    colwidths = c(1, 1, rep(1, length(outcome_labels)))
+  )
+  
+  # Alignment: Panel + Outcome left, coefficients centered
+  ft <- flextable::align(ft, j = 1:2, align = "left",   part = "all")
+  ft <- flextable::align(ft, j = 3:ncol(final_tbl), align = "center", part = "all")
+  
+  # Panel separation: thicker top borders at the start of each block
+  border_thick <- officer::fp_border(color = "black", width = 2)
+  border_thin  <- officer::fp_border(color = "black", width = 0.5)
+  
+  #ft <- flextable::border_remove(ft)
+  ft <- flextable::border_inner_h(ft, border = border_thin, part = "body")
+  
+  ft <- flextable::hline(ft, i = i_pi_start-1,    border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_pool_start,  border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_extra_start, border = border_thick, part = "body")
+  
+  # Make Panel titles (Tekavoul, EI Inclusion, etc.) merged + bold
+  ft <- flextable::merge_v(ft, j = "Panel", part = "body")
+  ft <- flextable::bold(ft,   j = "Panel", part = "body")
+  
+  # Caption
+  ft <- flextable::set_caption(ft, caption = table_title)
+  
+  # Footnote
+  ft <- flextable::add_footer_lines(
+    ft,
+    values = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes. We control for social promotion intervention. Enumerator fixed effects are included in all regressions. We estimate the regressions for the EI beneficiaries aged 18–49 only. Robust standard errors are shown in parentheses, clustered at the cluster proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1."
+  )
+  
+  # Fit to page width
+  ft <- FitFlextableToPage(ft)
+  
+  return(ft)
+}
+
+getTable_IPV_with_Holm <- function(ipv_vars,
+                                   treatment_vars,
+                                   control_vars,
+                                   strata_vars,
+                                   cluster_vars,
+                                   followup_ipv_MRT_hh,
+                                   followup_ipv_MRT_hh_control_pi,
+                                   followup_ipv_MRT_hh_control_csh_trnsfr,
+                                   header_labels,
+                                   table_title,
+                                   footnote_text = NULL) {
+  
+  # ---------------------------------------------------------------------------
+  # 0. Default footnote
+  # ---------------------------------------------------------------------------
+  if (is.null(footnote_text)) {
+    footnote_text <- paste0(
+      "Notes: Results presented are OLS estimates. Columns (1) and (3) show estimates without controls ",
+      "(treatment + strata only for cash transfer, treatment only for PI). Columns (2) and (4) include ",
+      "controls for randomization strata (commune) and baseline covariates. We control for social promotion ",
+      "intervention. Enumerator fixed effects are included in all regressions. We estimate the regressions ",
+      "for the EI beneficiaries aged 18\u201349 only. Robust standard errors are shown in parentheses, ",
+      "clustered at the village proxy level. For the EI Inclusion intervention, we adjust for multiple ",
+      "hypothesis testing using the Holm procedure across the three treatment arms (Capital, Psychosocial, ",
+      "and Full vs Control). Adjusted p-values are reported in the multiple testing adjustment section. ",
+      "*** p < 0.01, ** p < 0.05, * p < 0.10 (for adjusted p-values, stars indicate significance after correction)."
+    )
   }
   
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13)  # Cash transfer models
+  # ---------------------------------------------------------------------------
+  # 1. Run main regressions (with & without controls)
+  # ---------------------------------------------------------------------------
+  mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+    purrr::map_dfr(ipv_vars, function(depvar) {
+      getEstimateGlobalComparison(
+        depvar, curr_treat_var, control_vars,
+        strata_vars, cluster_vars, followup_ipv_MRT_hh
+      ) %>%
+        dplyr::mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+    })
+  })
   
+  # Filter by treatment arm
+  res_csh  <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_csh_trnsfr")
+  res_pi   <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi")
+  res_pool <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi_pool")
   
+  # Model lists: one entry per outcome variable, no-controls and with-controls
+  models_csh_no    <- res_csh$results_no_controls
+  models_csh_with  <- res_csh$results_with_controls
+  models_pi_no     <- res_pi$results_no_controls
+  models_pi_with   <- res_pi$results_with_controls
+  models_pool_no   <- res_pool$results_no_controls
+  models_pool_with <- res_pool$results_with_controls
   
+  # ---------------------------------------------------------------------------
+  # 2. Extract PI interaction-term comparisons (no controls / with controls)
+  # ---------------------------------------------------------------------------
+  full_Psychosocial_no      <- res_pi %>% dplyr::pull(full_Psychosocial_no)
+  full_Capital_no           <- res_pi %>% dplyr::pull(full_Capital_no)
+  psychosocial_Capital_no   <- res_pi %>% dplyr::pull(psychosocial_Capital_no)
   
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
+  full_Psychosocial_with    <- res_pi %>% dplyr::pull(full_Psychosocial_with)
+  full_Capital_with         <- res_pi %>% dplyr::pull(full_Capital_with)
+  psychosocial_Capital_with <- res_pi %>% dplyr::pull(psychosocial_Capital_with)
   
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
+  # ---------------------------------------------------------------------------
+  # 3. Descriptive statistics (control group means and SDs)
+  # ---------------------------------------------------------------------------
+  mean_values_pi         <- sapply(ipv_vars, function(v) round(mean(followup_ipv_MRT_hh_control_pi[[v]],        na.rm = TRUE), 3))
+  sd_values_pi           <- sapply(ipv_vars, function(v) round(stats::sd(followup_ipv_MRT_hh_control_pi[[v]],    na.rm = TRUE), 3))
+  mean_values_csh_trnsfr <- sapply(ipv_vars, function(v) round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[v]], na.rm = TRUE), 3))
+  sd_values_csh_trnsfr   <- sapply(ipv_vars, function(v) round(stats::sd(followup_ipv_MRT_hh_control_csh_trnsfr[[v]], na.rm = TRUE), 3))
   
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
+  # ---------------------------------------------------------------------------
+  # 4. Column setup
+  # ---------------------------------------------------------------------------
+  n_outcomes <- length(ipv_vars)
+  n_cols     <- n_outcomes * 2
+  col_names  <- paste0("(", seq_len(n_cols), ")")
   
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  ## Tot Mins in household chores activities
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Tot Mins in \n household \n chores (last 7 days)")
+  # Helper: for outcome j, "no" column index = 2j-1, "with" column index = 2j
+  idx_no   <- function(j) 2 * j - 1
+  idx_with <- function(j) 2 * j
   
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Tot Mins in \n household \n chores (last 7 days)")
+  # ---------------------------------------------------------------------------
+  # 5. Panel 1: Tekavoul (cash transfer)
+  # ---------------------------------------------------------------------------
+  row_tek <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_felm_regex(models_csh_no[[j]],   pat_csh),
+               as.character(get_n(models_csh_no[[j]])),
+               as.character(get_r2(models_csh_no[[j]]))),
+      with = c("—", fmt_est_felm_regex(models_csh_with[[j]], pat_csh),
+               as.character(get_n(models_csh_with[[j]])),
+               as.character(get_r2(models_csh_with[[j]])))
+    )
+  })
   
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Tot Mins in \n household \n chores (last 7 days)")
+  tek_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    tek_mat[, idx_no(j)]   <- row_tek[[j]]$no
+    tek_mat[, idx_with(j)] <- row_tek[[j]]$with
+  }
   
-  ## Tot Mins in market income activities
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Tot Mins in \n market income \n activities (last 7 days)")
+  tek_rows <- data.frame(
+    Outcome = c("Control", "Cash Assignment", "No. Obs.", "R\u00B2"),
+    as.data.frame(tek_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(tek_rows) <- c("Outcome", col_names)
   
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Tot Mins in \n market income \n activities (last 7 days)")
+  # ---------------------------------------------------------------------------
+  # 6. Panel 2: EI Inclusion (PI arms)
+  # ---------------------------------------------------------------------------
+  row_pi <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—",
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_cap),
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_psy),
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_full),
+               as.character(get_n(models_pi_no[[j]])),
+               as.character(get_r2(models_pi_no[[j]]))),
+      with = c("—",
+               fmt_est_felm_regex(models_pi_with[[j]], pat_cap),
+               fmt_est_felm_regex(models_pi_with[[j]], pat_psy),
+               fmt_est_felm_regex(models_pi_with[[j]], pat_full),
+               as.character(get_n(models_pi_with[[j]])),
+               as.character(get_r2(models_pi_with[[j]])))
+    )
+  })
   
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Tot Mins in \n market income \n activities (last 7 days)")
+  pi_mat <- matrix(NA_character_, nrow = 6, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pi_mat[, idx_no(j)]   <- row_pi[[j]]$no
+    pi_mat[, idx_with(j)] <- row_pi[[j]]$with
+  }
   
-  ## Tot Mins in leisure activities
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Tot Mins in \n leisure \n activities (last 7 days)")
+  pi_rows <- data.frame(
+    Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+    as.data.frame(pi_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pi_rows) <- c("Outcome", col_names)
   
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Tot Mins in \n leisure \n activities (last 7 days)")
+  # ---------------------------------------------------------------------------
+  # 7. Panel 3: EI Inclusion (Pool)
+  # ---------------------------------------------------------------------------
+  row_pool <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_felm_regex(models_pool_no[[j]],   pat_pool),
+               as.character(get_n(models_pool_no[[j]])),
+               as.character(get_r2(models_pool_no[[j]]))),
+      with = c("—", fmt_est_felm_regex(models_pool_with[[j]], pat_pool),
+               as.character(get_n(models_pool_with[[j]])),
+               as.character(get_r2(models_pool_with[[j]])))
+    )
+  })
   
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Tot Mins in \n leisure \n activities (last 7 days)")
+  pool_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pool_mat[, idx_no(j)]   <- row_pool[[j]]$no
+    pool_mat[, idx_with(j)] <- row_pool[[j]]$with
+  }
   
-  ## Tot Mins in other activities
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Tot Mins in \n other \n activities (last 7 days)")
+  pool_rows <- data.frame(
+    Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+    as.data.frame(pool_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pool_rows) <- c("Outcome", col_names)
   
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Tot Mins in \n other \n activities (last 7 days)")
+  # ---------------------------------------------------------------------------
+  # 8. Panel 4: Multiple Testing Adjustment (Holm)
+  # ---------------------------------------------------------------------------
+  adjusted_p_panel <- compute_holm_rows_PI(
+    mainResults,
+    depvar_binary = ipv_vars[1],
+    depvar_index  = ipv_vars[2]
+  )
   
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Tot Mins in \n other \n activities (last 7 days)")  
+  if (is.null(adjusted_p_panel)) {
+    stop("compute_holm_rows_PI() returned NULL \u2013 check that mainResults has treatment_pi rows for both depvars.")
+  }
+  
+  # Remove Panel column if it exists in the result from compute_holm_rows_PI
+  if ("Panel" %in% colnames(adjusted_p_panel)) {
+    adjusted_p_panel <- adjusted_p_panel %>% dplyr::select(-Panel)
+  }
+  
+  # Ensure adjusted_p_panel has the same column structure as other panels
+  colnames(adjusted_p_panel) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 9. Panel 5: Additional statistics
+  # ---------------------------------------------------------------------------
+  extra_mat <- matrix(NA_character_, nrow = 8, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    extra_mat[1, idx_no(j)]   <- "No"
+    extra_mat[1, idx_with(j)] <- "Yes"
+    extra_mat[2, idx_no(j)]   <- extra_mat[2, idx_with(j)] <- as.character(mean_values_csh_trnsfr[j])
+    extra_mat[3, idx_no(j)]   <- extra_mat[3, idx_with(j)] <- as.character(sd_values_csh_trnsfr[j])
+    extra_mat[4, idx_no(j)]   <- extra_mat[4, idx_with(j)] <- as.character(mean_values_pi[j])
+    extra_mat[5, idx_no(j)]   <- extra_mat[5, idx_with(j)] <- as.character(sd_values_pi[j])
+    extra_mat[6, idx_no(j)]   <- as.character(full_Psychosocial_no[j])
+    extra_mat[6, idx_with(j)] <- as.character(full_Psychosocial_with[j])
+    extra_mat[7, idx_no(j)]   <- as.character(full_Capital_no[j])
+    extra_mat[7, idx_with(j)] <- as.character(full_Capital_with[j])
+    extra_mat[8, idx_no(j)]   <- as.character(psychosocial_Capital_no[j])
+    extra_mat[8, idx_with(j)] <- as.character(psychosocial_Capital_with[j])
+  }
+  
+  extra_rows <- data.frame(
+    Outcome = c(
+      "Control Variables",
+      "Control mean @ follow up Tekavoul",
+      "Control SD @ follow up Tekavoul",
+      "Control mean @ follow up PI",
+      "Control SD @ follow up PI",
+      "Full - Psychosocial",
+      "Full - Capital",
+      "Psychosocial - Capital"
+    ),
+    as.data.frame(extra_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(extra_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 10. Bind all panels and add Panel label column
+  # ---------------------------------------------------------------------------
+  final_tbl <- dplyr::bind_rows(tek_rows, pi_rows, pool_rows, adjusted_p_panel, extra_rows)
+  
+  n_tek   <- nrow(tek_rows)
+  n_pi    <- nrow(pi_rows)
+  n_pool  <- nrow(pool_rows)
+  n_adj   <- nrow(adjusted_p_panel)
+  n_extra <- nrow(extra_rows)
+  
+  i_tek_start   <- 1
+  i_tek_end     <- n_tek
+  i_pi_start    <- i_tek_end + 1
+  i_pi_end      <- i_pi_start + n_pi - 1
+  i_pool_start  <- i_pi_end + 1
+  i_pool_end    <- i_pool_start + n_pool - 1
+  i_adj_start   <- i_pool_end + 1
+  i_adj_end     <- i_adj_start + n_adj - 1
+  i_extra_start <- i_adj_end + 1
+  i_extra_end   <- i_extra_start + n_extra - 1
+  
+  panel_titles <- c(
+    rep("Tekavoul",                           n_tek),
+    rep("EI Inclusion",                       n_pi),
+    rep("EI Inclusion (Pool)",                n_pool),
+    rep("Multiple Testing Adjustment (Holm)", n_adj),
+    rep("Additional statistics",              n_extra)
+  )
+  
+  final_tbl <- final_tbl %>%
+    dplyr::mutate(Panel = panel_titles, .before = 1)
+  
+  # ---------------------------------------------------------------------------
+  # 11. Build flextable
+  # ---------------------------------------------------------------------------
+  if (exists("customtab_defaults")) customtab_defaults()
+  
+  ft <- flextable::flextable(final_tbl)
+  
+  # Base header labels
+  ft <- flextable::set_header_labels(
+    ft,
+    values = c(
+      Panel   = " ",
+      Outcome = "Outcome\u2020",
+      stats::setNames(col_names, col_names)
+    )
+  )
+  
+  # Top header row: outcome group labels, each spanning 2 columns (no/with ctrl)
+  # Check actual number of columns in final_tbl
+  n_final_cols <- ncol(final_tbl)  # Should be Panel + Outcome + n_cols
+  
+  # The header should span: Panel(1) + Outcome(1) + header_labels (each spans 2 data cols)
+  # Verify that length(header_labels) * 2 == n_cols
+  if (length(header_labels) * 2 != n_cols) {
+    stop(paste0("Mismatch: header_labels has ", length(header_labels), 
+                " elements but should have ", n_cols/2, 
+                " (one label per outcome variable)"))
+  }
+  
+  ft <- flextable::add_header_row(
+    ft,
+    values    = c(" ", " ", header_labels),
+    colwidths = c(1, 1, rep(2, length(header_labels)))
+  )
+  
+  # Alignment
+  ft <- flextable::align(ft, j = 1:2,             align = "left",   part = "all")
+  ft <- flextable::align(ft, j = 3:(n_cols + 2),  align = "center", part = "all")
+  
+  # Borders
+  border_thick <- officer::fp_border(color = "black", width = 2)
+  border_thin  <- officer::fp_border(color = "black", width = 0.5)
+  
+  ft <- flextable::border_inner_h(ft, border = border_thin,  part = "body")
+  ft <- flextable::hline(ft, i = i_pi_start   - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_pool_start - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_adj_start  - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_extra_start - 1, border = border_thick, part = "body")
+  
+  # Merge and bold the Panel column
+  ft <- flextable::merge_v(ft, j = "Panel", part = "body")
+  ft <- flextable::bold(ft,   j = "Panel", part = "body")
+  
+  # Caption and footnote
+  ft <- flextable::set_caption(ft, caption = table_title)
+  ft <- flextable::add_footer_lines(ft, values = footnote_text)
+  
+  # Fit to page width
+  if (exists("FitFlextableToPage")) {
+    ft <- FitFlextableToPage(ft)
+  } else {
+    ft <- flextable::autofit(ft)
+  }
+  
+  return(ft)
+}
+# getTable_IPV_with_Holm <- function(ipv_vars,
+#                                    treatment_vars,
+#                                    control_vars,
+#                                    strata_vars,
+#                                    cluster_vars,
+#                                    followup_ipv_MRT_hh,
+#                                    followup_ipv_MRT_hh_control_pi,
+#                                    followup_ipv_MRT_hh_control_csh_trnsfr,
+#                                    header_labels,   # c("Binary label", "Index label")
+#                                    table_title,
+#                                    footnote_text = NULL) {
+#   #------------------------------------------------------------
+#   # 0. Default footnote
+#   #------------------------------------------------------------
+#   if (is.null(footnote_text)) {
+#     footnote_text <- paste0(
+#       "Notes: Results presented are OLS estimates. Columns (1) and (3) show estimates without controls ",
+#       "(treatment + strata only for cash transfer, treatment only for PI). Columns (2) and (4) include ",
+#       "controls for randomization strata (commune) and baseline covariates. We control for social promotion ",
+#       "intervention. Enumerator fixed effects are included in all regressions. We estimate the regressions ",
+#       "for the EI beneficiaries aged 18–49 only. Robust standard errors are shown in parentheses, ",
+#       "clustered at the village proxy level. For the EI Inclusion intervention, we adjust for multiple ",
+#       "hypothesis testing using the Holm procedure across the three treatment arms (Capital, Psychosocial, ",
+#       "and Full vs Control). Adjusted p-values are reported in the multiple testing adjustment section. ",
+#       "*** p < 0.01, ** p < 0.05, * p < 0.10 (for adjusted p-values, stars indicate significance after correction)."
+#     )
+#   }
+#   
+#   #------------------------------------------------------------
+#   # 1. Run main regressions (with & without controls)
+#   #------------------------------------------------------------
+#   mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+#     purrr::map_dfr(ipv_vars, function(depvar) {
+#       dplyr::bind_rows(
+#         getEstimateGlobalComparison(
+#           depvar,
+#           curr_treat_var,
+#           control_vars,
+#           strata_vars,
+#           cluster_vars,
+#           followup_ipv_MRT_hh
+#         ) %>%
+#           dplyr::mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+#       )
+#     })
+#   })
+#   
+#   # Expecting ipv_vars length = 2 and treatment_vars length = 3:
+#   # 2 outcomes × 3 treatments = 6 models in each list
+#   
+#   # Extract models WITHOUT controls
+#   m11_no <- mainResults$results_no_controls[[1]]   # Cash, outcome 1
+#   m12_no <- mainResults$results_no_controls[[2]]   # Cash, outcome 2
+#   m21_no <- mainResults$results_no_controls[[3]]   # PI, outcome 1
+#   m22_no <- mainResults$results_no_controls[[4]]   # PI, outcome 2
+#   m31_no <- mainResults$results_no_controls[[5]]   # PI pool, outcome 1
+#   m32_no <- mainResults$results_no_controls[[6]]   # PI pool, outcome 2
+#   
+#   # Extract models WITH controls
+#   m11_with <- mainResults$results_with_controls[[1]]
+#   m12_with <- mainResults$results_with_controls[[2]]
+#   m21_with <- mainResults$results_with_controls[[3]]
+#   m22_with <- mainResults$results_with_controls[[4]]
+#   m31_with <- mainResults$results_with_controls[[5]]
+#   m32_with <- mainResults$results_with_controls[[6]]
+#   
+#   #------------------------------------------------------------
+#   # 2. Interaction terms for PI (no / with controls)
+#   #------------------------------------------------------------
+#   # No controls
+#   full_Psychosocial_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Psychosocial_no)
+#   
+#   full_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Capital_no)
+#   
+#   psychosocial_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(psychosocial_Capital_no)
+#   
+#   # With controls
+#   full_Psychosocial_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Psychosocial_with)
+#   
+#   full_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Capital_with)
+#   
+#   psychosocial_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(psychosocial_Capital_with)
+#   
+#   #------------------------------------------------------------
+#   # 3. Descriptive stats (control means & SDs)
+#   #------------------------------------------------------------
+#   mean_values_pi         <- c()
+#   sd_values_pi           <- c()
+#   mean_values_csh_trnsfr <- c()
+#   sd_values_csh_trnsfr   <- c()
+#   
+#   for (depvar in ipv_vars) {
+#     mean_values_pi <- c(
+#       mean_values_pi,
+#       round(mean(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#     mean_values_csh_trnsfr <- c(
+#       mean_values_csh_trnsfr,
+#       round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3)
+#     )
+#     sd_values_pi <- c(
+#       sd_values_pi,
+#       round(stats::sd(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#     sd_values_csh_trnsfr <- c(
+#       sd_values_csh_trnsfr,
+#       round(stats::sd(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3)
+#     )
+#   }
+#   
+#   #------------------------------------------------------------
+#   # 4. Tekavoul panel
+#   #------------------------------------------------------------
+#   tek_rows <- tibble::tibble(
+#     Panel   = "Tekavoul",
+#     Outcome = c("Control", "Cash Assignment", "No. Obs.", "R\u00B2"),
+#     `(1)`   = c("—",
+#                 fmt_est_felm_regex(m11_no,   pat_csh),
+#                 as.character(get_n(m11_no)),
+#                 as.character(get_r2(m11_no))),
+#     `(2)`   = c("—",
+#                 fmt_est_felm_regex(m11_with, pat_csh),
+#                 as.character(get_n(m11_with)),
+#                 as.character(get_r2(m11_with))),
+#     `(3)`   = c("—",
+#                 fmt_est_felm_regex(m12_no,   pat_csh),
+#                 as.character(get_n(m12_no)),
+#                 as.character(get_r2(m12_no))),
+#     `(4)`   = c("—",
+#                 fmt_est_felm_regex(m12_with, pat_csh),
+#                 as.character(get_n(m12_with)),
+#                 as.character(get_r2(m12_with)))
+#   )
+#   
+#   #------------------------------------------------------------
+#   # 5. PI panel (3 arms)
+#   #------------------------------------------------------------
+#   pi_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion",
+#     Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+#     `(1)`   = c("—",
+#                 fmt_est_felm_regex(m21_no,   pat_cap),
+#                 fmt_est_felm_regex(m21_no,   pat_psy),
+#                 fmt_est_felm_regex(m21_no,   pat_full),
+#                 as.character(get_n(m21_no)),
+#                 as.character(get_r2(m21_no))),
+#     `(2)`   = c("—",
+#                 fmt_est_felm_regex(m21_with, pat_cap),
+#                 fmt_est_felm_regex(m21_with, pat_psy),
+#                 fmt_est_felm_regex(m21_with, pat_full),
+#                 as.character(get_n(m21_with)),
+#                 as.character(get_r2(m21_with))),
+#     `(3)`   = c("—",
+#                 fmt_est_felm_regex(m22_no,   pat_cap),
+#                 fmt_est_felm_regex(m22_no,   pat_psy),
+#                 fmt_est_felm_regex(m22_no,   pat_full),
+#                 as.character(get_n(m22_no)),
+#                 as.character(get_r2(m22_no))),
+#     `(4)`   = c("—",
+#                 fmt_est_felm_regex(m22_with, pat_cap),
+#                 fmt_est_felm_regex(m22_with, pat_psy),
+#                 fmt_est_felm_regex(m22_with, pat_full),
+#                 as.character(get_n(m22_with)),
+#                 as.character(get_r2(m22_with)))
+#   )
+#   
+#   #------------------------------------------------------------
+#   # 6. PI (pool) panel
+#   #------------------------------------------------------------
+#   pi_pool_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion (Pool)",
+#     Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+#     `(1)`   = c("—",
+#                 fmt_est_felm_regex(m31_no,   pat_pool),
+#                 as.character(get_n(m31_no)),
+#                 as.character(get_r2(m31_no))),
+#     `(2)`   = c("—",
+#                 fmt_est_felm_regex(m31_with, pat_pool),
+#                 as.character(get_n(m31_with)),
+#                 as.character(get_r2(m31_with))),
+#     `(3)`   = c("—",
+#                 fmt_est_felm_regex(m32_no,   pat_pool),
+#                 as.character(get_n(m32_no)),
+#                 as.character(get_r2(m32_no))),
+#     `(4)`   = c("—",
+#                 fmt_est_felm_regex(m32_with, pat_pool),
+#                 as.character(get_n(m32_with)),
+#                 as.character(get_r2(m32_with)))
+#   )
+#   
+#   #------------------------------------------------------------
+#   # 7. Extra panel: control means/SD + interaction contrasts
+#   #------------------------------------------------------------
+#   final_panel <- tibble::tibble(
+#     Panel   = "Additional statistics",
+#     Outcome = c(
+#       "Control Variables",
+#       "Control mean @ follow up Tekavoul",
+#       "Control SD @ follow up Tekavoul",
+#       "Control mean @ follow up PI",
+#       "Control SD @ follow up PI",
+#       "Full - Psychosocial",
+#       "Full - Capital",
+#       "Psychosocial - Capital"
+#     ),
+#     `(1)` = c(
+#       "No",
+#       as.character(mean_values_csh_trnsfr[1]),
+#       as.character(sd_values_csh_trnsfr[1]),
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_no[1]),
+#       as.character(full_Capital_no[1]),
+#       as.character(psychosocial_Capital_no[1])
+#     ),
+#     `(2)` = c(
+#       "Yes",
+#       as.character(mean_values_csh_trnsfr[1]),
+#       as.character(sd_values_csh_trnsfr[1]),
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_with[1]),
+#       as.character(full_Capital_with[1]),
+#       as.character(psychosocial_Capital_with[1])
+#     ),
+#     `(3)` = c(
+#       "No",
+#       as.character(mean_values_csh_trnsfr[2]),
+#       as.character(sd_values_csh_trnsfr[2]),
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_no[2]),
+#       as.character(full_Capital_no[2]),
+#       as.character(psychosocial_Capital_no[2])
+#     ),
+#     `(4)` = c(
+#       "Yes",
+#       as.character(mean_values_csh_trnsfr[2]),
+#       as.character(sd_values_csh_trnsfr[2]),
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_with[2]),
+#       as.character(full_Capital_with[2]),
+#       as.character(psychosocial_Capital_with[2])
+#     )
+#   )
+#   
+#   #------------------------------------------------------------
+#   # 8. Multiple testing panel (Holm)
+#   #------------------------------------------------------------
+#   adjusted_p_panel <- compute_holm_rows_PI(
+#     mainResults,
+#     depvar_binary = ipv_vars[1],
+#     depvar_index  = ipv_vars[2]
+#   )
+#   
+#   if (is.null(adjusted_p_panel)) {
+#     stop("compute_holm_rows_PI() returned NULL – check that mainResults has treatment_pi rows for both depvars.")
+#   }
+#   
+#   #------------------------------------------------------------
+#   # 9. Bind all panels + compute row ranges
+#   #------------------------------------------------------------
+#   final_tbl <- dplyr::bind_rows(
+#     tek_rows,
+#     pi_rows,
+#     pi_pool_rows,
+#     adjusted_p_panel,
+#     final_panel
+#   )
+#   
+#   n_tek   <- nrow(tek_rows)
+#   n_pi    <- nrow(pi_rows)
+#   n_pool  <- nrow(pi_pool_rows)
+#   n_adj   <- nrow(adjusted_p_panel)
+#   n_extra <- nrow(final_panel)
+#   
+#   i_tek_start   <- 1
+#   i_tek_end     <- n_tek
+#   i_pi_start    <- i_tek_end + 1
+#   i_pi_end      <- i_pi_start + n_pi   - 1
+#   i_pool_start  <- i_pi_end  + 1
+#   i_pool_end    <- i_pool_start + n_pool - 1
+#   i_adj_start   <- i_pool_end + 1
+#   i_adj_end     <- i_adj_start + n_adj - 1
+#   i_extra_start <- i_adj_end + 1
+#   i_extra_end   <- i_extra_start + n_extra - 1
+#   
+#   # Drop Panel column for kable printing
+#   final_tbl_no_panel <- final_tbl %>% dplyr::select(-Panel)
+#   
+#   #------------------------------------------------------------
+#   # 10. Build the HTML table (kable + kableExtra)
+#   #------------------------------------------------------------
+#   # header_labels should be length 2 = c("Binary label", "Index label")
+#   header_above <- c(
+#     " " = 1,
+#     stats::setNames(rep(2, 2), header_labels)  # each label spans 2 cols
+#   )
+#   
+#   tbl <- knitr::kable(
+#     final_tbl_no_panel,
+#     format   = "html",
+#     escape   = FALSE,
+#     align    = c("l", rep("c", 4)),
+#     col.names = c("Outcome\u2020", "(1)", "(2)", "(3)", "(4)"),
+#     caption  = table_title
+#   ) %>%
+#     kableExtra::add_header_above(header_above) %>%
+#     kableExtra::kable_classic(full_width = TRUE, html_font = "Arial") %>%
+#     # Tekavoul
+#     kableExtra::pack_rows("Tekavoul",
+#                           i_tek_start, i_tek_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     # EI Inclusion
+#     kableExtra::row_spec(i_pi_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("EI Inclusion",
+#                           i_pi_start, i_pi_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     # PI (Pool)
+#     kableExtra::row_spec(i_pool_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("EI Inclusion (Pool)",
+#                           i_pool_start, i_pool_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     # Holm section
+#     kableExtra::row_spec(i_adj_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("Multiple Testing Adjustment (Holm)",
+#                           i_adj_start, i_adj_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     # Additional statistics
+#     kableExtra::row_spec(i_extra_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("Additional statistics",
+#                           i_extra_start, i_extra_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::add_footnote(
+#       label    = footnote_text,
+#       notation = "none"
+#     )
+#   
+#   return(tbl)
+# }
+
+getTable_IPV_robust <- function(ipv_vars,
+                                fe_var,
+                                treatment_vars,
+                                control_vars,
+                                strata_vars,
+                                cluster_vars,
+                                followup_ipv_MRT_hh,
+                                followup_ipv_MRT_hh_control_pi,
+                                followup_ipv_MRT_hh_control_csh_trnsfr,
+                                header_labels,
+                                table_title,
+                                footnote_text = NULL) {
+  
+  # ---------------------------------------------------------------------------
+  # 0. Default footnote
+  # ---------------------------------------------------------------------------
+  if (is.null(footnote_text)) {
+    footnote_text <- paste0(
+      "Notes: Results presented are OLS estimates with ", fe_var,
+      " fixed effects. Columns (1) and (3) show estimates without controls ",
+      "(treatment + strata only for cash transfer, treatment only for PI). ",
+      "Columns (2) and (4) include controls for randomization strata (commune) ",
+      "and baseline covariates. We control for social promotion intervention. ",
+      "Enumerator fixed effects are included in all regressions. ",
+      "We estimate the regressions for the EI beneficiaries aged 18\u201349 only. ",
+      "Robust standard errors are shown in parentheses, clustered at the village proxy level. ",
+      "*** p < 0.01, ** p < 0.05, * p < 0.1."
+    )
+  }
+  
+  # ---------------------------------------------------------------------------
+  # 1. Run main regressions (with & without controls)
+  # ---------------------------------------------------------------------------
+  mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+    purrr::map_dfr(ipv_vars, function(depvar) {
+      getEstimateGlobalComparison_rob(
+        depvar, curr_treat_var, control_vars,
+        strata_vars, cluster_vars, followup_ipv_MRT_hh, fe_var
+      ) %>%
+        dplyr::mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+    })
+  })
+  
+  # Filter by treatment arm
+  res_csh  <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_csh_trnsfr")
+  res_pi   <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi")
+  res_pool <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi_pool")
+  
+  # Model lists: one entry per outcome variable, no-controls and with-controls
+  models_csh_no    <- res_csh$results_no_controls
+  models_csh_with  <- res_csh$results_with_controls
+  models_pi_no     <- res_pi$results_no_controls
+  models_pi_with   <- res_pi$results_with_controls
+  models_pool_no   <- res_pool$results_no_controls
+  models_pool_with <- res_pool$results_with_controls
+  
+  # ---------------------------------------------------------------------------
+  # 2. Extract PI interaction-term comparisons (no controls / with controls)
+  # ---------------------------------------------------------------------------
+  full_Psychosocial_no      <- res_pi %>% dplyr::pull(full_Psychosocial_no)
+  full_Capital_no           <- res_pi %>% dplyr::pull(full_Capital_no)
+  psychosocial_Capital_no   <- res_pi %>% dplyr::pull(psychosocial_Capital_no)
+  
+  full_Psychosocial_with    <- res_pi %>% dplyr::pull(full_Psychosocial_with)
+  full_Capital_with         <- res_pi %>% dplyr::pull(full_Capital_with)
+  psychosocial_Capital_with <- res_pi %>% dplyr::pull(psychosocial_Capital_with)
+  
+  # ---------------------------------------------------------------------------
+  # 3. Descriptive statistics (control group means and SDs)
+  # ---------------------------------------------------------------------------
+  mean_values_pi         <- sapply(ipv_vars, function(v) round(mean(followup_ipv_MRT_hh_control_pi[[v]],        na.rm = TRUE), 3))
+  sd_values_pi           <- sapply(ipv_vars, function(v) round(sd(followup_ipv_MRT_hh_control_pi[[v]],          na.rm = TRUE), 3))
+  mean_values_csh_trnsfr <- sapply(ipv_vars, function(v) round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[v]], na.rm = TRUE), 3))
+  sd_values_csh_trnsfr   <- sapply(ipv_vars, function(v) round(sd(followup_ipv_MRT_hh_control_csh_trnsfr[[v]],   na.rm = TRUE), 3))
+  
+  # ---------------------------------------------------------------------------
+  # 4. Column setup
+  # ---------------------------------------------------------------------------
+  n_outcomes <- length(ipv_vars)
+  n_cols     <- n_outcomes * 2
+  col_names  <- paste0("(", seq_len(n_cols), ")")
+  
+  # Helper: for outcome j, "no" column index = 2j-1, "with" column index = 2j
+  idx_no   <- function(j) 2 * j - 1
+  idx_with <- function(j) 2 * j
+  
+  # ---------------------------------------------------------------------------
+  # 5. Panel 1: Tekavoul (cash transfer)
+  # ---------------------------------------------------------------------------
+  row_tek <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_felm_regex(models_csh_no[[j]],   pat_csh),
+               as.character(get_n(models_csh_no[[j]])),
+               as.character(get_r2(models_csh_no[[j]]))),
+      with = c("—", fmt_est_felm_regex(models_csh_with[[j]], pat_csh),
+               as.character(get_n(models_csh_with[[j]])),
+               as.character(get_r2(models_csh_with[[j]])))
+    )
+  })
+  
+  tek_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    tek_mat[, idx_no(j)]   <- row_tek[[j]]$no
+    tek_mat[, idx_with(j)] <- row_tek[[j]]$with
+  }
+  
+  tek_rows <- data.frame(
+    Outcome = c("Control", "Cash Assignment", "No. Obs.", "R\u00B2"),
+    as.data.frame(tek_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(tek_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 6. Panel 2: EI Inclusion (PI arms)
+  # ---------------------------------------------------------------------------
+  row_pi <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—",
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_cap),
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_psy),
+               fmt_est_felm_regex(models_pi_no[[j]],   pat_full),
+               as.character(get_n(models_pi_no[[j]])),
+               as.character(get_r2(models_pi_no[[j]]))),
+      with = c("—",
+               fmt_est_felm_regex(models_pi_with[[j]], pat_cap),
+               fmt_est_felm_regex(models_pi_with[[j]], pat_psy),
+               fmt_est_felm_regex(models_pi_with[[j]], pat_full),
+               as.character(get_n(models_pi_with[[j]])),
+               as.character(get_r2(models_pi_with[[j]])))
+    )
+  })
+  
+  pi_mat <- matrix(NA_character_, nrow = 6, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pi_mat[, idx_no(j)]   <- row_pi[[j]]$no
+    pi_mat[, idx_with(j)] <- row_pi[[j]]$with
+  }
+  
+  pi_rows <- data.frame(
+    Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+    as.data.frame(pi_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pi_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 7. Panel 3: EI Inclusion (Pool)
+  # ---------------------------------------------------------------------------
+  row_pool <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_felm_regex(models_pool_no[[j]],   pat_pool),
+               as.character(get_n(models_pool_no[[j]])),
+               as.character(get_r2(models_pool_no[[j]]))),
+      with = c("—", fmt_est_felm_regex(models_pool_with[[j]], pat_pool),
+               as.character(get_n(models_pool_with[[j]])),
+               as.character(get_r2(models_pool_with[[j]])))
+    )
+  })
+  
+  pool_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pool_mat[, idx_no(j)]   <- row_pool[[j]]$no
+    pool_mat[, idx_with(j)] <- row_pool[[j]]$with
+  }
+  
+  pool_rows <- data.frame(
+    Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+    as.data.frame(pool_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pool_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 8. Panel 4: Additional statistics
+  # ---------------------------------------------------------------------------
+  extra_mat <- matrix(NA_character_, nrow = 8, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    extra_mat[1, idx_no(j)]   <- "No"
+    extra_mat[1, idx_with(j)] <- "Yes"
+    extra_mat[2, idx_no(j)]   <- extra_mat[2, idx_with(j)] <- as.character(mean_values_csh_trnsfr[j])
+    extra_mat[3, idx_no(j)]   <- extra_mat[3, idx_with(j)] <- as.character(sd_values_csh_trnsfr[j])
+    extra_mat[4, idx_no(j)]   <- extra_mat[4, idx_with(j)] <- as.character(mean_values_pi[j])
+    extra_mat[5, idx_no(j)]   <- extra_mat[5, idx_with(j)] <- as.character(sd_values_pi[j])
+    extra_mat[6, idx_no(j)]   <- as.character(full_Psychosocial_no[j])
+    extra_mat[6, idx_with(j)] <- as.character(full_Psychosocial_with[j])
+    extra_mat[7, idx_no(j)]   <- as.character(full_Capital_no[j])
+    extra_mat[7, idx_with(j)] <- as.character(full_Capital_with[j])
+    extra_mat[8, idx_no(j)]   <- as.character(psychosocial_Capital_no[j])
+    extra_mat[8, idx_with(j)] <- as.character(psychosocial_Capital_with[j])
+  }
+  
+  extra_rows <- data.frame(
+    Outcome = c(
+      "Control Variables",
+      "Control mean @ follow up Tekavoul",
+      "Control SD @ follow up Tekavoul",
+      "Control mean @ follow up PI",
+      "Control SD @ follow up PI",
+      "Full - Psychosocial",
+      "Full - Capital",
+      "Psychosocial - Capital"
+    ),
+    as.data.frame(extra_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(extra_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 9. Bind all panels and add Panel label column
+  # ---------------------------------------------------------------------------
+  final_tbl <- dplyr::bind_rows(tek_rows, pi_rows, pool_rows, extra_rows)
+  
+  n_tek   <- nrow(tek_rows)
+  n_pi    <- nrow(pi_rows)
+  n_pool  <- nrow(pool_rows)
+  n_extra <- nrow(extra_rows)
+  
+  i_tek_start   <- 1
+  i_tek_end     <- n_tek
+  i_pi_start    <- i_tek_end + 1
+  i_pi_end      <- i_pi_start + n_pi - 1
+  i_pool_start  <- i_pi_end + 1
+  i_pool_end    <- i_pool_start + n_pool - 1
+  i_extra_start <- i_pool_end + 1
+  i_extra_end   <- i_extra_start + n_extra - 1
+  
+  panel_titles <- c(
+    rep("Tekavoul",              n_tek),
+    rep("EI Inclusion",          n_pi),
+    rep("EI Inclusion (Pool)",   n_pool),
+    rep("Additional statistics", n_extra)
+  )
+  
+  final_tbl <- final_tbl %>%
+    dplyr::mutate(Panel = panel_titles, .before = 1)
+  
+  # ---------------------------------------------------------------------------
+  # 10. Build flextable
+  # ---------------------------------------------------------------------------
+  if (exists("customtab_defaults")) customtab_defaults()
+  
+  ft <- flextable::flextable(final_tbl)
+  
+  # Base header labels
+  ft <- flextable::set_header_labels(
+    ft,
+    values = c(
+      Panel   = " ",
+      Outcome = "Outcome\u2020",
+      stats::setNames(col_names, col_names)
+    )
+  )
+  
+  # Top header row: outcome group labels, each spanning 2 columns (no/with ctrl)
+  ft <- flextable::add_header_row(
+    ft,
+    values    = c(" ", " ", header_labels),
+    colwidths = c(1, 1, rep(2, length(header_labels)))
+  )
+  
+  # Alignment
+  ft <- flextable::align(ft, j = 1:2,             align = "left",   part = "all")
+  ft <- flextable::align(ft, j = 3:(n_cols + 2),  align = "center", part = "all")
+  
+  # Borders
+  border_thick <- officer::fp_border(color = "black", width = 2)
+  border_thin  <- officer::fp_border(color = "black", width = 0.5)
+  
+  ft <- flextable::border_inner_h(ft, border = border_thin,  part = "body")
+  ft <- flextable::hline(ft, i = i_pi_start   - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_pool_start - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_extra_start - 1, border = border_thick, part = "body")
+  
+  # Merge and bold the Panel column
+  ft <- flextable::merge_v(ft, j = "Panel", part = "body")
+  ft <- flextable::bold(ft,   j = "Panel", part = "body")
+  
+  # Caption and footnote
+  ft <- flextable::set_caption(ft, caption = table_title)
+  ft <- flextable::add_footer_lines(ft, values = footnote_text)
+  
+  # Fit to page width
+  if (exists("FitFlextableToPage")) {
+    ft <- FitFlextableToPage(ft)
+  } else {
+    ft <- flextable::autofit(ft)
+  }
+  
+  return(ft)
+}
+# getTable_IPV_robust <- function(ipv_vars,
+#                                 fe_var,
+#                                 treatment_vars,
+#                                 control_vars,
+#                                 strata_vars,
+#                                 cluster_vars,
+#                                 followup_ipv_MRT_hh,
+#                                 followup_ipv_MRT_hh_control_pi,
+#                                 followup_ipv_MRT_hh_control_csh_trnsfr,
+#                                 header_labels,   # length 2: c("Binary header", "Index header")
+#                                 table_title,
+#                                 footnote_text = NULL) {
+#   # We expect exactly two outcomes: binary & index
+#   if (length(ipv_vars) != 2) {
+#     stop("getTable_IPV_robust() expects ipv_vars of length 2 (binary + index).")
+#   }
+#   if (length(header_labels) != 2) {
+#     stop("header_labels must be a character vector of length 2.")
+#   }
+#   
+#   # Default footnote if not provided
+#   if (is.null(footnote_text)) {
+#     footnote_text <- paste0(
+#       "Notes: Results presented are OLS estimates with ", fe_var,
+#       " fixed effects. Columns (1) and (3) show estimates without controls ",
+#       "(treatment + strata only for cash transfer, treatment only for PI). ",
+#       "Columns (2) and (4) include controls for randomization strata (commune) ",
+#       "and baseline covariates. We control for social promotion intervention. ",
+#       "Enumerator fixed effects are included in all regressions. ",
+#       "We estimate the regressions for the EI beneficiaries aged 18–49 only. ",
+#       "Robust standard errors are shown in parentheses, clustered at the village proxy level. ",
+#       "*** p < 0.01, ** p < 0.05, * p < 0.1."
+#     )
+#   }
+#   
+#   #=========================
+#   # 1) Estimate all models
+#   #=========================
+#   mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+#     purrr::map_dfr(ipv_vars, function(depvar) {
+#       getEstimateGlobalComparison_rob(depvar, curr_treat_var, control_vars, 
+#                                       strata_vars, cluster_vars, followup_ipv_MRT_hh, fe_var) %>%
+#         dplyr::mutate(
+#           depvar        = depvar,
+#           curr_treat_var = curr_treat_var
+#         )
+#     })
+#   })
+#   
+#   #=========================
+#   # 2) Extract models
+#   #=========================
+#   # WITHOUT controls
+#   m11_no <- mainResults$results_no_controls[[1]]  # CSH, outcome 1
+#   m12_no <- mainResults$results_no_controls[[2]]  # CSH, outcome 2
+#   m21_no <- mainResults$results_no_controls[[3]]  # PI,  outcome 1
+#   m22_no <- mainResults$results_no_controls[[4]]  # PI,  outcome 2
+#   m31_no <- mainResults$results_no_controls[[5]]  # Pool, outcome 1
+#   m32_no <- mainResults$results_no_controls[[6]]  # Pool, outcome 2
+#   
+#   # WITH controls
+#   m11_with <- mainResults$results_with_controls[[1]]
+#   m12_with <- mainResults$results_with_controls[[2]]
+#   m21_with <- mainResults$results_with_controls[[3]]
+#   m22_with <- mainResults$results_with_controls[[4]]
+#   m31_with <- mainResults$results_with_controls[[5]]
+#   m32_with <- mainResults$results_with_controls[[6]]
+#   
+#   #=========================
+#   # 3) Interaction terms (PI)
+#   #=========================
+#   full_Psychosocial_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Psychosocial_no)
+#   
+#   full_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Capital_no)
+#   
+#   psychosocial_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(psychosocial_Capital_no)
+#   
+#   full_Psychosocial_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Psychosocial_with)
+#   
+#   full_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Capital_with)
+#   
+#   psychosocial_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(psychosocial_Capital_with)
+#   
+#   #=========================
+#   # 4) Descriptive stats
+#   #=========================
+#   mean_values_pi         <- c()
+#   sd_values_pi           <- c()
+#   mean_values_csh_trnsfr <- c()
+#   sd_values_csh_trnsfr   <- c()
+#   
+#   for (depvar in ipv_vars) {
+#     mean_values_pi <- c(
+#       mean_values_pi,
+#       round(mean(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#     mean_values_csh_trnsfr <- c(
+#       mean_values_csh_trnsfr,
+#       round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3)
+#     )
+#     sd_values_pi <- c(
+#       sd_values_pi,
+#       round(sd(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#     sd_values_csh_trnsfr <- c(
+#       sd_values_csh_trnsfr,
+#       round(sd(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3)
+#     )
+#   }
+#   
+#   #=========================
+#   # 5) Build panels
+#   #=========================
+#   ## Panel 1: Tekavoul
+#   tek_rows <- tibble::tibble(
+#     Panel   = "Tekavoul",
+#     Outcome = c("Control", "Cash Assignment", "No. Obs.", "R\u00B2"),
+#     `(1)` = c("—",
+#               fmt_est_felm_regex(m11_no,   pat_csh),
+#               as.character(get_n(m11_no)),
+#               as.character(get_r2(m11_no))),
+#     `(2)` = c("—",
+#               fmt_est_felm_regex(m11_with, pat_csh),
+#               as.character(get_n(m11_with)),
+#               as.character(get_r2(m11_with))),
+#     `(3)` = c("—",
+#               fmt_est_felm_regex(m12_no,   pat_csh),
+#               as.character(get_n(m12_no)),
+#               as.character(get_r2(m12_no))),
+#     `(4)` = c("—",
+#               fmt_est_felm_regex(m12_with, pat_csh),
+#               as.character(get_n(m12_with)),
+#               as.character(get_r2(m12_with)))
+#   )
+#   
+#   ## Panel 2: EI Inclusion (3 arms)
+#   pi_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion",
+#     Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+#     `(1)` = c("—",
+#               fmt_est_felm_regex(m21_no,   pat_cap),
+#               fmt_est_felm_regex(m21_no,   pat_psy),
+#               fmt_est_felm_regex(m21_no,   pat_full),
+#               as.character(get_n(m21_no)),
+#               as.character(get_r2(m21_no))),
+#     `(2)` = c("—",
+#               fmt_est_felm_regex(m21_with, pat_cap),
+#               fmt_est_felm_regex(m21_with, pat_psy),
+#               fmt_est_felm_regex(m21_with, pat_full),
+#               as.character(get_n(m21_with)),
+#               as.character(get_r2(m21_with))),
+#     `(3)` = c("—",
+#               fmt_est_felm_regex(m22_no,   pat_cap),
+#               fmt_est_felm_regex(m22_no,   pat_psy),
+#               fmt_est_felm_regex(m22_no,   pat_full),
+#               as.character(get_n(m22_no)),
+#               as.character(get_r2(m22_no))),
+#     `(4)` = c("—",
+#               fmt_est_felm_regex(m22_with, pat_cap),
+#               fmt_est_felm_regex(m22_with, pat_psy),
+#               fmt_est_felm_regex(m22_with, pat_full),
+#               as.character(get_n(m22_with)),
+#               as.character(get_r2(m22_with)))
+#   )
+#   
+#   ## Panel 3: EI Inclusion (Pool)
+#   pi_pool_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion (Pool)",
+#     Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+#     `(1)` = c("—",
+#               fmt_est_felm_regex(m31_no,   pat_pool),
+#               as.character(get_n(m31_no)),
+#               as.character(get_r2(m31_no))),
+#     `(2)` = c("—",
+#               fmt_est_felm_regex(m31_with, pat_pool),
+#               as.character(get_n(m31_with)),
+#               as.character(get_r2(m31_with))),
+#     `(3)` = c("—",
+#               fmt_est_felm_regex(m32_no,   pat_pool),
+#               as.character(get_n(m32_no)),
+#               as.character(get_r2(m32_no))),
+#     `(4)` = c("—",
+#               fmt_est_felm_regex(m32_with, pat_pool),
+#               as.character(get_n(m32_with)),
+#               as.character(get_r2(m32_with)))
+#   )
+#   
+#   ## Panel 4: Additional statistics
+#   final_panel <- tibble::tibble(
+#     Panel   = "Additional statistics",
+#     Outcome = c(
+#       "Control Variables",
+#       "Control mean @ follow up Tekavoul",
+#       "Control SD @ follow up Tekavoul",
+#       "Control mean @ follow up PI",
+#       "Control SD @ follow up PI",
+#       "Full - Psychosocial",
+#       "Full - Capital",
+#       "Psychosocial - Capital"
+#     ),
+#     `(1)` = c(
+#       "No",
+#       as.character(mean_values_csh_trnsfr[1]),
+#       as.character(sd_values_csh_trnsfr[1]),
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_no[1]),
+#       as.character(full_Capital_no[1]),
+#       as.character(psychosocial_Capital_no[1])
+#     ),
+#     `(2)` = c(
+#       "Yes",
+#       as.character(mean_values_csh_trnsfr[1]),
+#       as.character(sd_values_csh_trnsfr[1]),
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_with[1]),
+#       as.character(full_Capital_with[1]),
+#       as.character(psychosocial_Capital_with[1])
+#     ),
+#     `(3)` = c(
+#       "No",
+#       as.character(mean_values_csh_trnsfr[2]),
+#       as.character(sd_values_csh_trnsfr[2]),
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_no[2]),
+#       as.character(full_Capital_no[2]),
+#       as.character(psychosocial_Capital_no[2])
+#     ),
+#     `(4)` = c(
+#       "Yes",
+#       as.character(mean_values_csh_trnsfr[2]),
+#       as.character(sd_values_csh_trnsfr[2]),
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_with[2]),
+#       as.character(full_Capital_with[2]),
+#       as.character(psychosocial_Capital_with[2])
+#     )
+#   )
+#   
+#   #=========================
+#   # 6) Bind & index rows
+#   #=========================
+#   final_tbl <- dplyr::bind_rows(
+#     tek_rows,
+#     pi_rows,
+#     pi_pool_rows,
+#     final_panel
+#   )
+#   
+#   n_tek   <- nrow(tek_rows)
+#   n_pi    <- nrow(pi_rows)
+#   n_pool  <- nrow(pi_pool_rows)
+#   n_extra <- nrow(final_panel)
+#   
+#   i_tek_start   <- 1
+#   i_tek_end     <- n_tek
+#   i_pi_start    <- i_tek_end + 1
+#   i_pi_end      <- i_pi_start + n_pi   - 1
+#   i_pool_start  <- i_pi_end  + 1
+#   i_pool_end    <- i_pool_start + n_pool - 1
+#   i_extra_start <- i_pool_end + 1
+#   i_extra_end   <- i_extra_start + n_extra - 1
+#   
+#   # Drop Panel for printing
+#   final_tbl_no_panel <- final_tbl %>% dplyr::select(-Panel)
+#   
+#   # Build the header vector properly
+#   header_vec <- c(
+#     " " = 1,
+#     stats::setNames(rep(2, length(header_labels)), header_labels)
+#   )
+#   
+#   #=========================
+#   # 7) Render kable table
+#   #=========================
+#   tbl <- knitr::kable(
+#     final_tbl_no_panel,
+#     format    = "html",
+#     escape    = FALSE,
+#     align     = c("l", "c", "c", "c", "c"),
+#     col.names = c("Outcome\u2020", "(1)", "(2)", "(3)", "(4)"),
+#     caption   = table_title
+#   ) %>%
+#     kableExtra::add_header_above(header_vec) %>%
+#     kableExtra::kable_classic(full_width = TRUE, html_font = "Arial") %>%
+#     kableExtra::pack_rows("Tekavoul",
+#                           i_tek_start, i_tek_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_pi_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("EI Inclusion",
+#                           i_pi_start, i_pi_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_pool_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("EI Inclusion (Pool)",
+#                           i_pool_start, i_pool_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_extra_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("Additional statistics",
+#                           i_extra_start, i_extra_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::add_footnote(
+#       label    = footnote_text,
+#       notation = "none"
+#     )
+#   
+#   return(tbl)
+# }
+# 
+
+getTable_IPV_nonlin <- function(ipv_vars_bin,
+                                treatment_vars,
+                                control_vars,
+                                strata_vars,
+                                cluster_vars,
+                                followup_ipv_MRT_hh,
+                                followup_ipv_MRT_hh_control_pi,
+                                followup_ipv_MRT_hh_control_csh_trnsfr,
+                                header_labels,
+                                table_title,
+                                footnote_text = NULL) {
+  
+  # ---------------------------------------------------------------------------
+  # 0. Default footnote
+  # ---------------------------------------------------------------------------
+  if (is.null(footnote_text)) {
+    footnote_text <- paste(
+      "Notes: Results presented are nonlinear probability models (GLM with logit link).",
+      "Column (1) shows estimates without controls (treatment + strata only for cash transfer, treatment only for PI).",
+      "Column (2) includes controls for randomization strata (commune) and baseline covariates.",
+      "We estimate the regressions for the EI beneficiaries aged 18\u201349 only.",
+      "Robust standard errors are shown in parentheses, clustered at the village proxy level.",
+      "*** p < 0.01, ** p < 0.05, * p < 0.1.",
+      sep = " "
+    )
+  }
+  
+  # ---------------------------------------------------------------------------
+  # 1. Run main regressions (with & without controls)
+  # ---------------------------------------------------------------------------
+  mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+    purrr::map_dfr(ipv_vars_bin, function(depvar) {
+      getEstimateGlobalComparison_rob_nonlin(
+        depvar, curr_treat_var, control_vars,
+        strata_vars, cluster_vars, followup_ipv_MRT_hh
+      ) %>%
+        dplyr::mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+    })
+  })
+  
+  # Filter by treatment arm
+  res_csh  <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_csh_trnsfr")
+  res_pi   <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi")
+  res_pool <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi_pool")
+  
+  # Model lists: one entry per outcome variable, no-controls and with-controls
+  models_csh_no    <- res_csh$results_no_controls
+  models_csh_with  <- res_csh$results_with_controls
+  models_pi_no     <- res_pi$results_no_controls
+  models_pi_with   <- res_pi$results_with_controls
+  models_pool_no   <- res_pool$results_no_controls
+  models_pool_with <- res_pool$results_with_controls
+  
+  # ---------------------------------------------------------------------------
+  # 2. Extract PI interaction-term comparisons (no controls / with controls)
+  # ---------------------------------------------------------------------------
+  full_Psychosocial_no      <- res_pi %>% dplyr::pull(full_Psychosocial_no)
+  full_Capital_no           <- res_pi %>% dplyr::pull(full_Capital_no)
+  psychosocial_Capital_no   <- res_pi %>% dplyr::pull(psychosocial_Capital_no)
+  
+  full_Psychosocial_with    <- res_pi %>% dplyr::pull(full_Psychosocial_with)
+  full_Capital_with         <- res_pi %>% dplyr::pull(full_Capital_with)
+  psychosocial_Capital_with <- res_pi %>% dplyr::pull(psychosocial_Capital_with)
+  
+  # ---------------------------------------------------------------------------
+  # 3. Descriptive statistics (control group means and SDs)
+  # ---------------------------------------------------------------------------
+  mean_values_pi         <- sapply(ipv_vars_bin, function(v) round(mean(followup_ipv_MRT_hh_control_pi[[v]],        na.rm = TRUE), 3))
+  sd_values_pi           <- sapply(ipv_vars_bin, function(v) round(sd(followup_ipv_MRT_hh_control_pi[[v]],          na.rm = TRUE), 3))
+  mean_values_csh_trnsfr <- sapply(ipv_vars_bin, function(v) round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[v]], na.rm = TRUE), 3))
+  sd_values_csh_trnsfr   <- sapply(ipv_vars_bin, function(v) round(sd(followup_ipv_MRT_hh_control_csh_trnsfr[[v]],   na.rm = TRUE), 3))
+  
+  # ---------------------------------------------------------------------------
+  # 4. Column setup
+  # ---------------------------------------------------------------------------
+  n_outcomes <- length(ipv_vars_bin)
+  n_cols     <- n_outcomes * 2
+  col_names  <- paste0("(", seq_len(n_cols), ")")
+  
+  # Helper: for outcome j, "no" column index = 2j-1, "with" column index = 2j
+  idx_no   <- function(j) 2 * j - 1
+  idx_with <- function(j) 2 * j
+  
+  # ---------------------------------------------------------------------------
+  # 5. Panel 1: Tekavoul (cash transfer)
+  # ---------------------------------------------------------------------------
+  row_tek <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_feglm_regex(models_csh_no[[j]],   pat_csh),
+               as.character(get_n(models_csh_no[[j]])),
+               as.character(get_pseudo_r2(models_csh_no[[j]]))),
+      with = c("—", fmt_est_feglm_regex(models_csh_with[[j]], pat_csh),
+               as.character(get_n(models_csh_with[[j]])),
+               as.character(get_pseudo_r2(models_csh_with[[j]])))
+    )
+  })
+  
+  tek_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    tek_mat[, idx_no(j)]   <- row_tek[[j]]$no
+    tek_mat[, idx_with(j)] <- row_tek[[j]]$with
+  }
+  
+  tek_rows <- data.frame(
+    Outcome = c("Control", "Cash Assignment", "No. Obs.", "Pseudo R\u00B2"),
+    as.data.frame(tek_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(tek_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 6. Panel 2: EI Inclusion (PI arms)
+  # ---------------------------------------------------------------------------
+  row_pi <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—",
+               fmt_est_feglm_regex(models_pi_no[[j]],   pat_cap),
+               fmt_est_feglm_regex(models_pi_no[[j]],   pat_psy),
+               fmt_est_feglm_regex(models_pi_no[[j]],   pat_full),
+               as.character(get_n(models_pi_no[[j]])),
+               as.character(get_pseudo_r2(models_pi_no[[j]]))),
+      with = c("—",
+               fmt_est_feglm_regex(models_pi_with[[j]], pat_cap),
+               fmt_est_feglm_regex(models_pi_with[[j]], pat_psy),
+               fmt_est_feglm_regex(models_pi_with[[j]], pat_full),
+               as.character(get_n(models_pi_with[[j]])),
+               as.character(get_pseudo_r2(models_pi_with[[j]])))
+    )
+  })
+  
+  pi_mat <- matrix(NA_character_, nrow = 6, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pi_mat[, idx_no(j)]   <- row_pi[[j]]$no
+    pi_mat[, idx_with(j)] <- row_pi[[j]]$with
+  }
+  
+  pi_rows <- data.frame(
+    Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "Pseudo R\u00B2"),
+    as.data.frame(pi_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pi_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 7. Panel 3: EI Inclusion (Pool)
+  # ---------------------------------------------------------------------------
+  row_pool <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_feglm_regex(models_pool_no[[j]],   pat_pool),
+               as.character(get_n(models_pool_no[[j]])),
+               as.character(get_pseudo_r2(models_pool_no[[j]]))),
+      with = c("—", fmt_est_feglm_regex(models_pool_with[[j]], pat_pool),
+               as.character(get_n(models_pool_with[[j]])),
+               as.character(get_pseudo_r2(models_pool_with[[j]])))
+    )
+  })
+  
+  pool_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pool_mat[, idx_no(j)]   <- row_pool[[j]]$no
+    pool_mat[, idx_with(j)] <- row_pool[[j]]$with
+  }
+  
+  pool_rows <- data.frame(
+    Outcome = c("Control", "Pool", "No. Obs.", "Pseudo R\u00B2"),
+    as.data.frame(pool_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pool_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 8. Panel 4: Additional statistics
+  # ---------------------------------------------------------------------------
+  extra_mat <- matrix(NA_character_, nrow = 8, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    extra_mat[1, idx_no(j)]   <- "No"
+    extra_mat[1, idx_with(j)] <- "Yes"
+    extra_mat[2, idx_no(j)]   <- extra_mat[2, idx_with(j)] <- as.character(mean_values_csh_trnsfr[j])
+    extra_mat[3, idx_no(j)]   <- extra_mat[3, idx_with(j)] <- as.character(sd_values_csh_trnsfr[j])
+    extra_mat[4, idx_no(j)]   <- extra_mat[4, idx_with(j)] <- as.character(mean_values_pi[j])
+    extra_mat[5, idx_no(j)]   <- extra_mat[5, idx_with(j)] <- as.character(sd_values_pi[j])
+    extra_mat[6, idx_no(j)]   <- as.character(full_Psychosocial_no[j])
+    extra_mat[6, idx_with(j)] <- as.character(full_Psychosocial_with[j])
+    extra_mat[7, idx_no(j)]   <- as.character(full_Capital_no[j])
+    extra_mat[7, idx_with(j)] <- as.character(full_Capital_with[j])
+    extra_mat[8, idx_no(j)]   <- as.character(psychosocial_Capital_no[j])
+    extra_mat[8, idx_with(j)] <- as.character(psychosocial_Capital_with[j])
+  }
+  
+  extra_rows <- data.frame(
+    Outcome = c(
+      "Control Variables",
+      "Control mean @ follow up Tekavoul",
+      "Control SD @ follow up Tekavoul",
+      "Control mean @ follow up PI",
+      "Control SD @ follow up PI",
+      "Full - Psychosocial",
+      "Full - Capital",
+      "Psychosocial - Capital"
+    ),
+    as.data.frame(extra_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(extra_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 9. Bind all panels and add Panel label column
+  # ---------------------------------------------------------------------------
+  final_tbl <- dplyr::bind_rows(tek_rows, pi_rows, pool_rows, extra_rows)
+  
+  n_tek   <- nrow(tek_rows)
+  n_pi    <- nrow(pi_rows)
+  n_pool  <- nrow(pool_rows)
+  n_extra <- nrow(extra_rows)
+  
+  i_tek_start   <- 1
+  i_tek_end     <- n_tek
+  i_pi_start    <- i_tek_end + 1
+  i_pi_end      <- i_pi_start + n_pi - 1
+  i_pool_start  <- i_pi_end + 1
+  i_pool_end    <- i_pool_start + n_pool - 1
+  i_extra_start <- i_pool_end + 1
+  i_extra_end   <- i_extra_start + n_extra - 1
+  
+  panel_titles <- c(
+    rep("Tekavoul",              n_tek),
+    rep("EI Inclusion",          n_pi),
+    rep("EI Inclusion (Pool)",   n_pool),
+    rep("Additional statistics", n_extra)
+  )
+  
+  final_tbl <- final_tbl %>%
+    dplyr::mutate(Panel = panel_titles, .before = 1)
+  
+  # ---------------------------------------------------------------------------
+  # 10. Build flextable
+  # ---------------------------------------------------------------------------
+  if (exists("customtab_defaults")) customtab_defaults()
+  
+  ft <- flextable::flextable(final_tbl)
+  
+  # Base header labels
+  ft <- flextable::set_header_labels(
+    ft,
+    values = c(
+      Panel   = " ",
+      Outcome = "Outcome\u2020",
+      stats::setNames(col_names, col_names)
+    )
+  )
+  
+  # Top header row: outcome group labels, each spanning 2 columns (no/with ctrl)
+  ft <- flextable::add_header_row(
+    ft,
+    values    = c(" ", " ", header_labels),
+    colwidths = c(1, 1, rep(2, length(header_labels)))
+  )
+  
+  # Alignment
+  ft <- flextable::align(ft, j = 1:2,             align = "left",   part = "all")
+  ft <- flextable::align(ft, j = 3:(n_cols + 2),  align = "center", part = "all")
+  
+  # Borders
+  border_thick <- officer::fp_border(color = "black", width = 2)
+  border_thin  <- officer::fp_border(color = "black", width = 0.5)
+  
+  ft <- flextable::border_inner_h(ft, border = border_thin,  part = "body")
+  ft <- flextable::hline(ft, i = i_pi_start   - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_pool_start - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_extra_start - 1, border = border_thick, part = "body")
+  
+  # Merge and bold the Panel column
+  ft <- flextable::merge_v(ft, j = "Panel", part = "body")
+  ft <- flextable::bold(ft,   j = "Panel", part = "body")
+  
+  # Caption and footnote
+  ft <- flextable::set_caption(ft, caption = table_title)
+  ft <- flextable::add_footer_lines(ft, values = footnote_text)
+  
+  # Fit to page width
+  if (exists("FitFlextableToPage")) {
+    ft <- FitFlextableToPage(ft)
+  } else {
+    ft <- flextable::autofit(ft)
+  }
+  
+  return(ft)
+}
  
+
+# getTable_IPV_nonlin <- function(ipv_vars_bin,
+#                                 treatment_vars,
+#                                 control_vars,
+#                                 strata_vars,
+#                                 cluster_vars,
+#                                 followup_ipv_MRT_hh,
+#                                 followup_ipv_MRT_hh_control_pi,
+#                                 followup_ipv_MRT_hh_control_csh_trnsfr,
+#                                 header_label,
+#                                 table_title,
+#                                 footnote_text = NULL) {
+#   #---------------------------
+#   # Default footnote
+#   #---------------------------
+#   if (is.null(footnote_text)) {
+#     footnote_text <- paste(
+#       "Notes: Results presented are nonlinear probability models (GLM with logit link).",
+#       "Column (1) shows estimates without controls (treatment + strata only for cash transfer, treatment only for PI).",
+#       "Column (2) includes controls for randomization strata (commune) and baseline covariates.",
+#       "We estimate the regressions for the EI beneficiaries aged 18–49 only.",
+#       "Robust standard errors are shown in parentheses, clustered at the village proxy level.",
+#       "*** p < 0.01, ** p < 0.05, * p < 0.1.",
+#       sep = " "
+#     )
+#   }
+#   
+#   #---------------------------
+#   # 1) Main estimation
+#   #---------------------------
+#   mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+#     purrr::map_dfr(ipv_vars_bin, function(depvar) {
+#       getEstimateGlobalComparison_rob_nonlin(depvar,curr_treat_var,control_vars,strata_vars,cluster_vars,followup_ipv_MRT_hh
+#       ) %>%
+#         dplyr::mutate(
+#           depvar         = depvar,
+#           curr_treat_var = curr_treat_var
+#         )
+#     })
+#   })
+# 
+#   #---------------------------
+#   # 2) Extract models
+#   #   (assumes 1 depvar x 3 treatment vars = 3 models)
+#   #---------------------------
+#   # WITHOUT controls
+#   m11_no <- mainResults$results_no_controls[[1]]  # Cash
+#   m21_no <- mainResults$results_no_controls[[2]]  # PI
+#   m31_no <- mainResults$results_no_controls[[3]]  # PI pool
+#   
+#   # WITH controls
+#   m11_with <- mainResults$results_with_controls[[1]]
+#   m21_with <- mainResults$results_with_controls[[2]]
+#   m31_with <- mainResults$results_with_controls[[3]]
+#   
+#   #---------------------------
+#   # 3) Extract interaction terms (PI)
+#   #---------------------------
+#   full_Psychosocial_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Psychosocial_no)
+#   
+#   full_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Capital_no)
+#   
+#   psychosocial_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(psychosocial_Capital_no)
+#   
+#   full_Psychosocial_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Psychosocial_with)
+#   
+#   full_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(full_Capital_with)
+#   
+#   psychosocial_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi") %>%
+#     dplyr::pull(psychosocial_Capital_with)
+#   
+#   #---------------------------
+#   # 4) Descriptive statistics
+#   #---------------------------
+#   mean_values_pi        <- c()
+#   sd_values_pi          <- c()
+#   mean_values_csh_trnsfr <- c()
+#   sd_values_csh_trnsfr   <- c()
+#   
+#   for (depvar in ipv_vars_bin) {
+#     mean_values_pi <- c(
+#       mean_values_pi,
+#       round(mean(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#     mean_values_csh_trnsfr <- c(
+#       mean_values_csh_trnsfr,
+#       round(mean(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3)
+#     )
+#     
+#     sd_values_pi <- c(
+#       sd_values_pi,
+#       round(sd(followup_ipv_MRT_hh_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#     sd_values_csh_trnsfr <- c(
+#       sd_values_csh_trnsfr,
+#       round(sd(followup_ipv_MRT_hh_control_csh_trnsfr[[depvar]], na.rm = TRUE), 3)
+#     )
+#   }
+#   
+#   # For the table, we use the first element (assuming one binary depvar)
+#   mv_pi_1        <- as.character(mean_values_pi[1])
+#   sd_pi_1        <- as.character(sd_values_pi[1])
+#   mv_csh_1       <- as.character(mean_values_csh_trnsfr[1])
+#   sd_csh_1       <- as.character(sd_values_csh_trnsfr[1])
+#   
+#   fp_no_1        <- as.character(full_Psychosocial_no[1])
+#   fc_no_1        <- as.character(full_Capital_no[1])
+#   pc_no_1        <- as.character(psychosocial_Capital_no[1])
+#   
+#   fp_with_1      <- as.character(full_Psychosocial_with[1])
+#   fc_with_1      <- as.character(full_Capital_with[1])
+#   pc_with_1      <- as.character(psychosocial_Capital_with[1])
+#   
+#   #---------------------------
+#   # 5) Build panels
+#   #---------------------------
+#   
+#   # Panel 1: Tekavoul
+#   tek_rows <- tibble::tibble(
+#     Panel   = "Tekavoul",
+#     Outcome = c("Control", "Cash Assignment", "No. Obs.", "Pseudo R²"),
+#     `(1)`   = c(
+#       "—",
+#       fmt_est_feglm_regex(m11_no,   pat_csh),
+#       as.character(get_n(m11_no)),
+#       as.character(get_pseudo_r2(m11_no))
+#     ),
+#     `(2)`   = c(
+#       "—",
+#       fmt_est_feglm_regex(m11_with, pat_csh),
+#       as.character(get_n(m11_with)),
+#       as.character(get_pseudo_r2(m11_with))
+#     )
+#   )
+#   
+#   # Panel 2: EI Inclusion (3 arms)
+#   pi_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion",
+#     Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "Pseudo R²"),
+#     `(1)`   = c(
+#       "—",
+#       fmt_est_feglm_regex(m21_no, pat_cap),
+#       fmt_est_feglm_regex(m21_no, pat_psy),
+#       fmt_est_feglm_regex(m21_no, pat_full),
+#       as.character(get_n(m21_no)),
+#       as.character(get_pseudo_r2(m21_no))
+#     ),
+#     `(2)`   = c(
+#       "—",
+#       fmt_est_feglm_regex(m21_with, pat_cap),
+#       fmt_est_feglm_regex(m21_with, pat_psy),
+#       fmt_est_feglm_regex(m21_with, pat_full),
+#       as.character(get_n(m21_with)),
+#       as.character(get_pseudo_r2(m21_with))
+#     )
+#   )
+#   
+#   # Panel 3: PI (Pool)
+#   pi_pool_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion (Pool)",
+#     Outcome = c("Control", "Pool", "No. Obs.", "Pseudo R²"),
+#     `(1)`   = c(
+#       "—",
+#       fmt_est_feglm_regex(m31_no,   pat_pool),
+#       as.character(get_n(m31_no)),
+#       as.character(get_pseudo_r2(m31_no))
+#     ),
+#     `(2)`   = c(
+#       "—",
+#       fmt_est_feglm_regex(m31_with, pat_pool),
+#       as.character(get_n(m31_with)),
+#       as.character(get_pseudo_r2(m31_with))
+#     )
+#   )
+#   
+#   # Panel 4: Additional statistics
+#   final_panel <- tibble::tibble(
+#     Panel   = "Additional statistics",
+#     Outcome = c(
+#       "Control Variables",
+#       "Control mean @ follow up Tekavoul",
+#       "Control SD @ follow up Tekavoul",
+#       "Control mean @ follow up PI",
+#       "Control SD @ follow up PI",
+#       "Full - Psychosocial",
+#       "Full - Capital",
+#       "Psychosocial - Capital"
+#     ),
+#     `(1)`   = c(
+#       "No",
+#       mv_csh_1,
+#       sd_csh_1,
+#       mv_pi_1,
+#       sd_pi_1,
+#       fp_no_1,
+#       fc_no_1,
+#       pc_no_1
+#     ),
+#     `(2)`   = c(
+#       "Yes",
+#       mv_csh_1,
+#       sd_csh_1,
+#       mv_pi_1,
+#       sd_pi_1,
+#       fp_with_1,
+#       fc_with_1,
+#       pc_with_1
+#     )
+#   )
+#   
+#   #---------------------------
+#   # 6) Bind + indices
+#   #---------------------------
+#   final_tbl <- dplyr::bind_rows(
+#     tek_rows,
+#     pi_rows,
+#     pi_pool_rows,
+#     final_panel
+#   )
+#   
+#   n_tek   <- nrow(tek_rows)
+#   n_pi    <- nrow(pi_rows)
+#   n_pool  <- nrow(pi_pool_rows)
+#   n_extra <- nrow(final_panel)
+#   
+#   i_tek_start   <- 1
+#   i_tek_end     <- n_tek
+#   i_pi_start    <- i_tek_end + 1
+#   i_pi_end      <- i_pi_start + n_pi   - 1
+#   i_pool_start  <- i_pi_end  + 1
+#   i_pool_end    <- i_pool_start + n_pool - 1
+#   i_extra_start <- i_pool_end + 1
+#   i_extra_end   <- i_extra_start + n_extra - 1
+#   
+#   # Drop Panel column for printing
+#   final_tbl_no_panel <- final_tbl %>% dplyr::select(-Panel)
+#   
+#   #---------------------------
+#   # 7) Build header vector safely
+#   #---------------------------
+#   header_vec <- c(1, 2)
+#   names(header_vec) <- c(" ", header_label)
+#   
+#   #---------------------------
+#   # 8) Render kable
+#   #---------------------------
+#   tbl <- knitr::kable(
+#     final_tbl_no_panel,
+#     format    = "html",
+#     escape    = FALSE,
+#     align     = c("l", "c", "c"),
+#     col.names = c("Outcome\u2020", "(1)", "(2)")
+#   ) %>%
+#     kableExtra::add_header_above(header_vec) %>%
+#     kableExtra::kable_classic(full_width = TRUE, html_font = "Arial") %>%
+#     # Panels
+#     kableExtra::pack_rows("Tekavoul",
+#                           i_tek_start, i_tek_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_pi_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("EI Inclusion",
+#                           i_pi_start, i_pi_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_pool_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("EI Inclusion (Pool)",
+#                           i_pool_start, i_pool_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_extra_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("Additional statistics",
+#                           i_extra_start, i_extra_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::add_footnote(
+#       label    = footnote_text,
+#       notation = "none"
+#     )
+#   
+#   return(tbl)
+# }
+getTable_IPV_spill <- function(ipv_vars,
+                               binary_header,
+                               index_header,
+                               table_title,
+                               treatment_vars,
+                               control_vars,
+                               strata_vars,
+                               cluster_vars,
+                               followup_ipv_MRT_hh_spill,
+                               followup_ipv_MRT_hh_spill_control_pi,
+                               footnote_text = NULL) {
   
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]],
-                tbl_list_csh_trnsfr[[4]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)")
-    #tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)")
-  ) 
+  # ---------------------------------------------------------------------------
+  # 0. Default footnote
+  # ---------------------------------------------------------------------------
+  if (is.null(footnote_text)) {
+    footnote_text <- paste(
+      "Notes: Results presented are OLS estimates.",
+      "Columns (1) and (3) show estimates without controls (treatment + strata only for cash transfer, treatment only for PI).",
+      "Columns (2) and (4) include controls for randomization strata (commune) and baseline covariates.",
+      "We control for social promotion intervention. Enumerator fixed effects are included in all regressions.",
+      "We estimate the regressions for the EI beneficiaries aged 18\u201349 only.",
+      "Robust standard errors are shown in parentheses, clustered at the village proxy level.",
+      "*** p < 0.01, ** p < 0.05, * p < 0.1.",
+      sep = " "
+    )
+  }
   
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]],
-                tbl_list_pi[[4]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)")
+  # Combine the two header parameters into header_labels vector
+  header_labels <- c(binary_header, index_header)
+  
+  # ---------------------------------------------------------------------------
+  # 1. Run main regressions (with & without controls)
+  # ---------------------------------------------------------------------------
+  mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+    purrr::map_dfr(ipv_vars, function(depvar) {
+      getEstimateGlobal_spill(
+        depvar, curr_treat_var, control_vars,
+        strata_vars, cluster_vars, followup_ipv_MRT_hh_spill
+      ) %>%
+        dplyr::mutate(depvar = depvar, curr_treat_var = curr_treat_var)
+    })
+  })
+  
+  # Filter by treatment arm
+  res_pi   <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi_spill")
+  res_pool <- mainResults %>% dplyr::filter(curr_treat_var == "treatment_pi_pool_spill")
+  
+  # Model lists: one entry per outcome variable, no-controls and with-controls
+  models_pi_no     <- res_pi$results_no_controls
+  models_pi_with   <- res_pi$results_with_controls
+  models_pool_no   <- res_pool$results_no_controls
+  models_pool_with <- res_pool$results_with_controls
+  
+  # ---------------------------------------------------------------------------
+  # 2. Extract PI interaction-term comparisons (no controls / with controls)
+  # ---------------------------------------------------------------------------
+  full_Psychosocial_no      <- res_pi %>% dplyr::pull(full_Psychosocial_no)
+  full_Capital_no           <- res_pi %>% dplyr::pull(full_Capital_no)
+  psychosocial_Capital_no   <- res_pi %>% dplyr::pull(psychosocial_Capital_no)
+  
+  full_Psychosocial_with    <- res_pi %>% dplyr::pull(full_Psychosocial_with)
+  full_Capital_with         <- res_pi %>% dplyr::pull(full_Capital_with)
+  psychosocial_Capital_with <- res_pi %>% dplyr::pull(psychosocial_Capital_with)
+  
+  # ---------------------------------------------------------------------------
+  # 3. Descriptive statistics (control group means and SDs)
+  # ---------------------------------------------------------------------------
+  mean_values_pi <- sapply(ipv_vars, function(v) round(mean(followup_ipv_MRT_hh_spill_control_pi[[v]], na.rm = TRUE), 3))
+  sd_values_pi   <- sapply(ipv_vars, function(v) round(sd(followup_ipv_MRT_hh_spill_control_pi[[v]],   na.rm = TRUE), 3))
+  
+  # ---------------------------------------------------------------------------
+  # 4. Column setup
+  # ---------------------------------------------------------------------------
+  n_outcomes <- length(ipv_vars)
+  n_cols     <- n_outcomes * 2
+  col_names  <- paste0("(", seq_len(n_cols), ")")
+  
+  # Helper: for outcome j, "no" column index = 2j-1, "with" column index = 2j
+  idx_no   <- function(j) 2 * j - 1
+  idx_with <- function(j) 2 * j
+  
+  # ---------------------------------------------------------------------------
+  # 5. Panel 1: EI Inclusion (PI arms)
+  # ---------------------------------------------------------------------------
+  row_pi <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—",
+               fmt_est_felm_regex(models_pi_no[[j]],   patspill_cap),
+               fmt_est_felm_regex(models_pi_no[[j]],   patspill_psy),
+               fmt_est_felm_regex(models_pi_no[[j]],   patspill_full),
+               as.character(get_n(models_pi_no[[j]])),
+               as.character(get_r2(models_pi_no[[j]]))),
+      with = c("—",
+               fmt_est_felm_regex(models_pi_with[[j]], patspill_cap),
+               fmt_est_felm_regex(models_pi_with[[j]], patspill_psy),
+               fmt_est_felm_regex(models_pi_with[[j]], patspill_full),
+               as.character(get_n(models_pi_with[[j]])),
+               as.character(get_r2(models_pi_with[[j]])))
+    )
+  })
+  
+  pi_mat <- matrix(NA_character_, nrow = 6, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pi_mat[, idx_no(j)]   <- row_pi[[j]]$no
+    pi_mat[, idx_with(j)] <- row_pi[[j]]$with
+  }
+  
+  pi_rows <- data.frame(
+    Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+    as.data.frame(pi_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pi_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 6. Panel 2: EI Inclusion (Pool)
+  # ---------------------------------------------------------------------------
+  row_pool <- lapply(seq_len(n_outcomes), function(j) {
+    list(
+      no   = c("—", fmt_est_felm_regex(models_pool_no[[j]],   patspill_pool),
+               as.character(get_n(models_pool_no[[j]])),
+               as.character(get_r2(models_pool_no[[j]]))),
+      with = c("—", fmt_est_felm_regex(models_pool_with[[j]], patspill_pool),
+               as.character(get_n(models_pool_with[[j]])),
+               as.character(get_r2(models_pool_with[[j]])))
+    )
+  })
+  
+  pool_mat <- matrix(NA_character_, nrow = 4, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    pool_mat[, idx_no(j)]   <- row_pool[[j]]$no
+    pool_mat[, idx_with(j)] <- row_pool[[j]]$with
+  }
+  
+  pool_rows <- data.frame(
+    Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+    as.data.frame(pool_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(pool_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 7. Panel 3: Additional statistics
+  # ---------------------------------------------------------------------------
+  extra_mat <- matrix(NA_character_, nrow = 6, ncol = n_cols)
+  for (j in seq_len(n_outcomes)) {
+    extra_mat[1, idx_no(j)]   <- "No"
+    extra_mat[1, idx_with(j)] <- "Yes"
+    extra_mat[2, idx_no(j)]   <- extra_mat[2, idx_with(j)] <- as.character(mean_values_pi[j])
+    extra_mat[3, idx_no(j)]   <- extra_mat[3, idx_with(j)] <- as.character(sd_values_pi[j])
+    extra_mat[4, idx_no(j)]   <- as.character(full_Psychosocial_no[j])
+    extra_mat[4, idx_with(j)] <- as.character(full_Psychosocial_with[j])
+    extra_mat[5, idx_no(j)]   <- as.character(full_Capital_no[j])
+    extra_mat[5, idx_with(j)] <- as.character(full_Capital_with[j])
+    extra_mat[6, idx_no(j)]   <- as.character(psychosocial_Capital_no[j])
+    extra_mat[6, idx_with(j)] <- as.character(psychosocial_Capital_with[j])
+  }
+  
+  extra_rows <- data.frame(
+    Outcome = c(
+      "Control Variables",
+      "Control mean @ follow up PI",
+      "Control SD @ follow up PI",
+      "Full - Psychosocial",
+      "Full - Capital",
+      "Psychosocial - Capital"
+    ),
+    as.data.frame(extra_mat, stringsAsFactors = FALSE),
+    stringsAsFactors = FALSE
+  )
+  colnames(extra_rows) <- c("Outcome", col_names)
+  
+  # ---------------------------------------------------------------------------
+  # 8. Bind all panels and add Panel label column
+  # ---------------------------------------------------------------------------
+  final_tbl <- dplyr::bind_rows(pi_rows, pool_rows, extra_rows)
+  
+  n_pi    <- nrow(pi_rows)
+  n_pool  <- nrow(pool_rows)
+  n_extra <- nrow(extra_rows)
+  
+  i_pi_start    <- 1
+  i_pi_end      <- n_pi
+  i_pool_start  <- i_pi_end + 1
+  i_pool_end    <- i_pool_start + n_pool - 1
+  i_extra_start <- i_pool_end + 1
+  i_extra_end   <- i_extra_start + n_extra - 1
+  
+  panel_titles <- c(
+    rep("EI Inclusion",          n_pi),
+    rep("EI Inclusion (Pool)",   n_pool),
+    rep("Additional statistics", n_extra)
   )
   
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]],
-                tbl_list_pi_pool[[4]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)")
+  final_tbl <- final_tbl %>%
+    dplyr::mutate(Panel = panel_titles, .before = 1)
+  
+  # ---------------------------------------------------------------------------
+  # 9. Build flextable
+  # ---------------------------------------------------------------------------
+  if (exists("customtab_defaults")) customtab_defaults()
+  
+  ft <- flextable::flextable(final_tbl)
+  
+  # Base header labels
+  ft <- flextable::set_header_labels(
+    ft,
+    values = c(
+      Panel   = " ",
+      Outcome = "Outcome\u2020",
+      stats::setNames(col_names, col_names)
+    )
   )
   
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4,
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, 
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], 
-    "", "", "", "",
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4],
-    "", "", "", "",
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]),
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]),
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4]
+  # Top header row: outcome group labels, each spanning 2 columns (no/with ctrl)
+  ft <- flextable::add_header_row(
+    ft,
+    values    = c(" ", " ", header_labels),
+    colwidths = c(1, 1, rep(2, length(header_labels)))
   )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
   
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
+  # Alignment
+  ft <- flextable::align(ft, j = 1:2,             align = "left",   part = "all")
+  ft <- flextable::align(ft, j = 3:(n_cols + 2),  align = "center", part = "all")
   
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
+  # Borders
+  border_thick <- officer::fp_border(color = "black", width = 2)
+  border_thin  <- officer::fp_border(color = "black", width = 0.5)
   
-  # Print the final table
-  tbl
+  ft <- flextable::border_inner_h(ft, border = border_thin,  part = "body")
+  ft <- flextable::hline(ft, i = i_pool_start - 1, border = border_thick, part = "body")
+  ft <- flextable::hline(ft, i = i_extra_start - 1, border = border_thick, part = "body")
   
+  # Merge and bold the Panel column
+  ft <- flextable::merge_v(ft, j = "Panel", part = "body")
+  ft <- flextable::bold(ft,   j = "Panel", part = "body")
+  
+  # Caption and footnote
+  ft <- flextable::set_caption(ft, caption = table_title)
+  ft <- flextable::add_footer_lines(ft, values = footnote_text)
+  
+  # Fit to page width
+  if (exists("FitFlextableToPage")) {
+    ft <- FitFlextableToPage(ft)
+  } else {
+    ft <- flextable::autofit(ft)
+  }
+  
+  return(ft)
 }
-
-
-getTable6_het <- function(curr_het_var_lab, curr_het_var, dec_making, mainResults_mech_hh){
-  
-  mainResults_mech_ben_curr <- mainResults_mech_ben %>% filter(het_var==curr_het_var)
-  
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_ben_curr_csh$results_base[[6]]  #  cash transfer model
-  m16 <- mainResults_mech_ben_curr_csh$results_base[[7]]  # Second cash transfer model
-  m17 <- mainResults_mech_ben_curr_csh$results_base[[8]]  #  cash transfer model
-  m18 <- mainResults_mech_ben_curr_csh$results_base[[9]]  #  cash transfer model
-  m19 <- mainResults_mech_ben_curr_csh$results_base[[10]]  #  cash transfer model
-  m110 <- mainResults_mech_ben_curr_csh$results_base[[11]]  #  cash transfer model
-  m111 <- mainResults_mech_ben_curr_csh$results_base[[12]]  #  cash transfer model
-  m112 <- mainResults_mech_ben_curr_csh$results_base[[13]]  #  cash transfer model
-  m113 <- mainResults_mech_ben_curr_csh$results_base[[14]]  #  cash transfer model
-  m114 <- mainResults_mech_ben_curr_csh$results_base[[15]]  #  cash transfer model
-  m115 <- mainResults_mech_ben_curr_csh$results_base[[16]]  #  cash transfer model
-  m116 <- mainResults_mech_ben_curr_csh$results_base[[17]]  #  cash transfer model
-  m117 <- mainResults_mech_ben_curr_csh$results_base[[18]]  #  cash transfer model
-  m118 <- mainResults_mech_ben_curr_csh$results_base[[19]]  #  cash transfer model
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_ben_curr_pi$results_base[[6]]  #  productive inclusion model
-  m26 <- mainResults_mech_ben_curr_pi$results_base[[7]]  #  productive inclusion model
-  m27 <- mainResults_mech_ben_curr_pi$results_base[[8]]  #  productive inclusion model
-  m28 <- mainResults_mech_ben_curr_pi$results_base[[9]]  #  productive inclusion model
-  m29 <- mainResults_mech_ben_curr_pi$results_base[[10]]  #  productive inclusion model
-  m210 <- mainResults_mech_ben_curr_pi$results_base[[11]]  #  productive inclusion model
-  m211 <- mainResults_mech_ben_curr_pi$results_base[[12]]  #  productive inclusion model
-  m212 <- mainResults_mech_ben_curr_pi$results_base[[13]]  #  productive inclusion model
-  m213 <- mainResults_mech_ben_curr_pi$results_base[[14]]  #  productive inclusion model
-  m214 <- mainResults_mech_ben_curr_pi$results_base[[15]]  #  productive inclusion model
-  m215 <- mainResults_mech_ben_curr_pi$results_base[[16]]  #  productive inclusion model
-  m216 <- mainResults_mech_ben_curr_pi$results_base[[17]]  #  productive inclusion model
-  m217 <- mainResults_mech_ben_curr_pi$results_base[[18]]  #  productive inclusion model
-  m218 <- mainResults_mech_ben_curr_pi$results_base[[19]]  #  productive inclusion model
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_ben_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  m36 <- mainResults_mech_ben_curr_pool$results_base[[7]]  #  pool productive inclusion model
-  m37 <- mainResults_mech_ben_curr_pool$results_base[[8]]  #  pool productive inclusion model
-  m38 <- mainResults_mech_ben_curr_pool$results_base[[9]]  #  pool productive inclusion model
-  m39 <- mainResults_mech_ben_curr_pool$results_base[[10]]  #  pool productive inclusion model
-  m310 <- mainResults_mech_ben_curr_pool$results_base[[11]]  #  pool productive inclusion model
-  m311 <- mainResults_mech_ben_curr_pool$results_base[[12]]  #  pool productive inclusion model
-  m312 <- mainResults_mech_ben_curr_pool$results_base[[13]]  #  pool productive inclusion model
-  m313 <- mainResults_mech_ben_curr_pool$results_base[[14]]  #  pool productive inclusion model
-  m314 <- mainResults_mech_ben_curr_pool$results_base[[15]]  #  pool productive inclusion model
-  m315 <- mainResults_mech_ben_curr_pool$results_base[[16]]  #  pool productive inclusion model
-  m316 <- mainResults_mech_ben_curr_pool$results_base[[17]]  #  pool productive inclusion model
-  m317 <- mainResults_mech_ben_curr_pool$results_base[[18]]  #  pool productive inclusion model
-  m318 <- mainResults_mech_ben_curr_pool$results_base[[19]]  #  pool productive inclusion model
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in time_use_int) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-  }
-  
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m210, m211, m212, m213, m214, m215, m216, m217, m218)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m310, m311, m312, m313, m314, m315, m316, m317, m318)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m110, m111, m112, m113, m114, m115, m116, m117, m118)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Mins in \n off-farm \n business")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Mins in \n off-farm \n business")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Mins in \n off-farm \n business")
-  
-  ### 
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Mins spent \n retrieving \n water")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Mins spent \n retrieving \n water")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Mins spent \n retrieving \n water")
-  
-  ### partner
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Mins spent \n cooking")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Mins spent \n cooking")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Mins spent \n cooking")
-  
-  
-  ## Business rev
-  ### hh
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Mins spent \n agriculture")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Mins spent \n agriculture")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Mins spent \n agriculture")
-  
-  ### ben
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "Mins spent \n gathering \n firewood")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate =  "Mins spent \n gathering \n firewood")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate =  "Mins spent \n gathering \n firewood")
-  
-  ### partner
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "Mins spent \n cleaning")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "Mins spent \n cleaning")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "Mins spent \n cleaning")
-  
-  ## Wage rev
-  ### hh
-  tbl_list_pi[[7]] <- tbl_list_pi[[7]] %>%
-    modify_header(estimate = "Mins \n studying for \n Koranic school")
-  
-  tbl_list_csh_trnsfr[[7]] <- tbl_list_csh_trnsfr[[7]] %>%
-    modify_header(estimate = "Mins \n studying for \n Koranic school")
-  
-  tbl_list_pi_pool[[7]] <- tbl_list_pi_pool[[7]] %>%
-    modify_header(estimate = "Mins \n studying for \n Koranic school")
-  
-  ### ben
-  tbl_list_pi[[8]] <- tbl_list_pi[[8]] %>%
-    modify_header(estimate = "Mins spent \n doing \n laundry")
-  
-  tbl_list_csh_trnsfr[[8]] <- tbl_list_csh_trnsfr[[8]] %>%
-    modify_header(estimate = "Mins spent \n doing \n laundry")
-  
-  tbl_list_pi_pool[[8]] <- tbl_list_pi_pool[[8]] %>%
-    modify_header(estimate = "Mins spent \n doing \n laundry")
-  
-  ### part
-  tbl_list_pi[[9]] <- tbl_list_pi[[9]] %>%
-    modify_header(estimate = "Mins in \n livestock")
-  
-  tbl_list_csh_trnsfr[[9]] <- tbl_list_csh_trnsfr[[9]] %>%
-    modify_header(estimate = "Mins in \n livestock")
-  
-  tbl_list_pi_pool[[9]] <- tbl_list_pi_pool[[9]] %>%
-    modify_header(estimate = "Mins in \n livestock")
-  
-  ## Livestock
-  ### hh
-  tbl_list_pi[[10]] <- tbl_list_pi[[10]] %>%
-    modify_header(estimate = "Mins \n studying for \n traditional school")
-  
-  tbl_list_csh_trnsfr[[10]] <- tbl_list_csh_trnsfr[[10]] %>%
-    modify_header(estimate = "Mins \n studying for \n traditional school")
-  
-  tbl_list_pi_pool[[10]] <- tbl_list_pi_pool[[10]] %>%
-    modify_header(estimate = "Mins \n studying for \n traditional school")
-  
-  ### ben
-  tbl_list_pi[[11]] <- tbl_list_pi[[11]] %>%
-    modify_header(estimate = "Mins spent \n shopping")
-  
-  tbl_list_csh_trnsfr[[11]] <- tbl_list_csh_trnsfr[[11]] %>%
-    modify_header(estimate = "Mins spent \n shopping")
-  
-  tbl_list_pi_pool[[11]] <- tbl_list_pi_pool[[11]] %>%
-    modify_header(estimate = "Mins spent \n shopping")
-  
-  ### prt
-  tbl_list_pi[[12]] <- tbl_list_pi[[12]] %>%
-    modify_header(estimate = "Mins spent \n child care")
-  
-  tbl_list_csh_trnsfr[[12]] <- tbl_list_csh_trnsfr[[12]] %>%
-    modify_header(estimate = "Mins spent \n child care")
-  
-  tbl_list_pi_pool[[12]] <- tbl_list_pi_pool[[12]] %>%
-    modify_header(estimate = "Mins spent \n child care")
-  
-  tbl_list_pi[[13]] <- tbl_list_pi[[13]] %>%
-    modify_header(estimate = "Mins \n helping handicapped \n relatives")
-  
-  tbl_list_csh_trnsfr[[13]] <- tbl_list_csh_trnsfr[[13]] %>%
-    modify_header(estimate = "Mins \n helping handicapped \n relatives")
-  
-  tbl_list_pi_pool[[13]] <- tbl_list_pi_pool[[13]] %>%
-    modify_header(estimate = "Mins \n helping handicapped \n relatives")
-  
-  tbl_list_pi[[14]] <- tbl_list_pi[[14]] %>%
-    modify_header(estimate = "Mins spent \n with friends")
-  
-  tbl_list_csh_trnsfr[[14]] <- tbl_list_csh_trnsfr[[14]] %>%
-    modify_header(estimate = "Mins spent \n with friends")
-  
-  tbl_list_pi_pool[[14]] <- tbl_list_pi_pool[[14]] %>%
-    modify_header(estimate = "Mins spent \n with friends")
-  
-  tbl_list_pi[[15]] <- tbl_list_pi[[15]] %>%
-    modify_header(estimate = "Mins spent \n listening radio")
-  
-  tbl_list_csh_trnsfr[[15]] <- tbl_list_csh_trnsfr[[15]] %>%
-    modify_header(estimate = "Mins spent \n listening radio")
-  
-  tbl_list_pi_pool[[15]] <- tbl_list_pi_pool[[15]] %>%
-    modify_header(estimate = "Mins spent \n listening radio")
-  
-  tbl_list_pi[[16]] <- tbl_list_pi[[16]] %>%
-    modify_header(estimate = "Mins spent \n resting")
-  
-  tbl_list_csh_trnsfr[[16]] <- tbl_list_csh_trnsfr[[16]] %>%
-    modify_header(estimate = "Mins spent \n resting")
-  
-  tbl_list_pi_pool[[16]] <- tbl_list_pi_pool[[16]] %>%
-    modify_header(estimate = "Mins spent \n resting")
-  
-  tbl_list_pi[[17]] <- tbl_list_pi[[17]] %>%
-    modify_header(estimate = "Mins \n studying for \n traditional school")
-  
-  tbl_list_csh_trnsfr[[17]] <- tbl_list_csh_trnsfr[[17]] %>%
-    modify_header(estimate = "Mins \n studying for \n traditional school")
-  
-  tbl_list_pi_pool[[17]] <- tbl_list_pi_pool[[17]] %>%
-    modify_header(estimate = "Mins \n studying for \n traditional school")
-  
-  tbl_list_pi[[18]] <- tbl_list_pi[[18]] %>%
-    modify_header(estimate = "Mins spent \n shopping")
-  
-  tbl_list_csh_trnsfr[[18]] <- tbl_list_csh_trnsfr[[18]] %>%
-    modify_header(estimate = "Mins spent \n shopping")
-  
-  tbl_list_pi_pool[[18]] <- tbl_list_pi_pool[[18]] %>%
-    modify_header(estimate = "Mins spent \n shopping")
-  
-  tbl_list_pi[[19]] <- tbl_list_pi[[19]] %>%
-    modify_header(estimate = "Mins spent \n praying")
-  
-  tbl_list_csh_trnsfr[[19]] <- tbl_list_csh_trnsfr[[19]] %>%
-    modify_header(estimate = "Mins spent \n praying")
-  
-  tbl_list_pi_pool[[19]] <- tbl_list_pi_pool[[19]] %>%
-    modify_header(estimate = "Mins spent \n praying")
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]], 
-                tbl_list_csh_trnsfr[[7]], 
-                tbl_list_csh_trnsfr[[8]],
-                tbl_list_csh_trnsfr[[9]],
-                tbl_list_csh_trnsfr[[10]],
-                tbl_list_csh_trnsfr[[11]],
-                tbl_list_csh_trnsfr[[12]],
-                tbl_list_csh_trnsfr[[13]],
-                tbl_list_csh_trnsfr[[14]],
-                tbl_list_csh_trnsfr[[15]],
-                tbl_list_csh_trnsfr[[16]],
-                tbl_list_csh_trnsfr[[17]],
-                tbl_list_csh_trnsfr[[18]],
-                tbl_list_csh_trnsfr[[19]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)","(18)","(19)")
-    #tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]], 
-                tbl_list_pi[[7]], 
-                tbl_list_pi[[8]],
-                tbl_list_pi[[9]],
-                tbl_list_pi[[10]],
-                tbl_list_pi[[11]],
-                tbl_list_pi[[12]], 
-                tbl_list_pi[[13]],
-                tbl_list_pi[[14]],
-                tbl_list_pi[[15]],
-                tbl_list_pi[[16]],
-                tbl_list_pi[[17]],
-                tbl_list_pi[[18]],
-                tbl_list_pi[[19]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)","(18)","(19)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]], 
-                tbl_list_pi_pool[[7]], 
-                tbl_list_pi_pool[[8]],
-                tbl_list_pi_pool[[9]],
-                tbl_list_pi_pool[[10]],
-                tbl_list_pi_pool[[11]],
-                tbl_list_pi_pool[[12]], 
-                tbl_list_pi_pool[[13]],
-                tbl_list_pi_pool[[14]],
-                tbl_list_pi_pool[[15]],
-                tbl_list_pi_pool[[16]],
-                tbl_list_pi_pool[[17]],
-                tbl_list_pi_pool[[18]],
-                tbl_list_pi_pool[[19]]  
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)","(18)","(19)")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, ~estimate_10,
-    ~estimate_11, ~estimate_12,~estimate_13, ~estimate_14,~estimate_15,
-    ~estimate_16, ~estimate_17,~estimate_18, ~estimate_19,
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, ~stars_7, ~stars_8, ~stars_9, ~stars_10,~stars_11, ~stars_12,
-    ~stars_13,~stars_14, ~stars_15,~stars_16,~stars_17,~stars_18,~stars_19,
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], mean_values[7], mean_values[8], mean_values[9], mean_values[10], 
-    mean_values[11], mean_values[12],mean_values[13], mean_values[14],mean_values[15],
-    mean_values[16], mean_values[17], mean_values[18], mean_values[19],
-    "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "","", "","", "",
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], sd_values[7], sd_values[8], sd_values[9], sd_values[10],
-    sd_values[11], sd_values[12],sd_values[13], sd_values[14],
-    sd_values[15], sd_values[16],sd_values[17], sd_values[18],sd_values[19], 
-    "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "","", "","", "",
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    as.numeric(cash$full[6]), as.numeric(cash$full[7]), as.numeric(cash$full[8]),
-    as.numeric(cash$full[9]), as.numeric(cash$full[10]), as.numeric(cash$full[11]), 
-    as.numeric(cash$full[12]), as.numeric(cash$full[13]), as.numeric(cash$full[14]), 
-    as.numeric(cash$full[15]), as.numeric(cash$full[16]), as.numeric(cash$full[17]),
-    as.numeric(cash$full[18]), as.numeric(cash$full[19]), 
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], cash$full_start[7], cash$full_start[8],
-    cash$full_start[9], cash$full_start[10], cash$full_start[11], cash$full_start[12],
-    cash$full_start[13], cash$full_start[14], cash$full_start[15], cash$full_start[16],
-    cash$full_start[17], cash$full_start[18],
-    cash$full_start[19],
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    as.numeric(pool$full[6]), as.numeric(pool$full[7]), as.numeric(pool$full[8]),
-    as.numeric(pool$full[9]), as.numeric(pool$full[10]),
-    as.numeric(pool$full[11]), as.numeric(pool$full[12]), as.numeric(pool$full[13]),
-    as.numeric(pool$full[14]), as.numeric(pool$full[15]), as.numeric(pool$full[16]),
-    as.numeric(pool$full[17]), as.numeric(pool$full[18]),
-    as.numeric(pool$full[19]), 
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6], pool$full_start[7], pool$full_start[8],
-    pool$full_start[9], pool$full_start[10],
-    pool$full_start[11], pool$full_start[12],
-    pool$full_start[13], pool$full_start[14],
-    pool$full_start[15], pool$full_start[16],
-    pool$full_start[17], pool$full_start[18],
-    pool$full_start[19]
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
-}
+############################################################
+# Generic spillover IPV table (OLS + kable)
+############################################################
 
 
 
-
-
-getTable4_het <- function(curr_het_var_lab, curr_het_var, dec_making, mainResults_mech_hh){
-  
-  mainResults_mech_ben_curr <- mainResults_mech_ben %>% filter(het_var==curr_het_var)
-  
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_ben_curr_csh$results_base[[6]]  #  cash transfer model
-  m16 <- mainResults_mech_ben_curr_csh$results_base[[7]]  # Second cash transfer model
-  m17 <- mainResults_mech_ben_curr_csh$results_base[[8]]  #  cash transfer model
-  m18 <- mainResults_mech_ben_curr_csh$results_base[[9]]  #  cash transfer model
-  m19 <- mainResults_mech_ben_curr_csh$results_base[[10]]  #  cash transfer model
-  m110 <- mainResults_mech_ben_curr_csh$results_base[[11]]  #  cash transfer model
-  m111 <- mainResults_mech_ben_curr_csh$results_base[[12]]  #  cash transfer model
-  m112 <- mainResults_mech_ben_curr_csh$results_base[[13]]  #  cash transfer model
-  m113 <- mainResults_mech_ben_curr_csh$results_base[[14]]  #  cash transfer model
-  m114 <- mainResults_mech_ben_curr_csh$results_base[[15]]  #  cash transfer model
-  m115 <- mainResults_mech_ben_curr_csh$results_base[[16]]  #  cash transfer model
-  m116 <- mainResults_mech_ben_curr_csh$results_base[[17]]  #  cash transfer model
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_ben_curr_pi$results_base[[6]]  #  productive inclusion model
-  m26 <- mainResults_mech_ben_curr_pi$results_base[[7]]  #  productive inclusion model
-  m27 <- mainResults_mech_ben_curr_pi$results_base[[8]]  #  productive inclusion model
-  m28 <- mainResults_mech_ben_curr_pi$results_base[[9]]  #  productive inclusion model
-  m29 <- mainResults_mech_ben_curr_pi$results_base[[10]]  #  productive inclusion model
-  m210 <- mainResults_mech_ben_curr_pi$results_base[[11]]  #  productive inclusion model
-  m211 <- mainResults_mech_ben_curr_pi$results_base[[12]]  #  productive inclusion model
-  m212 <- mainResults_mech_ben_curr_pi$results_base[[13]]  #  productive inclusion model
-  m213 <- mainResults_mech_ben_curr_pi$results_base[[14]]  #  productive inclusion model
-  m214 <- mainResults_mech_ben_curr_pi$results_base[[15]]  #  productive inclusion model
-  m215 <- mainResults_mech_ben_curr_pi$results_base[[16]]  #  productive inclusion model
-  m216 <- mainResults_mech_ben_curr_pi$results_base[[17]]  #  productive inclusion model
-  
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_ben_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  m36 <- mainResults_mech_ben_curr_pool$results_base[[7]]  #  pool productive inclusion model
-  m37 <- mainResults_mech_ben_curr_pool$results_base[[8]]  #  pool productive inclusion model
-  m38 <- mainResults_mech_ben_curr_pool$results_base[[9]]  #  pool productive inclusion model
-  m39 <- mainResults_mech_ben_curr_pool$results_base[[10]]  #  pool productive inclusion model
-  m310 <- mainResults_mech_ben_curr_pool$results_base[[11]]  #  pool productive inclusion model
-  m311 <- mainResults_mech_ben_curr_pool$results_base[[12]]  #  pool productive inclusion model
-  m312 <- mainResults_mech_ben_curr_pool$results_base[[13]]  #  pool productive inclusion model
-  m313 <- mainResults_mech_ben_curr_pool$results_base[[14]]  #  pool productive inclusion model
-  m314 <- mainResults_mech_ben_curr_pool$results_base[[15]]  #  pool productive inclusion model
-  m315 <- mainResults_mech_ben_curr_pool$results_base[[16]]  #  pool productive inclusion model
-  m316 <- mainResults_mech_ben_curr_pool$results_base[[17]]  #  pool productive inclusion model
-  
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in dec_making) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-  }
-  
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m210, m211, m212, m213, m214, m215, m216)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m310, m311, m312, m313, m314, m315, m316)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m110, m111, m112, m113, m114, m115, m116)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  ### hh
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Control over \n household \n resources index")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Control over \n household \n resources index")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Control over \n household \n resources index")
-  
-  ### ben
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Control over \n earnings \n index")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Control over \n earnings \n index")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Control over \n earnings \n index")
-  
-  ### partner
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Own \n earnings \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Own \n earnings \n influence (1-3)")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Own \n earnings \n influence (1-3)")
-  
-  
-  ## Business rev
-  ### hh
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Can Decide \n to Earn \n Alone (1-3)")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Can Decide \n to Earn \n Alone (1-3)")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Can Decide \n to Earn \n Alone (1-3)")
-  
-  ### ben
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "Agriculture \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate =  "Agriculture \n influence (1-3)")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate =  "Agriculture \n influence (1-3)")
-  
-  ### partner
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "Livestock \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "Livestock \n influence (1-3)")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "Livestock \n influence (1-3)")
-  
-  ## Wage rev
-  ### hh
-  tbl_list_pi[[7]] <- tbl_list_pi[[7]] %>%
-    modify_header(estimate = "Off-farm \n business \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[7]] <- tbl_list_csh_trnsfr[[7]] %>%
-    modify_header(estimate = "Off-farm \n business \n influence (1-3)")
-  
-  tbl_list_pi_pool[[7]] <- tbl_list_pi_pool[[7]] %>%
-    modify_header(estimate = "Off-farm \n business \n influence (1-3)")
-  
-  ### ben
-  tbl_list_pi[[8]] <- tbl_list_pi[[8]] %>%
-    modify_header(estimate = "Daily \n spending \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[8]] <- tbl_list_csh_trnsfr[[8]] %>%
-    modify_header(estimate = "Daily \n spending \n influence (1-3)")
-  
-  tbl_list_pi_pool[[8]] <- tbl_list_pi_pool[[8]] %>%
-    modify_header(estimate = "Daily \n spending \n influence (1-3)")
-  
-  ### part
-  tbl_list_pi[[9]] <- tbl_list_pi[[9]] %>%
-    modify_header(estimate = "Can Decide \n to Spend \n Alone (1-3)")
-  
-  tbl_list_csh_trnsfr[[9]] <- tbl_list_csh_trnsfr[[9]] %>%
-    modify_header(estimate = "Can Decide \n to Spend \n Alone (1-3)")
-  
-  tbl_list_pi_pool[[9]] <- tbl_list_pi_pool[[9]] %>%
-    modify_header(estimate = "Can Decide \n to Spend \n Alone (1-3)")
-  
-  ## Livestock
-  ### hh
-  tbl_list_pi[[10]] <- tbl_list_pi[[10]] %>%
-    modify_header(estimate = "Large \n purchases \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[10]] <- tbl_list_csh_trnsfr[[10]] %>%
-    modify_header(estimate = "Large \n purchases \n influence (1-3)")
-  
-  tbl_list_pi_pool[[10]] <- tbl_list_pi_pool[[10]] %>%
-    modify_header(estimate = "Large \n purchases \n influence (1-3)")
-  
-  ### ben
-  tbl_list_pi[[11]] <- tbl_list_pi[[11]] %>%
-    modify_header(estimate = "Can Decide to \n Spend Large \n Amounts Alone (1-3)")
-  
-  tbl_list_csh_trnsfr[[11]] <- tbl_list_csh_trnsfr[[11]] %>%
-    modify_header(estimate = "Can Decide to \n Spend Large \n Amounts Alone (1-3)")
-  
-  tbl_list_pi_pool[[11]] <- tbl_list_pi_pool[[11]] %>%
-    modify_header(estimate = "Can Decide to \n Spend Large \n Amounts Alone (1-3)")
-  
-  ### prt
-  tbl_list_pi[[12]] <- tbl_list_pi[[12]] %>%
-    modify_header(estimate = "Family \n planning \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[12]] <- tbl_list_csh_trnsfr[[12]] %>%
-    modify_header(estimate = "Family \n planning \n influence (1-3)")
-  
-  tbl_list_pi_pool[[12]] <- tbl_list_pi_pool[[12]] %>%
-    modify_header(estimate = "Family \n planning \n influence (1-3)")
-  
-  tbl_list_pi[[13]] <- tbl_list_pi[[13]] %>%
-    modify_header(estimate = "Can Make \n Fertility \n Choices Alone (1-3)")
-  
-  tbl_list_csh_trnsfr[[13]] <- tbl_list_csh_trnsfr[[13]] %>%
-    modify_header(estimate = "Can Make \n Fertility \n Choices Alone (1-3)")
-  
-  tbl_list_pi_pool[[13]] <- tbl_list_pi_pool[[13]] %>%
-    modify_header(estimate = "Can Make \n Fertility \n Choices Alone (1-3)")
-  
-  tbl_list_pi[[14]] <- tbl_list_pi[[14]] %>%
-    modify_header(estimate = "Own \n healthcare \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[14]] <- tbl_list_csh_trnsfr[[14]] %>%
-    modify_header(estimate = "Own \n healthcare \n influence (1-3)")
-  
-  tbl_list_pi_pool[[14]] <- tbl_list_pi_pool[[14]] %>%
-    modify_header(estimate = "Own \n healthcare \n influence (1-3)")
-  
-  tbl_list_pi[[15]] <- tbl_list_pi[[15]] %>%
-    modify_header(estimate = "Can Decide \n about Self-Care \n Alone (1-3)")
-  
-  tbl_list_csh_trnsfr[[15]] <- tbl_list_csh_trnsfr[[15]] %>%
-    modify_header(estimate = "Can Decide \n about Self-Care \n Alone (1-3)")
-  
-  tbl_list_pi_pool[[15]] <- tbl_list_pi_pool[[15]] %>%
-    modify_header(estimate = "Can Decide \n about Self-Care \n Alone (1-3)")
-  
-  tbl_list_pi[[16]] <- tbl_list_pi[[16]] %>%
-    modify_header(estimate = "Partner’s \n earnings \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[16]] <- tbl_list_csh_trnsfr[[16]] %>%
-    modify_header(estimate = "Partner’s \n earnings \n influence (1-3)")
-  
-  tbl_list_pi_pool[[16]] <- tbl_list_pi_pool[[16]] %>%
-    modify_header(estimate = "Partner’s \n earnings \n influence (1-3)")
-  
-  tbl_list_pi[[17]] <- tbl_list_pi[[17]] %>%
-    modify_header(estimate = "Child \n education \n influence (1-3)")
-  
-  tbl_list_csh_trnsfr[[17]] <- tbl_list_csh_trnsfr[[17]] %>%
-    modify_header(estimate = "Child \n education \n influence (1-3)")
-  
-  tbl_list_pi_pool[[17]] <- tbl_list_pi_pool[[17]] %>%
-    modify_header(estimate = "Child \n education \n influence (1-3)")
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]], 
-                tbl_list_csh_trnsfr[[7]], 
-                tbl_list_csh_trnsfr[[8]],
-                tbl_list_csh_trnsfr[[9]],
-                tbl_list_csh_trnsfr[[10]],
-                tbl_list_csh_trnsfr[[11]],
-                tbl_list_csh_trnsfr[[12]],
-                tbl_list_csh_trnsfr[[13]],
-                tbl_list_csh_trnsfr[[14]],
-                tbl_list_csh_trnsfr[[15]],
-                tbl_list_csh_trnsfr[[16]],
-                tbl_list_csh_trnsfr[[17]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)")
-    #tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]], 
-                tbl_list_pi[[7]], 
-                tbl_list_pi[[8]],
-                tbl_list_pi[[9]],
-                tbl_list_pi[[10]],
-                tbl_list_pi[[11]],
-                tbl_list_pi[[12]], 
-                tbl_list_pi[[13]],
-                tbl_list_pi[[14]],
-                tbl_list_pi[[15]],
-                tbl_list_pi[[16]],
-                tbl_list_pi[[17]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]], 
-                tbl_list_pi_pool[[7]], 
-                tbl_list_pi_pool[[8]],
-                tbl_list_pi_pool[[9]],
-                tbl_list_pi_pool[[10]],
-                tbl_list_pi_pool[[11]],
-                tbl_list_pi_pool[[12]], 
-                tbl_list_pi_pool[[13]],
-                tbl_list_pi_pool[[14]],
-                tbl_list_pi_pool[[15]],
-                tbl_list_pi_pool[[16]],
-                tbl_list_pi_pool[[17]] 
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)","(13)","(14)","(15)","(16)","(17)")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, ~estimate_10,
-    ~estimate_11, ~estimate_12,~estimate_13, ~estimate_14,~estimate_15,
-    ~estimate_16, ~estimate_17,
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, ~stars_7, ~stars_8, ~stars_9, ~stars_10,~stars_11, ~stars_12,
-    ~stars_13,~stars_14, ~stars_15,~stars_16,~stars_17,
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], mean_values[7], mean_values[8], mean_values[9], mean_values[10], 
-    mean_values[11], mean_values[12],mean_values[13], mean_values[14],mean_values[15],
-    mean_values[16], mean_values[17],
-    "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "","", "",
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], sd_values[7], sd_values[8], sd_values[9], sd_values[10],
-    sd_values[11], sd_values[12],sd_values[13], sd_values[14],
-    sd_values[15], sd_values[16],sd_values[17], 
-    "", "", "", "", "", "", "", "", "", "",
-    "", "", "", "", "","", "",
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    as.numeric(cash$full[6]), as.numeric(cash$full[7]), as.numeric(cash$full[8]),
-    as.numeric(cash$full[9]), as.numeric(cash$full[10]), as.numeric(cash$full[11]), 
-    as.numeric(cash$full[12]), as.numeric(cash$full[13]), as.numeric(cash$full[14]), 
-    as.numeric(cash$full[15]), as.numeric(cash$full[16]), as.numeric(cash$full[17]), 
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], cash$full_start[7], cash$full_start[8],
-    cash$full_start[9], cash$full_start[10], cash$full_start[11], cash$full_start[12],
-    cash$full_start[13], cash$full_start[14], cash$full_start[15], cash$full_start[16],
-    cash$full_start[17],
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    as.numeric(pool$full[6]), as.numeric(pool$full[7]), as.numeric(pool$full[8]),
-    as.numeric(pool$full[9]), as.numeric(pool$full[10]),
-    as.numeric(pool$full[11]), as.numeric(pool$full[12]), as.numeric(pool$full[13]),
-    as.numeric(pool$full[14]), as.numeric(pool$full[15]), as.numeric(pool$full[16]),
-    as.numeric(pool$full[17]), 
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6], pool$full_start[7], pool$full_start[8],
-    pool$full_start[9], pool$full_start[10],
-    pool$full_start[11], pool$full_start[12],
-    pool$full_start[13], pool$full_start[14],
-    pool$full_start[15], pool$full_start[16],
-    pool$full_start[17]
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
-}
-
-
-getTable3_het <- function(curr_het_var_lab, curr_het_var, intra_hh_vars, mainResults_mech_hh){
-
-  
-  mainResults_mech_ben_curr <- mainResults_mech_ben %>% filter(het_var==curr_het_var)
-  
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  # m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  # Second cash transfer model
-  # m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  # m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  # Second productive inclusion model
-  # m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  # m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  # Second pool productive inclusion model
-  # m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in intra_hh_vars) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-  }
-  
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  ## Intra-household dynamics index
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Intra-household \n dynamics index")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Intra-household \n dynamics index")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Intra-household \n dynamics index")
-  
-  ### Violence perceptions index
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "Violence \n perceptions index")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Violence \n perceptions index")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Violence \n perceptions index")
-  
-  ### Gender attitudes index
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Gender \n attitudes index")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Gender \n attitudes index")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Gender \n attitudes index")
-  
-
-  
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]]
-    ), 
-    tab_spanner = c("(1)","(2)","(3)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]]
-
-    ),  
-    tab_spanner = c("(1)","(2)","(3)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]]
-
-    ),  
-    tab_spanner = c("(1)","(2)","(3)")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, 
-    ~stars_1, ~stars_2, ~stars_3, 
-    
-    
-    # Row 1: Control mean mean_values[4], mean_values[5], 
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], 
-    "", "", "", 
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], 
-    "", "", "", 
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    #as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    cash$full_start[1], cash$full_start[2], cash$full_start[3],
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    #as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    pool$full_start[1], pool$full_start[2], pool$full_start[3] 
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  }
-
-getTable2_het <- function(curr_het_var_lab, curr_het_var, revenue_consum_vars_ben, mainResults_mech_ben){
-  
-  mainResults_mech_ben_curr <- mainResults_mech_ben %>% filter(het_var==curr_het_var)
-  
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_ben_curr_csh <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_ben_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_ben_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_ben_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_ben_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_ben_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_ben_curr_csh$results_base[[6]]  #  cash transfer model
-  m16 <- mainResults_mech_ben_curr_csh$results_base[[7]]  # Second cash transfer model
-  m17 <- mainResults_mech_ben_curr_csh$results_base[[8]]  #  cash transfer model
-  m18 <- mainResults_mech_ben_curr_csh$results_base[[9]]  #  cash transfer model
-  m19 <- mainResults_mech_ben_curr_csh$results_base[[10]]  #  cash transfer model
-  m110 <- mainResults_mech_ben_curr_csh$results_base[[11]]  #  cash transfer model
-  m111 <- mainResults_mech_ben_curr_csh$results_base[[12]]  #  cash transfer model
-  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_ben_curr_pi <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_ben_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_ben_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_ben_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_ben_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_ben_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_ben_curr_pi$results_base[[6]]  #  productive inclusion model
-  m26 <- mainResults_mech_ben_curr_pi$results_base[[7]]  #  productive inclusion model
-  m27 <- mainResults_mech_ben_curr_pi$results_base[[8]]  #  productive inclusion model
-  m28 <- mainResults_mech_ben_curr_pi$results_base[[9]]  #  productive inclusion model
-  m29 <- mainResults_mech_ben_curr_pi$results_base[[10]]  #  productive inclusion model
-  m210 <- mainResults_mech_ben_curr_pi$results_base[[11]]  #  productive inclusion model
-  m211 <- mainResults_mech_ben_curr_pi$results_base[[12]]  #  productive inclusion model
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_ben_curr_pool <- mainResults_mech_ben_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_ben_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_ben_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_ben_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_ben_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_ben_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_ben_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  m36 <- mainResults_mech_ben_curr_pool$results_base[[7]]  #  pool productive inclusion model
-  m37 <- mainResults_mech_ben_curr_pool$results_base[[8]]  #  pool productive inclusion model
-  m38 <- mainResults_mech_ben_curr_pool$results_base[[9]]  #  pool productive inclusion model
-  m39 <- mainResults_mech_ben_curr_pool$results_base[[10]]  #  pool productive inclusion model
-  m310 <- mainResults_mech_ben_curr_pool$results_base[[11]]  #  pool productive inclusion model
-  m311 <- mainResults_mech_ben_curr_pool$results_base[[12]]  #  pool productive inclusion model
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_ben_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_ben_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_ben_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_ben_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_ben_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in revenue_consum_vars_ben) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-  }
-  
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m210, m211)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m310, m311)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m110, m111)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  ## Total revenue
-  ### hh
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "hh.")
-  
-  ### ben
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "ben.")
-  ### partner
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "prt.")
-  
-  
-  ## Business rev
-  ### hh
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "hh.")
-  
-  ### ben
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate = "ben.")
-  
-  ### partner
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "prt.")
-  
-  ## Wage rev
-  ### hh
-  tbl_list_pi[[7]] <- tbl_list_pi[[7]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_csh_trnsfr[[7]] <- tbl_list_csh_trnsfr[[7]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_pi_pool[[7]] <- tbl_list_pi_pool[[7]] %>%
-    modify_header(estimate = "hh.")
-  
-  ### ben
-  tbl_list_pi[[8]] <- tbl_list_pi[[8]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_csh_trnsfr[[8]] <- tbl_list_csh_trnsfr[[8]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_pi_pool[[8]] <- tbl_list_pi_pool[[8]] %>%
-    modify_header(estimate = "ben.")
-  
-  ### part
-  tbl_list_pi[[9]] <- tbl_list_pi[[9]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_csh_trnsfr[[9]] <- tbl_list_csh_trnsfr[[9]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_pi_pool[[9]] <- tbl_list_pi_pool[[9]] %>%
-    modify_header(estimate = "prt.")
-  
-  ## Livestock
-  ### hh
-  tbl_list_pi[[10]] <- tbl_list_pi[[10]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_csh_trnsfr[[10]] <- tbl_list_csh_trnsfr[[10]] %>%
-    modify_header(estimate = "hh.")
-  
-  tbl_list_pi_pool[[10]] <- tbl_list_pi_pool[[10]] %>%
-    modify_header(estimate = "hh.")
-  
-  ### ben
-  tbl_list_pi[[11]] <- tbl_list_pi[[11]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_csh_trnsfr[[11]] <- tbl_list_csh_trnsfr[[11]] %>%
-    modify_header(estimate = "ben.")
-  
-  tbl_list_pi_pool[[11]] <- tbl_list_pi_pool[[11]] %>%
-    modify_header(estimate = "ben.")
-  
-  ### prt
-  tbl_list_pi[[12]] <- tbl_list_pi[[12]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_csh_trnsfr[[12]] <- tbl_list_csh_trnsfr[[12]] %>%
-    modify_header(estimate = "prt.")
-  
-  tbl_list_pi_pool[[12]] <- tbl_list_pi_pool[[12]] %>%
-    modify_header(estimate = "prt.")
-  
-  
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]], 
-                tbl_list_csh_trnsfr[[7]], 
-                tbl_list_csh_trnsfr[[8]],
-                tbl_list_csh_trnsfr[[9]],
-                tbl_list_csh_trnsfr[[10]],
-                tbl_list_csh_trnsfr[[11]],
-                tbl_list_csh_trnsfr[[12]] 
-    ), 
-    tab_spanner = c("Total \n revenue \n (yearly, USD)","","","Business \n revenues \n (yearly, USD)","","", "Wage \n earnings \n (yearly, USD)","","","Livestock \n revenue \n (yearly, USD)","","")
-    #tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)","(11)","(12)")
-  ) 
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]], 
-                tbl_list_pi[[7]], 
-                tbl_list_pi[[8]],
-                tbl_list_pi[[9]],
-                tbl_list_pi[[10]],
-                tbl_list_pi[[11]],
-                tbl_list_pi[[12]] 
-    ),  
-    tab_spanner = c("Total \n revenue \n (yearly, USD)","","","Business \n revenues \n (yearly, USD)","","", "Wage \n earnings \n (yearly, USD)","","","Livestock \n revenue \n (yearly, USD)","","")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]], 
-                tbl_list_pi_pool[[7]], 
-                tbl_list_pi_pool[[8]],
-                tbl_list_pi_pool[[9]],
-                tbl_list_pi_pool[[10]],
-                tbl_list_pi_pool[[11]],
-                tbl_list_pi_pool[[12]] 
-    ),  
-    tab_spanner = c("Total \n revenue \n (yearly, USD)","","","Business \n revenues \n (yearly, USD)","","", "Wage \n earnings \n (yearly, USD)","","","Livestock \n revenue \n (yearly, USD)","","")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, ~estimate_10,
-    ~estimate_11, ~estimate_12,
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, ~stars_7, ~stars_8, ~stars_9, ~stars_10,~stars_11, ~stars_12,
-    
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], mean_values[7], mean_values[8], mean_values[9], mean_values[10], 
-    mean_values[11], mean_values[12],
-    "", "", "", "", "",
-    "", "", "", "", "","", "",
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], sd_values[7], sd_values[8], sd_values[9], sd_values[10],
-    sd_values[11], sd_values[12],
-    "", "", "", "", "","", "",
-    "", "", "", "", "",
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]), as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),
-    as.numeric(cash$full[6]), as.numeric(cash$full[7]), as.numeric(cash$full[8]),
-    as.numeric(cash$full[9]), as.numeric(cash$full[10]), as.numeric(cash$full[11]), 
-    as.numeric(cash$full[12]),
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], cash$full_start[7], cash$full_start[8],
-    cash$full_start[9], cash$full_start[10], cash$full_start[11], cash$full_start[12],
-    
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]),
-    as.numeric(pool$full[6]), as.numeric(pool$full[7]), as.numeric(pool$full[8]),
-    as.numeric(pool$full[9]), as.numeric(pool$full[10]),
-    as.numeric(pool$full[11]), as.numeric(pool$full[12]),
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6], pool$full_start[7], pool$full_start[8],
-    pool$full_start[9], pool$full_start[10],
-    pool$full_start[11], pool$full_start[12]
-  )
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
-  # # Row 4: Capital + Heterogeneity interaction
-  # 4, paste0("Capital + ", curr_het_var_lab, " * Capital"),
-  # paste0("Capital + ", curr_het_var_lab, " * Capital"),
-  # paste0("Capital + ", curr_het_var_lab, " * Capital"),
-  # as.numeric(capital$capital[1]), as.numeric(capital$capital[2]),
-  # as.numeric(capital$capital[3]), as.numeric(capital$capital[4]),
-  # as.numeric(capital$capital[5]), as.numeric(capital$capital[6]),
-  # as.numeric(capital$capital[7]), as.numeric(capital$capital[8]),
-  # as.numeric(capital$capital[9]), as.numeric(capital$capital[10]),
-  #  as.numeric(capital$capital[11]), as.numeric(capital$capital[12]),
-  # capital$capital_start[1], capital$capital_start[2], capital$capital_start[3],
-  # capital$capital_start[4], capital$capital_start[5], capital$capital_start[6],
-  # capital$capital_start[7], capital$capital_start[8], capital$capital_start[9],
-  # capital$capital_start[10],capital$capital_start[11],
-  # capital$capital_start[12],
-  # 
-  # # Row 5: Psychosocial + Heterogeneity interaction
-  # 4, paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),
-  # paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),
-  # paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),
-  # as.numeric(psychosocial$psychosocial[1]), as.numeric(psychosocial$psychosocial[2]),
-  # as.numeric(psychosocial$psychosocial[3]), as.numeric(psychosocial$psychosocial[4]),
-  # as.numeric(psychosocial$psychosocial[5]),
-  # as.numeric(psychosocial$psychosocial[6]), as.numeric(psychosocial$psychosocial[7]),
-  # as.numeric(psychosocial$psychosocial[8]), as.numeric(psychosocial$psychosocial[9]),
-  # as.numeric(psychosocial$psychosocial[10]), as.numeric(psychosocial$psychosocial[11]),
-  # as.numeric(psychosocial$psychosocial[12]),
-  # psychosocial$psychosocial_start[1], psychosocial$psychosocial_start[2],
-  # psychosocial$psychosocial_start[3], psychosocial$psychosocial_start[4],
-  # psychosocial$psychosocial_start[5], psychosocial$psychosocial_start[6],
-  # psychosocial$psychosocial_start[7], psychosocial$psychosocial_start[8],
-  # psychosocial$psychosocial_start[9], psychosocial$psychosocial_start[10],
-  #  psychosocial$psychosocial_start[11], psychosocial$psychosocial_start[12],
-  #   # Row 6: Full Package + Heterogeneity interaction
-  # 4, paste0("Full + ", curr_het_var_lab, " * Full"),
-  # paste0("Full + ", curr_het_var_lab, " * Full"),
-  # paste0("Full + ", curr_het_var_lab, " * Full"),
-  # as.numeric(full$full[1]), as.numeric(full$full[2]), as.numeric(full$full[3]),
-  # as.numeric(full$full[4]), as.numeric(full$full[5]),
-  # as.numeric(full$full[6]), as.numeric(full$full[7]), as.numeric(full$full[8]),
-  # as.numeric(full$full[9]), as.numeric(full$full[10]),
-  # as.numeric(full$full[11]), as.numeric(full$full[12]),
-  # full$full_start[1], full$full_start[2], full$full_start[3], full$full_start[4],
-  # full$full_start[5], full$full_start[6], full$full_start[7], full$full_start[8],
-  # full$full_start[9], full$full_start[10],full$full_start[11], full$full_start[12],
-}
-
-
-getTable1_het <- function(curr_het_var_lab, curr_het_var, revenue_consum_vars, mainResults_mech_hh){
-  
-  
-  mainResults_mech_hh_curr <- mainResults_mech_hh %>% filter(het_var==curr_het_var)
-  
-  
-  ## Cash transfer regression models
-  ### Extract specific models for cash transfer from the main results
-  mainResults_mech_hh_curr_csh <- mainResults_mech_hh_curr %>% filter(treat_var=="treatment_csh_trnsfr")
-  
-  m10 <- mainResults_mech_hh_curr_csh$results_base[[1]]  # First cash transfer model
-  m11 <- mainResults_mech_hh_curr_csh$results_base[[2]]  # Second cash transfer model
-  m12 <- mainResults_mech_hh_curr_csh$results_base[[3]]  #  cash transfer model
-  m13 <- mainResults_mech_hh_curr_csh$results_base[[4]]  #  cash transfer model
-  m14 <- mainResults_mech_hh_curr_csh$results_base[[5]]  #  cash transfer model
-  m15 <- mainResults_mech_hh_curr_csh$results_base[[6]]  #  cash transfer model
-  m16 <- mainResults_mech_hh_curr_csh$results_base[[7]]  # Second cash transfer model
-  m17 <- mainResults_mech_hh_curr_csh$results_base[[8]]  #  cash transfer model
-  m18 <- mainResults_mech_hh_curr_csh$results_base[[9]]  #  cash transfer model
-  m19 <- mainResults_mech_hh_curr_csh$results_base[[10]]  #  cash transfer model
-  m110 <- mainResults_mech_hh_curr_csh$results_base[[11]]  # First cash transfer model
-  m111 <- mainResults_mech_hh_curr_csh$results_base[[12]]  # Second cash transfer model
-  m112 <- mainResults_mech_hh_curr_csh$results_base[[13]]  #  cash transfer model
-  m113 <- mainResults_mech_hh_curr_csh$results_base[[14]]  #  cash transfer model
-  m114 <- mainResults_mech_hh_curr_csh$results_base[[15]]  #  cash transfer model
-  m115 <- mainResults_mech_hh_curr_csh$results_base[[16]]  #  cash transfer model
-  m116 <- mainResults_mech_hh_curr_csh$results_base[[17]]  # Second cash transfer model
-  m117 <- mainResults_mech_hh_curr_csh$results_base[[18]]  #  cash transfer model
-  m118 <- mainResults_mech_hh_curr_csh$results_base[[19]]  #  cash transfer model
-  m119 <- mainResults_mech_hh_curr_csh$results_base[[20]]  #  cash transfer model 
-  m120 <- mainResults_mech_hh_curr_csh$results_base[[21]]  #  cash transfer model  
-  ## Productive inclusion regression models
-  ### Extract specific models for productive inclusion from the main results
-  mainResults_mech_hh_curr_pi <- mainResults_mech_hh_curr %>% filter(treat_var=="treatment_pi")
-  
-  m20 <- mainResults_mech_hh_curr_pi$results_base[[1]]  # First productive inclusion model
-  m21 <- mainResults_mech_hh_curr_pi$results_base[[2]]  # Second productive inclusion model
-  m22 <- mainResults_mech_hh_curr_pi$results_base[[3]]  #  productive inclusion model
-  m23 <- mainResults_mech_hh_curr_pi$results_base[[4]]  #  productive inclusion model
-  m24 <- mainResults_mech_hh_curr_pi$results_base[[5]]  #  productive inclusion model
-  m25 <- mainResults_mech_hh_curr_pi$results_base[[6]]  #  productive inclusion model
-  m26 <- mainResults_mech_hh_curr_pi$results_base[[7]]  #  productive inclusion model
-  m27 <- mainResults_mech_hh_curr_pi$results_base[[8]]  #  productive inclusion model
-  m28 <- mainResults_mech_hh_curr_pi$results_base[[9]]  #  productive inclusion model
-  m29 <- mainResults_mech_hh_curr_pi$results_base[[10]]  #  productive inclusion model
-  m210 <- mainResults_mech_hh_curr_pi$results_base[[11]]  # First productive inclusion model
-  m211 <- mainResults_mech_hh_curr_pi$results_base[[12]]  # Second productive inclusion model
-  m212 <- mainResults_mech_hh_curr_pi$results_base[[13]]  #  productive inclusion model
-  m213 <- mainResults_mech_hh_curr_pi$results_base[[14]]  #  productive inclusion model
-  m214 <- mainResults_mech_hh_curr_pi$results_base[[15]]  #  productive inclusion model
-  m215 <- mainResults_mech_hh_curr_pi$results_base[[16]]  #  productive inclusion model
-  m216 <- mainResults_mech_hh_curr_pi$results_base[[17]]  #  productive inclusion model
-  m217 <- mainResults_mech_hh_curr_pi$results_base[[18]]  #  productive inclusion model
-  m218 <- mainResults_mech_hh_curr_pi$results_base[[19]]  #  productive inclusion model
-  m219 <- mainResults_mech_hh_curr_pi$results_base[[20]]  #  productive inclusion model  
-  m220 <- mainResults_mech_hh_curr_pi$results_base[[21]]  #  productive inclusion model  
-  
-  ### Extract specific models for productive inclusion (pool) from the main results
-  mainResults_mech_hh_curr_pool <- mainResults_mech_hh_curr %>% filter(treat_var=="treatment_pi_pool")
-  
-  m30 <- mainResults_mech_hh_curr_pool$results_base[[1]]  # First pool productive inclusion model
-  m31 <- mainResults_mech_hh_curr_pool$results_base[[2]]  # Second pool productive inclusion model
-  m32 <- mainResults_mech_hh_curr_pool$results_base[[3]]  #  pool productive inclusion model
-  m33 <- mainResults_mech_hh_curr_pool$results_base[[4]]  #  pool productive inclusion model
-  m34 <- mainResults_mech_hh_curr_pool$results_base[[5]]  #  pool productive inclusion model
-  m35 <- mainResults_mech_hh_curr_pool$results_base[[6]]  #  pool productive inclusion model
-  m36 <- mainResults_mech_hh_curr_pool$results_base[[7]]  #  pool productive inclusion model
-  m37 <- mainResults_mech_hh_curr_pool$results_base[[8]]  #  pool productive inclusion model
-  m38 <- mainResults_mech_hh_curr_pool$results_base[[9]]  #  pool productive inclusion model
-  m39 <- mainResults_mech_hh_curr_pool$results_base[[10]]  #  pool productive inclusion model
-  m310 <- mainResults_mech_hh_curr_pool$results_base[[11]]  # First pool productive inclusion model
-  m311 <- mainResults_mech_hh_curr_pool$results_base[[12]]  # Second pool productive inclusion model
-  m312 <- mainResults_mech_hh_curr_pool$results_base[[13]]  #  pool productive inclusion model
-  m313 <- mainResults_mech_hh_curr_pool$results_base[[14]]  #  pool productive inclusion model
-  m314 <- mainResults_mech_hh_curr_pool$results_base[[15]]  #  pool productive inclusion model
-  m315 <- mainResults_mech_hh_curr_pool$results_base[[16]]  #  pool productive inclusion model
-  m316 <- mainResults_mech_hh_curr_pool$results_base[[17]]  #  pool productive inclusion model
-  m317 <- mainResults_mech_hh_curr_pool$results_base[[18]]  #  pool productive inclusion model
-  m318 <- mainResults_mech_hh_curr_pool$results_base[[19]]  #  pool productive inclusion model
-  m319 <- mainResults_mech_hh_curr_pool$results_base[[20]]  #  pool productive inclusion model  
-  m320 <- mainResults_mech_hh_curr_pool$results_base[[21]]  #  pool productive inclusion model  
-  
-  # Extract interaction terms for productive inclusion treatments
-  # Full interaction term
-  full <- mainResults_mech_hh_curr_pi %>% 
-    select(full,full_start) 
-  
-  # Psychosocial interaction term
-  psychosocial <- mainResults_mech_hh_curr_pi %>% 
-    select(psychosocial,psychosocial_start) 
-  
-  # Capital interaction term
-  capital <- mainResults_mech_hh_curr_pi %>% 
-    select(capital, capital_start) 
-  
-  # Cash assignment interaction term
-  cash <- mainResults_mech_hh_curr_csh %>% 
-    select(full,full_start) 
-  
-  # Full interaction term
-  pool <- mainResults_mech_hh_curr_pool %>% 
-    select(full,full_start) 
-  
-  # Initialize empty vectors to store descriptive statistics
-  # These will store mean and standard deviation for each outcome variable
-  mean_values <- c()  # Vector to store mean values
-  sd_values <- c()   # Vector to store standard deviation values
-  
-  # Calculate descriptive statistics for each outcome variable
-  # Loop through the list of outcome variables
-  for (depvar in revenue_consum_vars) {
-    # Calculate and round mean, ignoring NA values
-    mean_values <- c(mean_values,  round(mean(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-    
-    # Calculate and round standard deviation, ignoring NA values
-    sd_values <- c(sd_values,  round(sd(followup_MRT_hh_control[[depvar]], na.rm = TRUE), 3))
-  }
-  
-  # Create lists of models for easier processing
-  models_pi <- list(m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m210, m211, 
-                    m212, m213, m214, m215, m216, m217, m218, m219, m220)  # Productive inclusion models
-  models_pi_pool <- list(m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m310, 
-                         m311, m312, m313, m314, m315, m316, m317, m318, m319, m320)  # Productive inclusion models pool
-  models_csh_trnsfr <- list(m10, m11, m12, m13, m14, m15, m16, m17, m18, m19, m110, 
-                            m111, m112, m113, m114, m115, m116, m117, m118, m119, m120)  # Cash transfer models
-  
-  
-  
-  
-  # Create regression tables for Productive Inclusion models
-  tbl_list_pi <- map(models_pi, ~ tbl_regression(.x, 
-                                                 exponentiate = FALSE,  # Keep coefficients as-is 
-                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                 include=c(                                 # Retain main and interaction terms
-                                                   "treatment_pi", 
-                                                   paste0(curr_het_var, ":treatment_pi")))  %>% 
-                       add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                              hide_se = TRUE) %>%
-                       add_glance_table(include = c(nobs, r.squared)))
-  
-  tbl_list_pi_pool <- map(models_pi_pool, ~ tbl_regression(.x, 
-                                                           exponentiate = FALSE,  # Keep coefficients as-is 
-                                                           estimate_fun = ~ style_number(.x, digits = 2),
-                                                           include=c(                                 # Keep main pooled treatment and its interaction
-                                                             "treatment_pi_pool", 
-                                                             paste0(curr_het_var, ":treatment_pi_pool")))  %>% 
-                            add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                   hide_se = TRUE)%>%
-                            add_glance_table(include = c(nobs, r.squared)))
-  
-  # Create regression tables for Cash Transfer models
-  tbl_list_csh_trnsfr <- map(models_csh_trnsfr, ~ tbl_regression(.x, 
-                                                                 exponentiate = FALSE,  # Keep coefficients as-is
-                                                                 estimate_fun = ~ style_number(.x, digits = 2),
-                                                                 include= c(                                 # Coefficients to retain
-                                                                   "treatment_csh_trnsfr", 
-                                                                   paste0(curr_het_var, ":treatment_csh_trnsfr")
-                                                                 ))  %>% 
-                               add_significance_stars(pattern = "{estimate}{stars} \n ({std.error})",
-                                                      hide_se = TRUE)%>%
-                               add_glance_table(include = c(nobs, r.squared)))
-  
-  # Modify headers for the Productive Inclusion and Cash Transfer models
-  
-  ## Gross consumption
-  tbl_list_pi[[1]] <- tbl_list_pi[[1]] %>%
-    modify_header(estimate = "Gross \n consumption\n (daily, USD/capita)")
-  
-  tbl_list_csh_trnsfr[[1]] <- tbl_list_csh_trnsfr[[1]] %>%
-    modify_header(estimate = "Gross \n consumption\n (daily, USD/capita)")
-  
-  tbl_list_pi_pool[[1]] <- tbl_list_pi_pool[[1]] %>%
-    modify_header(estimate = "Gross \n consumption\n (daily, USD/capita)")
-  
-  ## Food consumption
-  tbl_list_pi[[2]] <- tbl_list_pi[[2]] %>%
-  modify_header(estimate = "Food\n consumption\n (daily, USD/adult eq.)")
-  
-  tbl_list_csh_trnsfr[[2]] <- tbl_list_csh_trnsfr[[2]] %>%
-    modify_header(estimate = "Food\n consumption\n (daily, USD/adult eq.)")
-  
-  tbl_list_pi_pool[[2]] <- tbl_list_pi_pool[[2]] %>%
-    modify_header(estimate = "Food\n consumption\n (daily, USD/adult eq.)")
-  
-  
-  ## Non food consumption
-  tbl_list_pi[[3]] <- tbl_list_pi[[3]] %>%
-    modify_header(estimate = "Non Food\n consumption\n (daily, USD/adult eq.)")
-  
-  tbl_list_csh_trnsfr[[3]] <- tbl_list_csh_trnsfr[[3]] %>%
-    modify_header(estimate = "Non Food\n consumption\n (daily, USD/adult eq.)")
-  
-  tbl_list_pi_pool[[3]] <- tbl_list_pi_pool[[3]] %>%
-    modify_header(estimate = "Non Food\n consumption\n (daily, USD/adult eq.)")
-  
-  ## Eat out expenditures
-  tbl_list_pi[[4]] <- tbl_list_pi[[4]] %>%
-    modify_header(estimate = "Eating out\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_csh_trnsfr[[4]] <- tbl_list_csh_trnsfr[[4]] %>%
-    modify_header(estimate = "Eating out\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_pi_pool[[4]] <- tbl_list_pi_pool[[4]] %>%
-    modify_header(estimate = "Eating out\n expenditure\n (daily, USD/adult eq.)")
-  
-  ## Education expenditures
-  tbl_list_pi[[5]] <- tbl_list_pi[[5]] %>%
-    modify_header(estimate = "Education\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_csh_trnsfr[[5]] <- tbl_list_csh_trnsfr[[5]] %>%
-    modify_header(estimate = "Education\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_pi_pool[[5]] <- tbl_list_pi_pool[[5]] %>%
-    modify_header(estimate = "Education\n expenditure\n (daily, USD/adult eq.)")
-  
-  ## Health expenditures
-  tbl_list_pi[[6]] <- tbl_list_pi[[6]] %>%
-    modify_header(estimate = "Health\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_csh_trnsfr[[6]] <- tbl_list_csh_trnsfr[[6]] %>%
-    modify_header(estimate = "Health\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_pi_pool[[6]] <- tbl_list_pi_pool[[6]] %>%
-    modify_header(estimate = "Health\n expenditure\n (daily, USD/adult eq.)")
-  
-  ## Celebration expenditures
-  tbl_list_pi[[7]] <- tbl_list_pi[[7]] %>%
-    modify_header(estimate = "Celebration\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_csh_trnsfr[[7]] <- tbl_list_csh_trnsfr[[7]] %>%
-    modify_header(estimate = "Celebration\n expenditure\n (daily, USD/adult eq.)")
-  
-  tbl_list_pi_pool[[7]] <- tbl_list_pi_pool[[7]] %>%
-    modify_header(estimate = "Celebration\n expenditure\n (daily, USD/adult eq.)")  
-  
-  ## Tontine
-  tbl_list_pi[[8]] <- tbl_list_pi[[8]] %>%
-    modify_header(estimate ="Takes part in\n tontine/AVEC\n (0,1)")
-  
-  tbl_list_csh_trnsfr[[8]] <- tbl_list_csh_trnsfr[[8]] %>%
-    modify_header(estimate = "Takes part in\n tontine/AVEC\n (0,1)")
-  
-  tbl_list_pi_pool[[8]] <- tbl_list_pi_pool[[8]] %>%
-    modify_header(estimate = "Takes part in\n tontine/AVEC\n (0,1)")  
-  
-  ## "Total\n debt\n (yearly, USD)"	
-  tbl_list_pi[[9]] <- tbl_list_pi[[9]] %>%
-    modify_header(estimate ="Total\n debt\n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[9]] <- tbl_list_csh_trnsfr[[9]] %>%
-    modify_header(estimate = "Total\n debt\n (yearly, USD)")
-  
-  tbl_list_pi_pool[[9]] <- tbl_list_pi_pool[[9]] %>%
-    modify_header(estimate = "Total\n debt\n (yearly, USD)")    
-  
-  ## "Total\n borrowed\n (yearly, USD)"
-  tbl_list_pi[[10]] <- tbl_list_pi[[10]] %>%
-    modify_header(estimate ="Total\n borrowed\n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[10]] <- tbl_list_csh_trnsfr[[10]] %>%
-    modify_header(estimate = "Total\n borrowed\n (yearly, USD)")
-  
-  tbl_list_pi_pool[[10]] <- tbl_list_pi_pool[[10]] %>%
-    modify_header(estimate = "Total\n borrowed\n (yearly, USD)")   
-  
-  ## "Household\n Gross transfers\n (yearly, USD)"
-  tbl_list_pi[[11]] <- tbl_list_pi[[11]] %>%
-    modify_header(estimate ="Household\n Gross transfers\n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[11]] <- tbl_list_csh_trnsfr[[11]] %>%
-    modify_header(estimate = "Household\n Gross transfers\n (yearly, USD)")
-  
-  tbl_list_pi_pool[[11]] <- tbl_list_pi_pool[[11]] %>%
-    modify_header(estimate = "Household\n Gross transfers\n (yearly, USD)")   
-  
-  ##   "Total\n savings\n (3 months, USD)"
-  tbl_list_pi[[12]] <- tbl_list_pi[[12]] %>%
-    modify_header(estimate =  "Total\n savings\n (3 months, USD)")
-  
-  tbl_list_csh_trnsfr[[12]] <- tbl_list_csh_trnsfr[[12]] %>%
-    modify_header(estimate =   "Total\n savings\n (3 months, USD)")
-  
-  tbl_list_pi_pool[[12]] <- tbl_list_pi_pool[[12]] %>%
-    modify_header(estimate =   "Total\n savings\n (3 months, USD)")  
-
-  
-  ## Food security
-  tbl_list_pi[[13]] <- tbl_list_pi[[13]] %>%
-    modify_header(estimate = "Food \n security \n (FIES)")
-  
-  tbl_list_csh_trnsfr[[13]] <- tbl_list_csh_trnsfr[[13]] %>%
-    modify_header(estimate = "Food \n security \n (FIES)")
-  
-  tbl_list_pi_pool[[13]] <- tbl_list_pi_pool[[13]] %>%
-    modify_header(estimate = "Food \n security \n (FIES)")
-  
-  ## Dietary diversity
-  tbl_list_pi[[14]] <- tbl_list_pi[[14]] %>%
-    modify_header(estimate = "Dietary \n diversity \n (FCS)")
-  
-  tbl_list_csh_trnsfr[[14]] <- tbl_list_csh_trnsfr[[14]] %>%
-    modify_header(estimate = "Dietary \n diversity \n (FCS)")
-  
-  tbl_list_pi_pool[[14]] <- tbl_list_pi_pool[[14]] %>%
-    modify_header(estimate = "Dietary \n diversity \n (FCS)")
-  
-  ## Total revenue
-  tbl_list_pi[[15]] <- tbl_list_pi[[15]] %>%
-    modify_header(estimate = "Total \n revenue \n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[15]] <- tbl_list_csh_trnsfr[[15]] %>%
-    modify_header(estimate = "Total \n revenue \n (yearly, USD)")
-  
-  tbl_list_pi_pool[[15]] <- tbl_list_pi_pool[[15]] %>%
-    modify_header(estimate = "Total \n revenue \n (yearly, USD)")
-  
-  ## Business rev
-  tbl_list_pi[[16]] <- tbl_list_pi[[16]] %>%
-    modify_header(estimate = "Business \n revenues \n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[16]] <- tbl_list_csh_trnsfr[[16]] %>%
-    modify_header(estimate = "Business \n revenues \n (yearly, USD)")
-  
-  tbl_list_pi_pool[[16]] <- tbl_list_pi_pool[[16]] %>%
-    modify_header(estimate = "Business \n revenues \n (yearly, USD)")
-  
-  ## Wage rev
-  tbl_list_pi[[17]] <- tbl_list_pi[[17]] %>%
-    modify_header(estimate = "Wage \n earnings \n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[17]] <- tbl_list_csh_trnsfr[[17]] %>%
-    modify_header(estimate = "Wage \n earnings \n (yearly, USD)")
-  
-  tbl_list_pi_pool[[17]] <- tbl_list_pi_pool[[17]] %>%
-    modify_header(estimate = "Wage \n earnings \n (yearly, USD)")
-  
-  ## Livestock
-  tbl_list_pi[[18]] <- tbl_list_pi[[18]] %>%
-    modify_header(estimate = "Livestock \n revenue \n (yearly, USD)")
-  
-  tbl_list_csh_trnsfr[[18]] <- tbl_list_csh_trnsfr[[18]] %>%
-    modify_header(estimate = "Livestock \n revenue \n (yearly, USD)")
-  
-  tbl_list_pi_pool[[18]] <- tbl_list_pi_pool[[18]] %>%
-    modify_header(estimate = "Livestock \n revenue \n (yearly, USD)")
-  
-  ## Income sources
-  tbl_list_pi[[19]] <- tbl_list_pi[[19]] %>%
-    modify_header(estimate = "Count of \n income sources \n (yearly)")
-  
-  tbl_list_csh_trnsfr[[19]] <- tbl_list_csh_trnsfr[[19]] %>%
-    modify_header(estimate = "Count of \n income sources \n (yearly)")
-  
-  tbl_list_pi_pool[[19]] <- tbl_list_pi_pool[[19]] %>%
-    modify_header(estimate = "Count of \n income sources \n (yearly)")
-  
-  ## Income diversification
-  tbl_list_pi[[20]] <- tbl_list_pi[[20]] %>%
-    modify_header(estimate = "No. \n of income \n sources\n (Household)")
-  
-  tbl_list_csh_trnsfr[[20]] <- tbl_list_csh_trnsfr[[20]] %>%
-    modify_header(estimate = "No. \n of income \n sources\n (Household)")
-  
-  tbl_list_pi_pool[[20]] <- tbl_list_pi_pool[[20]] %>%
-    modify_header(estimate = "No. \n of income \n sources\n (Household)")
-  
-  
-  ## Wage types
-  tbl_list_pi[[21]] <- tbl_list_pi[[21]] %>%
-    modify_header(estimate = "Wage \n types \n (Household)")
-  
-  tbl_list_csh_trnsfr[[21]] <- tbl_list_csh_trnsfr[[21]] %>%
-    modify_header(estimate = "Wage \n types \n (Household)")
-  
-  tbl_list_pi_pool[[21]] <- tbl_list_pi_pool[[21]] %>%
-    modify_header(estimate = "Wage \n types \n (Household)")
-  
-  
-  
-  # Merge the stacked tables into a single table with column headers
-  ## Cash transfert
-  tbl_csh_trnsfr <- tbl_merge(
-    tbls = list(tbl_list_csh_trnsfr[[1]],# First model
-                tbl_list_csh_trnsfr[[2]], # Second model
-                tbl_list_csh_trnsfr[[3]], 
-                tbl_list_csh_trnsfr[[4]],
-                tbl_list_csh_trnsfr[[5]], 
-                tbl_list_csh_trnsfr[[6]], 
-                tbl_list_csh_trnsfr[[7]], 
-                tbl_list_csh_trnsfr[[8]],
-                tbl_list_csh_trnsfr[[9]],
-                tbl_list_csh_trnsfr[[10]],
-                tbl_list_csh_trnsfr[[11]],# First model
-                tbl_list_csh_trnsfr[[12]], # Second model
-                tbl_list_csh_trnsfr[[13]], 
-                tbl_list_csh_trnsfr[[14]],
-                tbl_list_csh_trnsfr[[15]], 
-                tbl_list_csh_trnsfr[[16]], 
-                tbl_list_csh_trnsfr[[17]], 
-                tbl_list_csh_trnsfr[[18]],
-                tbl_list_csh_trnsfr[[19]],
-                tbl_list_csh_trnsfr[[20]], 
-                tbl_list_csh_trnsfr[[21]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)",
-                    "(11)","(12)","(13)","(14)","(15)","(16)", "(17)","(18)","(19)",
-                    "(20)","(21)")
-  )
-  
-  ## Productive inclusion
-  tbl_pi <- tbl_merge(
-    tbls = list(tbl_list_pi[[1]],# First model
-                tbl_list_pi[[2]], # Second model
-                tbl_list_pi[[3]], 
-                tbl_list_pi[[4]],
-                tbl_list_pi[[5]], 
-                tbl_list_pi[[6]], 
-                tbl_list_pi[[7]], 
-                tbl_list_pi[[8]],
-                tbl_list_pi[[9]],
-                tbl_list_pi[[10]], 
-                tbl_list_pi[[11]],# First model
-                tbl_list_pi[[12]], # Second model
-                tbl_list_pi[[13]], 
-                tbl_list_pi[[14]],
-                tbl_list_pi[[15]], 
-                tbl_list_pi[[16]], 
-                tbl_list_pi[[17]], 
-                tbl_list_pi[[18]],
-                tbl_list_pi[[19]],
-                tbl_list_pi[[20]], 
-                tbl_list_pi[[21]] 
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)",
-                    "(11)","(12)","(13)","(14)","(15)","(16)", "(17)","(18)","(19)",
-                    "(20)","(21)")
-  )
-  
-  ## Pool Productive inclusion
-  tbl_pi_pool <- tbl_merge(
-    tbls = list(tbl_list_pi_pool[[1]],# First model
-                tbl_list_pi_pool[[2]], # Second model
-                tbl_list_pi_pool[[3]], 
-                tbl_list_pi_pool[[4]],
-                tbl_list_pi_pool[[5]], 
-                tbl_list_pi_pool[[6]], 
-                tbl_list_pi_pool[[7]], 
-                tbl_list_pi_pool[[8]],
-                tbl_list_pi_pool[[9]],
-                tbl_list_pi_pool[[10]],
-                tbl_list_pi_pool[[11]],# First model
-                tbl_list_pi_pool[[12]], # Second model
-                tbl_list_pi_pool[[13]], 
-                tbl_list_pi_pool[[14]],
-                tbl_list_pi_pool[[15]], 
-                tbl_list_pi_pool[[16]], 
-                tbl_list_pi_pool[[17]], 
-                tbl_list_pi_pool[[18]],
-                tbl_list_pi_pool[[19]],
-                tbl_list_pi_pool[[20]],
-                tbl_list_pi_pool[[21]]
-    ),  
-    tab_spanner = c("(1)","(2)","(3)","(4)","(5)","(6)", "(7)","(8)","(9)","(10)",
-                    "(11)","(12)","(13)","(14)","(15)","(16)", "(17)","(18)","(19)",
-                    "(20)","(21)")
-  )
-  
-  # Create a list of stacked tables combining Cash Transfer and Productive Inclusion models
-  # Each list element combines the corresponding models from both treatment types
-  tbl <- tbl_stack(list(tbl_csh_trnsfr,  tbl_pi_pool)) #tbl_pi,
-  
-  # Modify table body to customize variable labels
-  tbl <- tbl %>%
-    modify_table_body(~ .x %>%
-                        mutate(label = case_when(
-                          # Rename specific treatment variables
-                          term_1 == "treatment_piCapital" ~ "Capital",
-                          term_1 == "treatment_piPsychosocial" ~ "Psychosocial",
-                          term_1 == "treatment_piFull" ~ "Full",
-                          term_1 == "treatment_pi_poolPool" ~ "Pool",
-                          term_1 == paste0(curr_het_var,"1:treatment_piCapital") ~ paste0(curr_het_var_lab, "* Capital"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piPsychosocial") ~ paste0(curr_het_var_lab, "* Psychosocial"),
-                          term_1 == paste0(curr_het_var,"1:treatment_piFull") ~ paste0(curr_het_var_lab, "* Full"),
-                          term_1 == paste0(curr_het_var,"1:treatment_csh_trnsfrCash Assignment") ~ paste0(curr_het_var_lab, "* Cash Assignment"),
-                          term_1 == paste0(curr_het_var,"1:treatment_pi_poolPool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          # Label cash transfer and productive inclusion treatments
-                          variable == "treatment_csh_trnsfr" & label=="Tekavoul program IE treatment group" ~ "Tekavoul",
-                          
-                          variable == "treatment_pi" & label=="PI IE treatment group" ~ "PI",
-                          variable == "treatment_pi_pool" & label=="treatment_pi_pool" ~ "PI (Pool)",
-                          
-                          variable == paste0(curr_het_var,":treatment_csh_trnsfr") & label==paste0(curr_het_var," * Tekavoul program IE treatment group") ~ paste0(curr_het_var_lab, "* Tekavoul"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi") & label==paste0(curr_het_var," * PI IE treatment group") ~ paste0(curr_het_var_lab, "* PI"),
-                          
-                          variable == paste0(curr_het_var,":treatment_pi_pool") & label==paste0(curr_het_var," * treatment_pi_pool") ~ paste0(curr_het_var_lab, "* Pool"),
-                          
-                          TRUE ~ label  # Keep original labels for other variables
-                        )))
-  
-  
-  additional_rows <- tribble(
-    ~tbl_id1, ~variable, ~var_label, ~label,
-    ~estimate_1, ~estimate_2, ~estimate_3, ~estimate_4, ~estimate_5,
-    ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, ~estimate_10,
-    ~estimate_11, ~estimate_12, ~estimate_13, ~estimate_14, ~estimate_15,
-    ~estimate_16, ~estimate_17, ~estimate_18, ~estimate_19, ~estimate_20, ~estimate_21,
-    ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5,
-    ~stars_6, ~stars_7, ~stars_8, ~stars_9, ~stars_10,
-    ~stars_11, ~stars_12, ~stars_13, ~stars_14, ~stars_15,
-    ~stars_16, ~stars_17, ~stars_18, ~stars_19, ~stars_20, ~stars_21,
-    
-    
-    # Row 1: Control mean
-    4, "Control mean @ follow up", "Control mean @ follow up", "Control mean @ follow up",
-    mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5],
-    mean_values[6], mean_values[7], mean_values[8], mean_values[9], mean_values[10],
-    mean_values[11], mean_values[12], mean_values[13], mean_values[14], mean_values[15],
-    mean_values[16], mean_values[17], mean_values[18], mean_values[19], mean_values[20],
-    mean_values[21],
-    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-
-    
-    # Row 2: Control SD
-    4, "Control SD @ follow up", "Control SD @ follow up", "Control SD @ follow up",
-    sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5],
-    sd_values[6], sd_values[7], sd_values[8], sd_values[9], sd_values[10],
-    sd_values[11], sd_values[12], sd_values[13], sd_values[14], sd_values[15],
-    sd_values[16], sd_values[17], sd_values[18], sd_values[19], sd_values[20],
-    sd_values[21],
-    "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-    
-    # Row 3: Cash Assignment + Heterogeneity interaction
-    4, paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),
-    as.numeric(cash$full[1]), as.numeric(cash$full[2]),as.numeric(cash$full[3]),
-    as.numeric(cash$full[4]), as.numeric(cash$full[5]),as.numeric(cash$full[6]), 
-    as.numeric(cash$full[7]), as.numeric(cash$full[8]),as.numeric(cash$full[9]), 
-    as.numeric(cash$full[10]),as.numeric(cash$full[11]),as.numeric(cash$full[12]), 
-    as.numeric(cash$full[13]),as.numeric(cash$full[14]),as.numeric(cash$full[15]), 
-    as.numeric(cash$full[16]),as.numeric(cash$full[17]),as.numeric(cash$full[18]), 
-    as.numeric(cash$full[19]),as.numeric(cash$full[20]),as.numeric(cash$full[21]),
-    cash$full_start[1], cash$full_start[2], cash$full_start[3], cash$full_start[4],
-    cash$full_start[5], cash$full_start[6], cash$full_start[7], cash$full_start[8],
-    cash$full_start[9], cash$full_start[10],cash$full_start[11], cash$full_start[12], 
-    cash$full_start[13], cash$full_start[14], cash$full_start[15], cash$full_start[16], 
-    cash$full_start[17], cash$full_start[18], cash$full_start[19], cash$full_start[20], 
-    cash$full_start[21],
-    
-    # Row 4: Capital + Heterogeneity interaction
-    # 4, paste0("Capital + ", curr_het_var_lab, " * Capital"),
-    # paste0("Capital + ", curr_het_var_lab, " * Capital"),
-    # paste0("Capital + ", curr_het_var_lab, " * Capital"),
-    # as.numeric(capital$capital[1]), as.numeric(capital$capital[2]),
-    # as.numeric(capital$capital[3]), as.numeric(capital$capital[4]),
-    # as.numeric(capital$capital[5]), as.numeric(capital$capital[6]),
-    # as.numeric(capital$capital[7]), as.numeric(capital$capital[8]),
-    # as.numeric(capital$capital[9]), as.numeric(capital$capital[10]),
-    # capital$capital_start[1], capital$capital_start[2], capital$capital_start[3],
-    # capital$capital_start[4], capital$capital_start[5], capital$capital_start[6],
-    # capital$capital_start[7], capital$capital_start[8], capital$capital_start[9],
-    # capital$capital_start[10],
-    # 
-    # # Row 5: Psychosocial + Heterogeneity interaction
-    # 4, paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),
-    # paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),
-    # paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),
-    # as.numeric(psychosocial$psychosocial[1]), as.numeric(psychosocial$psychosocial[2]),
-    # as.numeric(psychosocial$psychosocial[3]), as.numeric(psychosocial$psychosocial[4]),
-    # as.numeric(psychosocial$psychosocial[5]),
-    # as.numeric(psychosocial$psychosocial[6]), as.numeric(psychosocial$psychosocial[7]),
-    # as.numeric(psychosocial$psychosocial[8]), as.numeric(psychosocial$psychosocial[9]),
-    # as.numeric(psychosocial$psychosocial[10]),
-    # psychosocial$psychosocial_start[1], psychosocial$psychosocial_start[2],
-    # psychosocial$psychosocial_start[3], psychosocial$psychosocial_start[4],
-    # psychosocial$psychosocial_start[5], psychosocial$psychosocial_start[6],
-    # psychosocial$psychosocial_start[7], psychosocial$psychosocial_start[8],
-    # psychosocial$psychosocial_start[9], psychosocial$psychosocial_start[10],
-    # 
-    # # Row 6: Full Package + Heterogeneity interaction
-    # 4, paste0("Full + ", curr_het_var_lab, " * Full"),
-    # paste0("Full + ", curr_het_var_lab, " * Full"),
-    # paste0("Full + ", curr_het_var_lab, " * Full"),
-    # as.numeric(full$full[1]), as.numeric(full$full[2]), as.numeric(full$full[3]),
-    # as.numeric(full$full[4]), as.numeric(full$full[5]),
-    # as.numeric(full$full[6]), as.numeric(full$full[7]), as.numeric(full$full[8]),
-    # as.numeric(full$full[9]), as.numeric(full$full[10]),
-    # full$full_start[1], full$full_start[2], full$full_start[3], full$full_start[4],
-    # full$full_start[5], full$full_start[6], full$full_start[7], full$full_start[8],
-    # full$full_start[9], full$full_start[10],
-    
-    # Row 7: Pool + Heterogeneity interaction
-    4, paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    paste0("Pool + ", curr_het_var_lab, " * Pool"),
-    as.numeric(pool$full[1]), as.numeric(pool$full[2]), as.numeric(pool$full[3]),
-    as.numeric(pool$full[4]), as.numeric(pool$full[5]), as.numeric(pool$full[6]),
-    as.numeric(pool$full[7]), as.numeric(pool$full[8]), as.numeric(pool$full[9]), 
-    as.numeric(pool$full[10]),as.numeric(pool$full[11]), as.numeric(pool$full[12]), 
-    as.numeric(pool$full[13]),as.numeric(pool$full[14]), as.numeric(pool$full[15]), 
-    as.numeric(pool$full[16]),as.numeric(pool$full[17]), as.numeric(pool$full[18]), 
-    as.numeric(pool$full[19]), as.numeric(pool$full[20]), as.numeric(pool$full[21]),
-    pool$full_start[1], pool$full_start[2], pool$full_start[3], pool$full_start[4],
-    pool$full_start[5], pool$full_start[6], pool$full_start[7], pool$full_start[8],
-    pool$full_start[9], pool$full_start[10],pool$full_start[11], pool$full_start[12], 
-    pool$full_start[13], pool$full_start[14],pool$full_start[15], pool$full_start[16], 
-    pool$full_start[17], pool$full_start[18], pool$full_start[19], pool$full_start[20], pool$full_start[21]
-  )
-  
-  # browser()
-  # Append the additional rows to the table body
-  tbl$table_body <- bind_rows(tbl$table_body, additional_rows)
-  
-  # Title for each index
-  tbl_ipv_title = paste0("**Table : effect of the programs by ",curr_het_var_lab,"**")
-  
-  # Final table formatting
-  tbl <- tbl %>%
-    # Set table caption
-    modify_caption(tbl_ipv_title) %>%
-    # Modify header for the label column
-    modify_header(label = "**Outcome**") %>%
-    # Remove all existing footnotes
-    modify_footnote(everything() ~ NA) %>%
-    modify_footnote(all_stat_cols() ~ NA) %>%
-    # Add custom footnote with methodological details
-    modify_footnote(label = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes.  We control for social promotion intervention. Enumerator fixed effects are included in all regression. We estimate the regressions for the productive beneficiaries aged 18-49 only. Robust standard errors are shown in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1.")
-  
-  # Print the final table
-  tbl
-  
-  # Create a tribble (transposed tibble) with additional rows for the table
-  # These rows include control mean, standard deviation, and interaction terms
-  # additional_rows <- tribble(
-  #   ~variable,  ~var_label, ~label, ~estimate_1, ~estimate_2, ~estimate_3, 
-  #   ~estimate_4, ~estimate_5, ~estimate_6, ~estimate_7, ~estimate_8, ~estimate_9, ~estimate_10, ~stars_1, ~stars_2, ~stars_3, ~stars_4, ~stars_5, ~stars_6, ~stars_7, ~stars_8, ~stars_9, ~stars_10, 
-  #   "Control mean @ follow up","Control mean @ follow up","Control mean @ follow up", mean_values[1], mean_values[2], mean_values[3], mean_values[4], mean_values[5], mean_values[6], mean_values[7], mean_values[8], mean_values[9], mean_values[10], "","","","","","","","","","",
-  # "Control SD @ follow up","Control SD @ follow up","Control SD @ follow up",  sd_values[1], sd_values[2], sd_values[3], sd_values[4], sd_values[5], sd_values[6], sd_values[7], sd_values[8], sd_values[9], sd_values[10], "","","","","","","","","","",
-  # paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"),   cash$full %>% as.vector(), cash$full_start %>% as.vector(),
-  # paste0("Full + ", curr_het_var_lab, " * Full"),paste0("Full + ", curr_het_var_lab, " * Full"),paste0("Full + ", curr_het_var_lab, " * Full"), full$full %>% as.vector(), full$full_start %>% as.vector(),
-  # paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"),paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"), psychosocial$psychosocial %>% as.vector(), psychosocial$psychosocial_start %>% as.vector(),
-  # paste0("Capital + ", curr_het_var_lab, " * Capital"),paste0("Capital + ", curr_het_var_lab, " * Capital"),paste0("Capital + ", curr_het_var_lab, " * Capital"), capital$capital %>% as.vector(), capital$capital_start %>% as.vector()
-  # )
-  
-  
-  # Create the additional columns
-  # additional_columns <- tibble::tibble(
-  #   row_type = 	"level",
-  #   contrasts_1 = rep("contr.treatment",7), 
-  #   contrasts_type_1 = rep("treatment",7), 
-  #   var_type_1 = rep("categorical", 7),
-  #   reference_row_1 = rep(TRUE, 7),
-  #   header_row_1 = rep(FALSE, 7),
-  #   N_obs_1 = c(143, 213, 207, 131, 144, 162, 286),
-  #   N_1 = c(180, 261, 175, 209, 203, 93, 184),
-  #   coefficients_type_1 = rep("generic", 7),
-  #   coefficients_label_1 = paste("Beta", 1:7),
-  #   term_1 = paste0("term_", 1:7),
-  #   var_class_1 = rep("factor", 7),
-  #   var_nlevels_1 = rep(2, 7),
-  #   n_obs_1 = c(109, 101, 159, 249, 118, 151, 237),
-  #   std.error_1 = c(0.104, 0.112, 0.118, 0.056, 0.122, 0.061, 0.086),
-  #   statistic_1 = c(1.279, 1.464, 1.293, 1.720, 2.021, 1.631, 1.593),
-  #   ci_1 = c("-0.20,  0.22", "-0.20,  0.22", "-0.20,  0.22", 
-  #            "-0.20,  0.22", "-0.20,  0.22", "-0.20,  0.22", "-0.20,  0.22"),
-  #   conf.low_1 = c(-0.074, -0.033, -0.150, -0.250, -0.068, -0.017, -0.241),
-  #   conf.high_1 = c(0.197, 0.154, 0.204, 0.272, 0.135, 0.183, 0.208),
-  #   p.value_1 = c(0.027, 0.002, 0.069, 0.067, 0.020, 0.081, 0.055)
-  #   
-  #   # term_1 = paste0("term_", 1:7),
-  #   # var_class_1 = rep("factor", 7),
-  #   # var_nlevels_1 = rep(2, 7),
-  #   # n_obs_1 = c(109, 101, 159, 249, 118, 151, 237),
-  #   # std.error_1 = c(0.104, 0.112, 0.118, 0.056, 0.122, 0.061, 0.086),
-  #   # statistic_1 = c(1.279, 1.464, 1.293, 1.720, 2.021, 1.631, 1.593),
-  #   # ci_1 = c("-0.20,  0.22", "-0.20,  0.22", "-0.20,  0.22", 
-  #   #          "-0.20,  0.22", "-0.20,  0.22", "-0.20,  0.22", "-0.20,  0.22"),
-  #   # conf.low_1 = c(-0.074, -0.033, -0.150, -0.250, -0.068, -0.017, -0.241),
-  #   # conf.high_1 = c(0.197, 0.154, 0.204, 0.272, 0.135, 0.183, 0.208),
-  #   # p.value_1 = c(0.027, 0.002, 0.069, 0.067, 0.020, 0.081, 0.055)
-  # )
-  # 
-  # additional_rows <- bind_cols(additional_rows, additional_columns)
-  
-  # Generate LaTeX tables using stargazer to display regression results for different interventions
-  
-  # ## --- Cash Transfer (Tekavoul) Table ---
-  # tbl_csh <- stargazer(
-  #   models_csh_trnsfr,                        # List of regression models for the cash transfer treatment
-  #   digits = 2,                               # Number of digits after the decimal point
-  #   float = TRUE,                             # Allow the table to float in LaTeX
-  #   se.position = "below",                    # Display standard errors below coefficients
-  #   type = "text",                           # Output format
-  #   omit.stat = c("LL", "ser", "f", "adj.rsq", "res.dev"), # Statistics to omit from the table
-  #   dep.var.labels.include = TRUE,           # Include dependent variable labels
-  #   font.size = "small",                     # Font size of the table
-  #   notes.align = "l",                       # Align notes to the left
-  #   table.placement = "H",                   # LaTeX float placement specifier
-  #   header = FALSE,                          # Exclude LaTeX document header
-  #   column.labels = rep("Baseline", 10),     # Column labels (e.g., one per outcome)
-  #   keep = c(                                 # Coefficients to retain
-  #     "treatment_csh_trnsfrCash Assignment", 
-  #     paste0(curr_het_var, "1:treatment_csh_trnsfrCash Assignment")
-  #   ),
-  #   covariate.labels = c(                    # Custom labels for displayed coefficients
-  #     "Cash Assignment", 
-  #     paste0(curr_het_var_lab, " * Cash Assignment")
-  #   )
-  # )
-  # 
-  # ## --- Productive Inclusion (PI) Table ---
-  # tbl_pi <- stargazer(
-  #   models_pi,                                # List of regression models for PI treatments
-  #   digits = 2,
-  #   float = TRUE,
-  #   se.position = "below",
-  #   type = "text",
-  #   omit.stat = c("LL", "ser", "f", "adj.rsq", "res.dev"),
-  #   dep.var.labels.include = TRUE,
-  #   font.size = "small",
-  #   notes.align = "l",
-  #   table.placement = "H",
-  #   header = FALSE,
-  #   column.labels = rep("Baseline", 10),
-  #   keep = c(                                 # Retain main and interaction terms
-  #     "treatment_piFull", 
-  #     "treatment_piPsychosocial", 
-  #     "treatment_piCapital", 
-  #     paste0(curr_het_var, "1:treatment_piFull"),
-  #     paste0(curr_het_var, "1:treatment_piPsychosocial"),
-  #     paste0(curr_het_var, "1:treatment_piCapital")
-  #   ),
-  #   covariate.labels = c(
-  #     "Full", 
-  #     "Psychosocial", 
-  #     "Capital", 
-  #     paste0(curr_het_var_lab, " * Full"), 
-  #     paste0(curr_het_var_lab, " * Psychosocial"), 
-  #     paste0(curr_het_var_lab, " * Capital")
-  #   )
-  # )
-  # 
-  # ## --- Pooling of all PI Treatments ---
-  # tbl_pool <- stargazer(
-  #   models_pi_pool,                           # List of regression models for pooled PI treatment
-  #   digits = 2,
-  #   float = TRUE,
-  #   se.position = "below",
-  #   type = "html",
-  #   omit.stat = c("LL", "ser", "f", "adj.rsq", "res.dev"),
-  #   dep.var.labels.include = TRUE,
-  #   font.size = "small",
-  #   notes.align = "l",
-  #   table.placement = "H",
-  #   header = FALSE,
-  #   column.labels = rep("Baseline", 10),
-  #   keep = c(                                 # Keep main pooled treatment and its interaction
-  #     "treatment_pi_poolPool", 
-  #     paste0(curr_het_var, "1:treatment_pi_poolPool")
-  #   ),
-  #   covariate.labels = c(
-  #     "Pool", 
-  #     paste0(curr_het_var_lab, " * Pool")
-  #   ),
-  #   add.lines = list(                         # Additional rows to display total effects and stats
-  #     c(paste0("Cash Assignment + ", curr_het_var_lab, " * Cash Assignment"), cash[1:10]),
-  #     c(paste0("Full + ", curr_het_var_lab, " * Full"), full[1:10]),
-  #     c(paste0("Psychosocial + ", curr_het_var_lab, " * Psychosocial"), psychosocial[1:10]),
-  #     c(paste0("Capital + ", curr_het_var_lab, " * Capital"), capital[1:10]),
-  #     c(paste0("Pool + ", curr_het_var_lab, " * Pool"), pool[1:10]),
-  #     c("Mean Outcome @ follow up", mean_values[1:10]),
-  #     c("Sd Outcome @ follow up", sd_values[1:10]))
-  # )
-  # ,
-  #     notes	 = "Notes: Results presented are OLS estimates that include controls for randomization strata (commune) and, where possible, baseline outcomes. We control for social promotion intervention. Enumerator fixed effects are included in all regressions. Regressions are estimated for productive beneficiaries aged 18–49 only. Robust standard errors in parentheses, clustered at the village proxy level. *** p < 0.01, ** p < 0.05, * p < 0.1."
-  #   
-  ## --- Combine all three tables into a single panel ---
-  # star_panel_out <- star_panel(
-  #   tbl_csh, tbl_pi, tbl_pool,
-  #   panel.names = c("Tekavoul", "Productive inclusion", "Productive inclusion (Pool)"), # Panel titles
-  #   same.summary.stats = TRUE,       # Use consistent summary stats across tables
-  #   keep.stat = c("n", "rsq")        # Retain only number of observations and R-squared
-  # )
-  # 
-  # # Print the final LaTeX table
-  # print(star_panel_out)
-  
-}
-
-
+# getTable_IPV_spill <- function(ipv_vars,
+#                                binary_header,
+#                                index_header,
+#                                table_title,
+#                                treatment_vars,
+#                                control_vars,
+#                                strata_vars,
+#                                cluster_vars,
+#                                followup_ipv_MRT_hh_spill,
+#                                followup_ipv_MRT_hh_spill_control_pi,
+#                                footnote_text = NULL) {
+#   #---------------------------
+#   # Default footnote
+#   #---------------------------
+#   if (is.null(footnote_text)) {
+#     footnote_text <- paste(
+#       "Notes: Results presented are OLS estimates.",
+#       "Columns (1) and (3) show estimates without controls (treatment + strata only for cash transfer, treatment only for PI).",
+#       "Columns (2) and (4) include controls for randomization strata (commune) and baseline covariates.",
+#       "We control for social promotion intervention. Enumerator fixed effects are included in all regressions.",
+#       "We estimate the regressions for the EI beneficiaries aged 18–49 only.",
+#       "Robust standard errors are shown in parentheses, clustered at the village proxy level.",
+#       "*** p < 0.01, ** p < 0.05, * p < 0.1.",
+#       sep = " "
+#     )
+#   }
+#  
+#   #---------------------------
+#   # 1) Main estimation
+#   #---------------------------
+#   mainResults <- purrr::map_dfr(treatment_vars, function(curr_treat_var) {
+#     purrr::map_dfr(ipv_vars, function(depvar) {
+#       getEstimateGlobal_spill(depvar,curr_treat_var,control_vars,strata_vars,
+#                               cluster_vars,followup_ipv_MRT_hh_spill
+#       ) %>%
+#         dplyr::mutate(
+#           depvar         = depvar,
+#           curr_treat_var = curr_treat_var
+#         )
+#     })
+#   })
+#   
+#   #---------------------------
+#   # 2) Extract models WITHOUT / WITH controls
+#   #   Order assumed:
+#   #   1: PI, binary
+#   #   2: PI, index
+#   #   3: PI pool, binary
+#   #   4: PI pool, index
+#   #---------------------------
+#   m21_no   <- mainResults$results_no_controls[[1]]
+#   m22_no   <- mainResults$results_no_controls[[2]]
+#   m31_no   <- mainResults$results_no_controls[[3]]
+#   m32_no   <- mainResults$results_no_controls[[4]]
+#   
+#   m21_with <- mainResults$results_with_controls[[1]]
+#   m22_with <- mainResults$results_with_controls[[2]]
+#   m31_with <- mainResults$results_with_controls[[3]]
+#   m32_with <- mainResults$results_with_controls[[4]]
+# 
+#   #---------------------------
+#   # 3) Interaction terms (PI)
+#   #---------------------------
+#   full_Psychosocial_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi_spill") %>%
+#     dplyr::pull(full_Psychosocial_no)
+#   
+#   full_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi_spill") %>%
+#     dplyr::pull(full_Capital_no)
+#   
+#   psychosocial_Capital_no <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi_spill") %>%
+#     dplyr::pull(psychosocial_Capital_no)
+#   
+#   full_Psychosocial_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi_spill") %>%
+#     dplyr::pull(full_Psychosocial_with)
+#   
+#   full_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi_spill") %>%
+#     dplyr::pull(full_Capital_with)
+#   
+#   psychosocial_Capital_with <- mainResults %>%
+#     dplyr::filter(curr_treat_var == "treatment_pi_spill") %>%
+#     dplyr::pull(psychosocial_Capital_with)
+#   
+#   #---------------------------
+#   # 4) Descriptive statistics
+#   #---------------------------
+#   mean_values_pi <- c()
+#   sd_values_pi   <- c()
+#   
+#   for (depvar in ipv_vars) {
+#     mean_values_pi <- c(
+#       mean_values_pi,
+#       round(mean(followup_ipv_MRT_hh_spill_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#     sd_values_pi <- c(
+#       sd_values_pi,
+#       round(sd(followup_ipv_MRT_hh_spill_control_pi[[depvar]], na.rm = TRUE), 3)
+#     )
+#   }
+#   
+#   #---------------------------
+#   # 5) Panels
+#   #---------------------------
+#   
+#   # Panel 1: EI Inclusion (3 arms)
+#   pi_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion",
+#     Outcome = c("Control", "Capital", "Psychosocial", "Full", "No. Obs.", "R\u00B2"),
+#     `(1)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m21_no,   patspill_cap),
+#       fmt_est_felm_regex(m21_no,   patspill_psy),
+#       fmt_est_felm_regex(m21_no,   patspill_full),
+#       as.character(get_n(m21_no)),
+#       as.character(get_r2(m21_no))
+#     ),
+#     `(2)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m21_with, patspill_cap),
+#       fmt_est_felm_regex(m21_with, patspill_psy),
+#       fmt_est_felm_regex(m21_with, patspill_full),
+#       as.character(get_n(m21_with)),
+#       as.character(get_r2(m21_with))
+#     ),
+#     `(3)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m22_no,   patspill_cap),
+#       fmt_est_felm_regex(m22_no,   patspill_psy),
+#       fmt_est_felm_regex(m22_no,   patspill_full),
+#       as.character(get_n(m22_no)),
+#       as.character(get_r2(m22_no))
+#     ),
+#     `(4)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m22_with, patspill_cap),
+#       fmt_est_felm_regex(m22_with, patspill_psy),
+#       fmt_est_felm_regex(m22_with, patspill_full),
+#       as.character(get_n(m22_with)),
+#       as.character(get_r2(m22_with))
+#     )
+#   )
+#   
+#   # Panel 2: EI Inclusion (Pool)
+#   pi_pool_rows <- tibble::tibble(
+#     Panel   = "EI Inclusion (Pool)",
+#     Outcome = c("Control", "Pool", "No. Obs.", "R\u00B2"),
+#     `(1)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m31_no, patspill_pool),
+#       as.character(get_n(m31_no)),
+#       as.character(get_r2(m31_no))
+#     ),
+#     `(2)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m31_with, patspill_pool),
+#       as.character(get_n(m31_with)),
+#       as.character(get_r2(m31_with))
+#     ),
+#     `(3)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m32_no, patspill_pool),
+#       as.character(get_n(m32_no)),
+#       as.character(get_r2(m32_no))
+#     ),
+#     `(4)`   = c(
+#       "—",
+#       fmt_est_felm_regex(m32_with, patspill_pool),
+#       as.character(get_n(m32_with)),
+#       as.character(get_r2(m32_with))
+#     )
+#   )
+#   
+#   # Panel 3: Additional statistics
+#   final_panel <- tibble::tibble(
+#     Panel   = "Additional statistics",
+#     Outcome = c(
+#       "Control Variables",
+#       "Control mean @ follow up PI",
+#       "Control SD @ follow up PI",
+#       "Full - Psychosocial",
+#       "Full - Capital",
+#       "Psychosocial - Capital"
+#     ),
+#     `(1)` = c(
+#       "No",
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_no[1]),
+#       as.character(full_Capital_no[1]),
+#       as.character(psychosocial_Capital_no[1])
+#     ),
+#     `(2)` = c(
+#       "Yes",
+#       as.character(mean_values_pi[1]),
+#       as.character(sd_values_pi[1]),
+#       as.character(full_Psychosocial_with[1]),
+#       as.character(full_Capital_with[1]),
+#       as.character(psychosocial_Capital_with[1])
+#     ),
+#     `(3)` = c(
+#       "No",
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_no[2]),
+#       as.character(full_Capital_no[2]),
+#       as.character(psychosocial_Capital_no[2])
+#     ),
+#     `(4)` = c(
+#       "Yes",
+#       as.character(mean_values_pi[2]),
+#       as.character(sd_values_pi[2]),
+#       as.character(full_Psychosocial_with[2]),
+#       as.character(full_Capital_with[2]),
+#       as.character(psychosocial_Capital_with[2])
+#     )
+#   )
+#   
+#   #---------------------------
+#   # 6) Bind + row indices
+#   #---------------------------
+#   final_tbl <- dplyr::bind_rows(
+#     pi_rows,
+#     pi_pool_rows,
+#     final_panel
+#   )
+#   
+#   n_pi    <- nrow(pi_rows)
+#   n_pool  <- nrow(pi_pool_rows)
+#   n_extra <- nrow(final_panel)
+#   
+#   i_pi_start    <- 1
+#   i_pi_end      <- n_pi
+#   i_pool_start  <- i_pi_end + 1
+#   i_pool_end    <- i_pool_start + n_pool - 1
+#   i_extra_start <- i_pool_end + 1
+#   i_extra_end   <- i_extra_start + n_extra - 1
+#   
+#   final_tbl_no_panel <- final_tbl %>% dplyr::select(-Panel)
+#   
+#   #---------------------------
+#   # 7) Header (grouping)
+#   #---------------------------
+#   header_vec <- c(" " = 1, binary_header = 2, index_header = 2)
+#   
+#   #---------------------------
+#   # 8) Render kable (caption = table_title, no 'Table X:')
+#   #---------------------------
+#   tbl <- knitr::kable(
+#     final_tbl_no_panel,
+#     format    = "html",
+#     escape    = FALSE,
+#     align     = c("l", "c", "c", "c", "c"),
+#     col.names = c("Outcome\u2020", "(1)", "(2)", "(3)", "(4)"),
+#     caption   = table_title
+#   ) %>%
+#     kableExtra::add_header_above(header_vec) %>%
+#     kableExtra::kable_classic(full_width = TRUE, html_font = "Arial") %>%
+#     kableExtra::pack_rows("EI Inclusion",
+#                           i_pi_start, i_pi_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_pool_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("EI Inclusion (Pool)",
+#                           i_pool_start, i_pool_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::row_spec(i_extra_start, extra_css = "border-top: 2px solid #000;") %>%
+#     kableExtra::pack_rows("Additional statistics",
+#                           i_extra_start, i_extra_end,
+#                           bold = TRUE, italic = FALSE) %>%
+#     kableExtra::add_footnote(
+#       label    = footnote_text,
+#       notation = "none"
+#     )
+#   
+#   return(tbl)
+# }
 
 ############################################################################
 ######### Function for computing regression ################################
@@ -4759,12 +3971,12 @@ getEstimateGlobal <- function(depvar, curr_treat_var, control_vars, strata_vars,
   if(curr_treat_var=="treatment_csh_trnsfr"){
     
     # Create formula for base model with full controls
-    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "hhid")
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "hhid")
+    
     ## browser()
     reg_df <- followup_df %>% filter(reg_hh_csh_mrt==1)
     # Estimate both models using felm
     regmodbase_cntrls <- felm(formula=formula(regmodel_cntrls), data = reg_df)
-    #regmodbase_cntrls <- fixest::feglm(fml=formula(regmodel_cntrls), data = reg_df, cluster = cluster_vars)
     
     coef_ftest_1 = ""
     coef_ftest_2 = ""
@@ -4773,7 +3985,7 @@ getEstimateGlobal <- function(depvar, curr_treat_var, control_vars, strata_vars,
   }else if(curr_treat_var=="treatment_pi"){
     
     # Create formula for base model with full controls
-    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "village")
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
     
     reg_df <- followup_df %>% 
       filter(reg_hh_pi_mrt==1)
@@ -4834,7 +4046,7 @@ getEstimateGlobal <- function(depvar, curr_treat_var, control_vars, strata_vars,
   }else{
     
     # Create formula for base model with full controls
-    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "village")
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
     
     # for the case of the pool treatment 
     reg_df <- followup_df %>% 
@@ -4864,44 +4076,62 @@ getEstimateGlobal <- function(depvar, curr_treat_var, control_vars, strata_vars,
   out
 }
 
-# Function to get global estimates for continuous variables paste0(control_vars, collapse = " + "),
-getEstimateGlobal_spill <- function(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup_df){
+# Function to get global estimates for continuous variables adding surveyor FE
+getEstimateGlobal_rob <- function(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup_df, fe_var="0"){
   
-
-  if(curr_treat_var=="treatment_pi_spill"){
+  
+  if(curr_treat_var=="treatment_csh_trnsfr"){
     
     # Create formula for base model with full controls
-    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "village")
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), paste0("| ",fe_var," | 0 |", "hhid"))
+    ## browser()
+    reg_df <- followup_df %>% filter(reg_hh_csh_mrt==1)
+    # Estimate both models using felm
+    regmodbase_cntrls <- felm(formula=formula(regmodel_cntrls), data = reg_df)
+    #regmodbase_cntrls <- fixest::feglm(fml=formula(regmodel_cntrls), data = reg_df, cluster = cluster_vars)
     
-    reg_df <- followup_df 
+    coef_ftest_1 = ""
+    coef_ftest_2 = ""
+    coef_ftest_3 = ""
+    
+  }else if(curr_treat_var=="treatment_pi"){
+    
+    # Create formula for base model with full controls
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), paste0("| ",fe_var," | 0 |", "cluster"))
+    
+    reg_df <- followup_df %>% 
+      filter(reg_hh_pi_mrt==1)
     
     # Estimate both models using felm
     regmodbase_cntrls <- felm(formula=formula(regmodel_cntrls), data = reg_df)
+    # Estimate both models using felm
+    #regmodbase_cntrls <- fixest::feglm(fml=formula(regmodel_cntrls), data = reg_df, 
+    #                                   cluster = cluster_vars, family = "binomial")
     
     # Extract coefficients from the model
     coef_values <- coef(regmodbase_cntrls)
     
     # Perform joint F-test with clustered standard errors
     joint_f_test_1 <- linearHypothesis(regmodbase_cntrls, 
-                                       c("treatment_pi_spillFull=treatment_pi_spillPsychosocial"),
+                                       c("treatment_piFull=treatment_piPsychosocial"),
                                        test = "F", singular.ok = TRUE)
     
     joint_f_test_2<- linearHypothesis(regmodbase_cntrls, 
-                                      c("treatment_pi_spillFull=treatment_pi_spillCapital"),
+                                      c("treatment_piFull=treatment_piCapital"),
                                       test = "F", singular.ok = TRUE)
     
     joint_f_test_3 <- linearHypothesis(regmodbase_cntrls, 
-                                       c("treatment_pi_spillPsychosocial = treatment_pi_spillCapital"),
+                                       c("treatment_piPsychosocial = treatment_piCapital"),
                                        test = "F", singular.ok = TRUE)
     
     # Get and format p-value with significance stars
-    coef_ftest_1 <- round(coef_values["treatment_pi_spillFull"] - coef_values["treatment_pi_spillPsychosocial"],3)
+    coef_ftest_1 <- round(coef_values["treatment_piFull"] - coef_values["treatment_piPsychosocial"],3)
     pval_ftest_1 <- round(joint_f_test_1$`Pr(>F)`[2],3)
     
-    coef_ftest_2 <- round(coef_values["treatment_pi_spillFull"] - coef_values["treatment_pi_spillCapital"],3)
+    coef_ftest_2 <- round(coef_values["treatment_piFull"] - coef_values["treatment_piCapital"],3)
     pval_ftest_2 <- round(joint_f_test_2$`Pr(>F)`[2],3)
     
-    coef_ftest_3 <- round(coef_values["treatment_pi_spillPsychosocial"] - coef_values["treatment_pi_spillCapital"],3)
+    coef_ftest_3 <- round(coef_values["treatment_piPsychosocial"] - coef_values["treatment_piCapital"],3)
     pval_ftest_3 <- round(joint_f_test_3$`Pr(>F)`[2],3)
     
     # Get and format p-value with significance stars
@@ -4928,10 +4158,11 @@ getEstimateGlobal_spill <- function(depvar, curr_treat_var, control_vars, strata
   }else{
     
     # Create formula for base model with full controls
-    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "village")
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
     
     # for the case of the pool treatment 
-    reg_df <- followup_df 
+    reg_df <- followup_df %>% 
+      filter(reg_hh_pi_mrt==1)
     
     # Estimate both models using felm
     regmodbase_cntrls <- felm(formula=formula(regmodel_cntrls), data = reg_df)
@@ -4957,53 +4188,307 @@ getEstimateGlobal_spill <- function(depvar, curr_treat_var, control_vars, strata
   out
 }
 
-getEstimate_mechanism <- function(depvar, curr_treat_var, het_var, control_vars, strata_vars, cluster_vars, followup){
-  
 
+# Function to get global estimates for continuous variables adding surveyor FE
+getEstimateGlobalComparison_rob_nonlin <- function(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup_df){
+  
+    if(curr_treat_var=="treatment_csh_trnsfr"){
+      
+      # MODEL WITHOUT CONTROLS (only treatment + strata)
+      regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var)
+      reg_df <- followup_df %>% filter(reg_hh_csh_mrt==1)
+      regmodbase_no_cntrls <- fixest::feglm(fml=formula(regmodel_no_cntrls), family = "binomial",data = reg_df, cluster = "hhid")
+
+      # MODEL WITH CONTROLS (treatment + strata + controls)
+      regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                     paste0(control_vars, collapse = " + "))
+      regmodbase_with_cntrls <- fixest::feglm(fml=formula(regmodel_with_cntrls), family = "binomial",data = reg_df, cluster = "hhid")
+      
+      coef_ftest_1_no = ""
+      coef_ftest_2_no = ""
+      coef_ftest_3_no = ""
+      coef_ftest_1_with = ""
+      coef_ftest_2_with = ""
+      coef_ftest_3_with = ""
+      
+    } else if(curr_treat_var=="treatment_pi"){
+      
+      # MODEL WITHOUT CONTROLS (only treatment)
+      regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var)
+      reg_df <- followup_df %>% filter(reg_hh_pi_mrt==1)
+      regmodbase_no_cntrls <- fixest::feglm(fml=formula(regmodel_no_cntrls), family = "binomial",data = reg_df, cluster = "cluster")
+      
+      # MODEL WITH CONTROLS (treatment + controls)
+      regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                     paste0(control_vars, collapse = " + "))
+      regmodbase_with_cntrls <- fixest::feglm(fml=formula(regmodel_with_cntrls), family = "binomial",data = reg_df, cluster = "cluster")
+      
+      # F-tests for model WITHOUT controls
+      coef_values_no <- coef(regmodbase_with_cntrls)
+      
+      joint_f_test_1_no <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piFull=treatment_piPsychosocial"),
+                                            test = "F", singular.ok = TRUE)
+      joint_f_test_2_no <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piFull=treatment_piCapital"),
+                                            test = "F", singular.ok = TRUE)
+      joint_f_test_3_no <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_piPsychosocial = treatment_piCapital"),
+                                            test = "F", singular.ok = TRUE)
+      
+      coef_ftest_1_no <- round(coef_values_no["treatment_piFull"] - coef_values_no["treatment_piPsychosocial"], 3)
+      pval_ftest_1_no <- round(joint_f_test_1_no$`Pr(>F)`[2], 3)
+      
+      coef_ftest_2_no <- round(coef_values_no["treatment_piFull"] - coef_values_no["treatment_piCapital"], 3)
+      pval_ftest_2_no <- round(joint_f_test_2_no$`Pr(>F)`[2], 3)
+      
+      coef_ftest_3_no <- round(coef_values_no["treatment_piPsychosocial"] - coef_values_no["treatment_piCapital"], 3)
+      pval_ftest_3_no <- round(joint_f_test_3_no$`Pr(>F)`[2], 3)
+      
+      # F-tests for model WITH controls
+      coef_values_with <- coef(regmodbase_with_cntrls)
+      
+      joint_f_test_1_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                              c("treatment_piFull=treatment_piPsychosocial"),
+                                              test = "F", singular.ok = TRUE)
+      joint_f_test_2_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                              c("treatment_piFull=treatment_piCapital"),
+                                              test = "F", singular.ok = TRUE)
+      joint_f_test_3_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                              c("treatment_piPsychosocial = treatment_piCapital"),
+                                              test = "F", singular.ok = TRUE)
+      
+      coef_ftest_1_with <- round(coef_values_with["treatment_piFull"] - coef_values_with["treatment_piPsychosocial"], 3)
+      pval_ftest_1_with <- round(joint_f_test_1_with$`Pr(>F)`[2], 3)
+      
+      coef_ftest_2_with <- round(coef_values_with["treatment_piFull"] - coef_values_with["treatment_piCapital"], 3)
+      pval_ftest_2_with <- round(joint_f_test_2_with$`Pr(>F)`[2], 3)
+      
+      coef_ftest_3_with <- round(coef_values_with["treatment_piPsychosocial"] - coef_values_with["treatment_piCapital"], 3)
+      pval_ftest_3_with <- round(joint_f_test_3_with$`Pr(>F)`[2], 3)
+      
+      # Add significance stars for NO controls
+      for (index in 1:3) {
+        pval_ftest <- get(paste0("pval_ftest_", index, "_no"))
+        coef_ftest <- get(paste0("coef_ftest_", index, "_no"))
+        
+        if (pval_ftest <= 0.01) {
+          coef_ftest <- paste0(coef_ftest, "***")
+        } else if (pval_ftest <= 0.05) {
+          coef_ftest <- paste0(coef_ftest, "**")
+        } else if (pval_ftest <= 0.10) {
+          coef_ftest <- paste0(coef_ftest, "*")
+        } else {
+          coef_ftest <- as.character(coef_ftest)
+        }
+        assign(paste0("coef_ftest_", index, "_no"), coef_ftest)
+      }
+      
+      # Add significance stars for WITH controls
+      for (index in 1:3) {
+        pval_ftest <- get(paste0("pval_ftest_", index, "_with"))
+        coef_ftest <- get(paste0("coef_ftest_", index, "_with"))
+        
+        if (pval_ftest <= 0.01) {
+          coef_ftest <- paste0(coef_ftest, "***")
+        } else if (pval_ftest <= 0.05) {
+          coef_ftest <- paste0(coef_ftest, "**")
+        } else if (pval_ftest <= 0.10) {
+          coef_ftest <- paste0(coef_ftest, "*")
+        } else {
+          coef_ftest <- as.character(coef_ftest)
+        }
+        assign(paste0("coef_ftest_", index, "_with"), coef_ftest)
+      }
+      
+    } else {
+      # For pooled treatment
+      
+      # MODEL WITHOUT CONTROLS 
+      regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var)
+      reg_df <- followup_df %>% filter(reg_hh_pi_mrt==1)
+      regmodbase_no_cntrls <-  fixest::feglm(fml=formula(regmodel_no_cntrls), family = "binomial",data = reg_df, cluster = "cluster")
+      
+      # MODEL WITH CONTROLS
+      regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                     paste0(control_vars, collapse = " + "))
+      regmodbase_with_cntrls <- fixest::feglm(fml=formula(regmodel_with_cntrls), family = "binomial",data = reg_df, cluster = "cluster")
+      
+      coef_ftest_1_no = ""
+      coef_ftest_2_no = ""
+      coef_ftest_3_no = ""
+      coef_ftest_1_with = ""
+      coef_ftest_2_with = ""
+      coef_ftest_3_with = ""
+    }
+    
+    # Return results in tibble format
+    out <- tibble(
+      results_no_controls = list(regmodbase_no_cntrls),
+      results_with_controls = list(regmodbase_with_cntrls),
+      full_Psychosocial_no = coef_ftest_1_no,
+      full_Capital_no = coef_ftest_2_no,
+      psychosocial_Capital_no = coef_ftest_3_no,
+      full_Psychosocial_with = coef_ftest_1_with,
+      full_Capital_with = coef_ftest_2_with,
+      psychosocial_Capital_with = coef_ftest_3_with
+    )
+    
+    out
+  }
+
+
+# Function to get global estimates for continuous variables paste0(control_vars, collapse = " + "),
+getEstimateGlobal_spill <- function(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup_df_spill){
+
+  if(curr_treat_var=="treatment_pi_spill"){
+    
+   
+    # MODEL WITHOUT CONTROLS (only treatment)
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, "| 0 | 0 |", "cluster")
+    reg_df <- followup_df_spill %>% filter(reg_hh_pi_spl_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+
+    # MODEL WITH CONTROLS (treatment + controls)
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                   paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    # F-tests for model WITHOUT controls
+    coef_values_no <- coef(regmodbase_no_cntrls)
+    
+    joint_f_test_1_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_pi_spillFull=treatment_pi_spillPsychosocial"),
+                                          test = "F", singular.ok = TRUE)
+    joint_f_test_2_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_pi_spillFull=treatment_pi_spillCapital"),
+                                          test = "F", singular.ok = TRUE)
+    joint_f_test_3_no <- linearHypothesis(regmodbase_no_cntrls, 
+                                          c("treatment_pi_spillPsychosocial = treatment_pi_spillCapital"),
+                                          test = "F", singular.ok = TRUE)
+ 
+    coef_ftest_1_no <- round(coef_values_no["treatment_pi_spillFull"] - coef_values_no["treatment_pi_spillPsychosocial"], 3)
+    pval_ftest_1_no <- round(joint_f_test_1_no$`Pr(>F)`[2], 3)
+    
+    coef_ftest_2_no <- round(coef_values_no["treatment_pi_spillFull"] - coef_values_no["treatment_pi_spillCapital"], 3)
+    pval_ftest_2_no <- round(joint_f_test_2_no$`Pr(>F)`[2], 3)
+    
+    coef_ftest_3_no <- round(coef_values_no["treatment_pi_spillPsychosocial"] - coef_values_no["treatment_pi_spillCapital"], 3)
+    pval_ftest_3_no <- round(joint_f_test_3_no$`Pr(>F)`[2], 3)
+    
+    # F-tests for model WITH controls
+    coef_values_with <- coef(regmodbase_with_cntrls)
+    
+    joint_f_test_1_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_pi_spillFull=treatment_pi_spillPsychosocial"),
+                                            test = "F", singular.ok = TRUE)
+    joint_f_test_2_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_pi_spillFull=treatment_pi_spillCapital"),
+                                            test = "F", singular.ok = TRUE)
+    joint_f_test_3_with <- linearHypothesis(regmodbase_with_cntrls, 
+                                            c("treatment_pi_spillPsychosocial = treatment_pi_spillCapital"),
+                                            test = "F", singular.ok = TRUE)
+    
+    coef_ftest_1_with <- round(coef_values_with["treatment_pi_spillFull"] - coef_values_with["treatment_pi_spillPsychosocial"], 3)
+    pval_ftest_1_with <- round(joint_f_test_1_with$`Pr(>F)`[2], 3)
+    
+    coef_ftest_2_with <- round(coef_values_with["treatment_pi_spillFull"] - coef_values_with["treatment_pi_spillCapital"], 3)
+    pval_ftest_2_with <- round(joint_f_test_2_with$`Pr(>F)`[2], 3)
+    
+    coef_ftest_3_with <- round(coef_values_with["treatment_pi_spillPsychosocial"] - coef_values_with["treatment_pi_spillCapital"], 3)
+    pval_ftest_3_with <- round(joint_f_test_3_with$`Pr(>F)`[2], 3)
+    
+    # Add significance stars for NO controls
+    for (index in 1:3) {
+      pval_ftest <- get(paste0("pval_ftest_", index, "_no"))
+      coef_ftest <- get(paste0("coef_ftest_", index, "_no"))
+      
+      if (pval_ftest <= 0.01) {
+        coef_ftest <- paste0(coef_ftest, "***")
+      } else if (pval_ftest <= 0.05) {
+        coef_ftest <- paste0(coef_ftest, "**")
+      } else if (pval_ftest <= 0.10) {
+        coef_ftest <- paste0(coef_ftest, "*")
+      } else {
+        coef_ftest <- as.character(coef_ftest)
+      }
+      assign(paste0("coef_ftest_", index, "_no"), coef_ftest)
+    }
+    
+    # Add significance stars for WITH controls
+    for (index in 1:3) {
+      pval_ftest <- get(paste0("pval_ftest_", index, "_with"))
+      coef_ftest <- get(paste0("coef_ftest_", index, "_with"))
+      
+      if (pval_ftest <= 0.01) {
+        coef_ftest <- paste0(coef_ftest, "***")
+      } else if (pval_ftest <= 0.05) {
+        coef_ftest <- paste0(coef_ftest, "**")
+      } else if (pval_ftest <= 0.10) {
+        coef_ftest <- paste0(coef_ftest, "*")
+      } else {
+        coef_ftest <- as.character(coef_ftest)
+      }
+      assign(paste0("coef_ftest_", index, "_with"), coef_ftest)
+    }
+    
+  } else {
+    # For pooled treatment
+    
+    # MODEL WITHOUT CONTROLS 
+    regmodel_no_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, "| 0 | 0 |", "cluster")
+    reg_df <- followup_df_spill %>% filter(reg_hh_pi_spl_mrt==1)
+    regmodbase_no_cntrls <- felm(formula=formula(regmodel_no_cntrls), data = reg_df)
+    
+    # MODEL WITH CONTROLS
+    regmodel_with_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", 
+                                   paste0(control_vars, collapse = " + "), "| 0 | 0 |", "cluster")
+    regmodbase_with_cntrls <- felm(formula=formula(regmodel_with_cntrls), data = reg_df)
+    
+    coef_ftest_1_no = ""
+    coef_ftest_2_no = ""
+    coef_ftest_3_no = ""
+    coef_ftest_1_with = ""
+    coef_ftest_2_with = ""
+    coef_ftest_3_with = ""
+  }
+  
+  # Return results in tibble format
+  out <- tibble(
+    results_no_controls = list(regmodbase_no_cntrls),
+    results_with_controls = list(regmodbase_with_cntrls),
+    full_Psychosocial_no = coef_ftest_1_no,
+    full_Capital_no = coef_ftest_2_no,
+    psychosocial_Capital_no = coef_ftest_3_no,
+    full_Psychosocial_with = coef_ftest_1_with,
+    full_Capital_with = coef_ftest_2_with,
+    psychosocial_Capital_with = coef_ftest_3_with
+  )
+  out
+}
+
+getEstimate_mechanism <- function(depvar, curr_treat_var, control_vars, strata_vars, cluster_vars, followup){
+  
   if(curr_treat_var=="treatment_csh_trnsfr"){
     
-    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " hhid")
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " hhid")
 
     reg_df <- followup %>% 
       filter(reg_hh_csh_mrt==1)
 
     # Estimate models using felm
     regmodbase_cntrls <- felm(formula(regmodel_cntrls), data = reg_df, keepModel = T, na.action = na.omit) 
-    # Extract coefficients from the model
-    coef_values <- coef(regmodbase_cntrls)
     
-    # Perform joint F-test with clustered standard errors
-    joint_f_test_1 <- linearHypothesis(regmodbase_cntrls, 
-                                       c(paste0(het_var,"1:","treatment_csh_trnsfrCash Assignment + treatment_csh_trnsfrCash Assignment = 0", sep = "")),#,het_var,"1:","treatment_piPsychosocial", sep = ""
-                                       test = "F", singular.ok = TRUE)
+    coef_ftest_1 = ""
     
-    # Get and format p-value with significance stars
-    coef_ftest_1 <- round(coef_values[paste0(het_var,"1:","treatment_csh_trnsfrCash Assignment", sep = "")] + coef_values["treatment_csh_trnsfrCash Assignment"],3)
-    pval_ftest_1 <- round(joint_f_test_1$`Pr(>F)`[2],3)
-
-    # Append significance stars based on p-value
-    if (pval_ftest_1 < 0.01) {
-      starts_1 <- as.character("***")
-    } else if (pval_ftest_1 < 0.05) {
-      starts_1 <-  as.character("**")
-    } else if (pval_ftest_1 < 0.1) {
-      starts_1 <-  as.character("*")
-    } else {
-      starts_1 <-  as.character("")
-    }
+    coef_ftest_2 = ""
     
-
-    # Output
-    coef_ftest_1 = coef_ftest_1
-    starts_1 = starts_1
-    coef_ftest_2 = NA
-    starts_2 = ""
-    coef_ftest_3 = NA
-    starts_3 = ""
+    coef_ftest_3 = ""
+    
 
   }else if(curr_treat_var=="treatment_pi"){
     
-    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " village")
+    regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " cluster")
     
     reg_df <- followup %>% 
       filter(reg_hh_pi_mrt==1)
@@ -5013,59 +4498,56 @@ getEstimate_mechanism <- function(depvar, curr_treat_var, het_var, control_vars,
     
     # Extract coefficients from the model
     coef_values <- coef(regmodbase_cntrls)
+
     
     # Perform joint F-test with clustered standard errors
     joint_f_test_1 <- linearHypothesis(regmodbase_cntrls, 
-                                       c(paste0(het_var,"1:","treatment_piFull + treatment_piFull = 0", sep = "")),#,het_var,"1:","treatment_piPsychosocial", sep = ""
+                                       c("treatment_piFull=treatment_piPsychosocial"),
                                        test = "F", singular.ok = TRUE)
     
     joint_f_test_2<- linearHypothesis(regmodbase_cntrls, 
-                                      c(paste0(het_var,"1:","treatment_piPsychosocial + treatment_piPsychosocial = 0", sep = "")),#,het_var,"1:","treatment_piCapital", sep = ""
+                                      c("treatment_piFull=treatment_piCapital"),
                                       test = "F", singular.ok = TRUE)
     
-    joint_f_test_3 <- linearHypothesis(regmodbase_cntrls,
-                                       c(paste0(het_var,"1:","treatment_piCapital + treatment_piCapital = 0",sep = "")),#het_var,"1:","treatment_piCapital", 
+    joint_f_test_3 <- linearHypothesis(regmodbase_cntrls, 
+                                       c("treatment_piPsychosocial = treatment_piCapital"),
                                        test = "F", singular.ok = TRUE)
     
     # Get and format p-value with significance stars
-    coef_ftest_1 <- round(coef_values[paste0(het_var,"1:","treatment_piFull", sep = "")] + coef_values["treatment_piFull"],3)
+    coef_ftest_1 <- round(coef_values["treatment_piFull"] - coef_values["treatment_piPsychosocial"],3)
     pval_ftest_1 <- round(joint_f_test_1$`Pr(>F)`[2],3)
-    starts_1 = ""
     
-    coef_ftest_2 <- round(coef_values[paste0(het_var,"1:","treatment_piPsychosocial", sep = "")] + coef_values["treatment_piPsychosocial"],3)
+    coef_ftest_2 <- round(coef_values["treatment_piFull"] - coef_values["treatment_piCapital"],3)
     pval_ftest_2 <- round(joint_f_test_2$`Pr(>F)`[2],3)
-    starts_2 = ""
     
-    coef_ftest_3 <- round(coef_values[paste0(het_var,"1:","treatment_piCapital", sep = "")] + coef_values["treatment_piCapital"],3)
+    coef_ftest_3 <- round(coef_values["treatment_piPsychosocial"] - coef_values["treatment_piCapital"],3)
     pval_ftest_3 <- round(joint_f_test_3$`Pr(>F)`[2],3)
-    starts_3 = ""
     
     # Get and format p-value with significance stars
     for (index in 1:3) {
       # Retrieve values dynamically
       pval_ftest <- get(paste0("pval_ftest_", index))
       coef_ftest <- get(paste0("coef_ftest_", index))
-      starts <- get(paste0("starts_", index))
       
       # Append significance stars based on p-value
       if (pval_ftest < 0.01) {
-        starts <- as.character("***")
+        coef_ftest <- paste0(coef_ftest, "***")
       } else if (pval_ftest < 0.05) {
-        starts <- as.character("**")
+        coef_ftest <- paste0(coef_ftest, "**")
       } else if (pval_ftest < 0.1) {
-        starts <- as.character("*")
+        coef_ftest <- paste0(coef_ftest, "*")
       } else {
-        starts <- as.character("")
+        coef_ftest <- as.character(coef_ftest)
       }
       
       # Assign the modified value back to the global variable
-      assign(paste0("starts_", index), starts)
+      assign(paste0("coef_ftest_", index), coef_ftest)
     
     }
     
     }else{
       # Create formula for base model with full controls
-      regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " village")
+      regmodel_cntrls <- paste0(depvar, " ~ ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " cluster")
       
       # for the case of the pool treatment 
       reg_df <- followup %>% 
@@ -5078,44 +4560,20 @@ getEstimate_mechanism <- function(depvar, curr_treat_var, het_var, control_vars,
       coef_values <- coef(regmodbase_cntrls)
       ### browser()
       # Perform joint F-test with clustered standard errors
-      joint_f_test_1 <- linearHypothesis(regmodbase_cntrls, 
-                                         c(paste0(het_var,"1:","treatment_pi_poolPool + treatment_pi_poolPool = 0", sep = "")),#,het_var,"1:","treatment_piPsychosocial", sep = ""
-                                         test = "F", singular.ok = TRUE)
+      coef_ftest_1 = ""
       
-      # Get and format p-value with significance stars
-      coef_ftest_1 <- round(coef_values[paste0(het_var,"1:","treatment_pi_poolPool", sep = "")] + coef_values["treatment_pi_poolPool"],3)
-      pval_ftest_1 <- round(joint_f_test_1$`Pr(>F)`[2],3)
+      coef_ftest_2 = ""
       
-      # Append significance stars based on p-value
-      if (pval_ftest_1 < 0.01) {
-        starts_1 <- as.character("***")
-      } else if (pval_ftest_1 < 0.05) {
-        starts_1 <-  as.character("**")
-      } else if (pval_ftest_1 < 0.1) {
-        starts_1 <-  as.character("*")
-      } else {
-        starts_1 <-  as.character("")
-      }
-      
-      # Output
-      coef_ftest_1 = coef_ftest_1
-      starts_1 = starts_1
-      coef_ftest_2 = NA
-      starts_2 = ""
-      coef_ftest_3 = NA
-      starts_3 = ""
+      coef_ftest_3 = ""
       
     }
 
   # Return results in tibble format
   out <- tibble(
     results_base = list(regmodbase_cntrls),
-    full = coef_ftest_1,
-    full_start = starts_1,
-    psychosocial = coef_ftest_2,
-    psychosocial_start = starts_2,
-    capital = coef_ftest_3,
-    capital_start = starts_3
+    full_Psychosocial = coef_ftest_1,
+    full_Capital = coef_ftest_2,
+    psychosocial_Capital = coef_ftest_3,
   )
   
   out
@@ -5129,7 +4587,7 @@ getEstimateGlobal_het <- function(depvar, curr_treat_var, het_var, control_vars,
 
   if(curr_treat_var=="treatment_csh_trnsfr"){
 
-    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " hhid")
+    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " hhid")
     
     reg_df <- followup %>% 
       filter(reg_hh_csh_mrt==1)
@@ -5139,7 +4597,7 @@ getEstimateGlobal_het <- function(depvar, curr_treat_var, het_var, control_vars,
     
   }else{
     
-    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " village")
+    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " cluster")
     
     reg_df <- followup %>% filter(reg_hh_pi_mrt==1)
 
@@ -5155,10 +4613,11 @@ getEstimateGlobal_het <- function(depvar, curr_treat_var, het_var, control_vars,
 
 
 getEstimatedf_het_csh <- function(formula, depvar, het_var, curr_treat_var, dfcurr, R = 1000) {
-
+ 
   # Fit the model using fixed effects
   mod <- felm(formula, data = dfcurr, keepModel = T, na.action = na.omit)
-  ### browser()
+  
+
   # Extract the variance-covariance matrix
   vcmod <- vcov(mod)
   vcmod[is.na(vcmod)] <- 0
@@ -5643,7 +5102,7 @@ getEstimatePred_IPV <- function(curr_ipv, listOutcomes, treatment_vars,
 #     reg_df <- followup %>%
 #       filter(reg_hh_csh_mrt==1) 
 #     
-#     # Extract clustering variable (village) for clustered standard errors
+#     # Extract clustering variable (cluster) for clustered standard errors
 #     clusters <- reg_df %>%  
 #       dplyr::select(hhid) %>% 
 #       pull()
@@ -5653,9 +5112,9 @@ getEstimatePred_IPV <- function(curr_ipv, listOutcomes, treatment_vars,
 #     reg_df <- followup %>%
 #       filter(reg_hh_pi_mrt==1) 
 #     
-#     # Extract clustering variable (village) for clustered standard errors
+#     # Extract clustering variable (cluster) for clustered standard errors
 #     clusters <- reg_df %>%  
-#       dplyr::select(village) %>% 
+#       dplyr::select(cluster) %>% 
 #       pull()
 #   }
 # 
@@ -5718,7 +5177,7 @@ getEstimateGlobal_CF_median <- function(depvar, treat_var, followup, n_forests =
     clusters <- reg_df %>% pull(hhid)
   } else {
     reg_df <- followup %>% filter(reg_hh_pi_mrt == 1)
-    clusters <- reg_df %>% pull(village)
+    clusters <- reg_df %>% pull(cluster)
   }
   
   Y <- reg_df %>% dplyr::select(!!sym(depvar)) %>% pull()
@@ -5782,35 +5241,35 @@ getEstimateGlobal_ML_het <- function(depvar, curr_treat_var, het_var, control_va
 
   if(curr_treat_var=="treatment_csh_trnsfr"){
     
-    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " hhid")
+    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " hhid")
 
     reg_df <- followup %>%
       # filter(!!sym(curr_treat_var)!="None") %>% 
       filter(reg_hh_csh_mrt==1) %>% 
-      distinct(hhid,village,hhh_fem_bl, hhh_poly, hhh_edu, .keep_all = TRUE)
+      distinct(hhid,cluster,hhh_fem_bl, hhh_poly, hhh_edu, .keep_all = TRUE)
     
     # Estimate both models using felm
-    reg_results <- getEstimatedf_ML_het_csh(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, reg_df)
+    reg_results <- getEstimatedf_ML_het_csh(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, strata_vars, reg_df)
     
   }else{
-    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " village")
+    regmodel_cntrls <- paste0(depvar, " ~ ", het_var, " * ", curr_treat_var, " + ", strata_vars, " + ", paste0(control_vars, collapse = " + "), "| 0 | 0 |", " cluster")
     
     reg_df <- followup %>%
       filter(reg_hh_pi_mrt==1) %>% 
-      distinct(hhid,village,hhh_fem_bl, hhh_poly, hhh_edu, .keep_all = TRUE)
+      distinct(hhid,cluster,hhh_fem_bl, hhh_poly, hhh_edu, .keep_all = TRUE)
 
     if(het_var=="decile_baseline_ipv"){
       
     # Estimate both models using felm
-      reg_results <- getEstimatedf_ML_het_pi_dec(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, reg_df)
+      reg_results <- getEstimatedf_ML_het_pi_dec(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, strata_vars, reg_df)
     }else if(het_var=="quartile_baseline_ipv"){
 
       # Estimate both models using felm
-      reg_results <- getEstimatedf_ML_het_pi_quan(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, reg_df)
+      reg_results <- getEstimatedf_ML_het_pi_quan(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, strata_vars, reg_df)
     }else{
 
       # Estimate both models using felm
-      reg_results <- getEstimatedf_ML_het_pi_med(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, reg_df)
+      reg_results <- getEstimatedf_ML_het_pi_med(formula=formula(regmodel_cntrls), depvar, het_var, curr_treat_var, strata_vars, reg_df)
     }
     
   }
@@ -5950,7 +5409,7 @@ getEstimatedf_ML_het_pi_med <- function(formula, depvar, het_var, curr_treat_var
 }
 
 
-getEstimatedf_ML_het_csh <- function(formula, depvar, het_var, curr_treat_var, dfcurr, R = 1000) {
+getEstimatedf_ML_het_csh <- function(formula, depvar, het_var, curr_treat_var, strata_vars, dfcurr, R = 1000) {
 
   # Fit the model using fixed effects
   mod <- felm(formula, data = dfcurr, keepModel = T, na.action = na.omit)
@@ -6119,7 +5578,7 @@ getEstimatedf_ML_het_csh <- function(formula, depvar, het_var, curr_treat_var, d
 }
 
 # Function to estimate the model with squared exposition variable
-getEstimatedf_ML_het_pi_quan <- function(formula, depvar, het_var, curr_treat_var, dfcurr, R = 1000) {
+getEstimatedf_ML_het_pi_quan <- function(formula, depvar, het_var, curr_treat_var, strata_vars, dfcurr, R = 1000) {
 
   # Fit the model using fixed effects
   mod <- felm(formula, data = dfcurr, keepModel = T, na.action = na.omit)
@@ -6291,7 +5750,7 @@ getEstimatedf_ML_het_pi_quan <- function(formula, depvar, het_var, curr_treat_va
 
 
 # Function to estimate the model with squared exposition variable
-getEstimatedf_ML_het_pi_dec <- function(formula, depvar, het_var, curr_treat_var, dfcurr, R = 1000) {
+getEstimatedf_ML_het_pi_dec <- function(formula, depvar, het_var, curr_treat_var, strata_vars, dfcurr, R = 1000) {
   
   # Fit the model using fixed effects
   mod <- felm(formula, data = dfcurr, keepModel = T, na.action = na.omit)
